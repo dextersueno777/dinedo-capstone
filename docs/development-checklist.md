@@ -46,10 +46,13 @@
 - [x] Applied inventory/audit Prisma migration
 - [x] Created branch data seed script
 - [x] Seeded menu categories and starter restaurant tables
+- [x] Installed authentication packages
+- [x] Created authentication API foundation
+- [x] Tested customer and admin login endpoints
 
 ## Current
 
-- [ ] Create authentication API foundation
+- [ ] Add JWT authentication guard
 
 ## Pending
 
