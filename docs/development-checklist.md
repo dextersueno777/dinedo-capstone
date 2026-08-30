@@ -107,10 +107,14 @@
 - [x] Tested admin dashboard summary endpoint
 - [x] Tested branch report filter
 - [x] Tested date range report filter
+- [x] Created audit log API foundation
+- [x] Tested admin audit log list endpoint
+- [x] Tested admin audit log detail endpoint
+- [x] Tested audit log branch and action filters
 
 ## Current
 
-- [ ] Create audit log API foundation
+- [ ] Create notification API foundation
 
 ## Pending
 
