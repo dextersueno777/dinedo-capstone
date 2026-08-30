@@ -103,10 +103,14 @@
 - [x] Tested inventory item creation endpoint
 - [x] Tested stock movement endpoint
 - [x] Tested inventory quantity update after stock movement
+- [x] Created reports API foundation
+- [x] Tested admin dashboard summary endpoint
+- [x] Tested branch report filter
+- [x] Tested date range report filter
 
 ## Current
 
-- [ ] Create reports API foundation
+- [ ] Create audit log API foundation
 
 ## Pending
 
