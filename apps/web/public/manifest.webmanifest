@@ -1,0 +1,18 @@
+{
+  "name": "DineDo",
+  "short_name": "DineDo",
+  "description": "DineDo PWA for Dindo’s Restaurant - Tinoc Branch.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff7ed",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

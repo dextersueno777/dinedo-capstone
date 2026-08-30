@@ -119,10 +119,19 @@
 - [x] Tested mark as read endpoint
 - [x] Tested archive notification endpoint
 - [x] Tested delete notification endpoint
+- [x] Created web app package
+- [x] Installed Next.js, React, and TypeScript dependencies
+- [x] Created Next.js and TypeScript config files
+- [x] Created DineDo mobile-first landing page
+- [x] Added PWA manifest file
+- [x] Added PWA icon
+- [x] Added service worker and offline page
+- [x] Tested web typecheck
+- [x] Tested web production build
 
 ## Current
 
-- [ ] Create web PWA foundation
+- [ ] Create web API client foundation
 
 ## Pending
 
