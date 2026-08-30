@@ -6,3 +6,98 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  KITCHEN
+  RIDER
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  BANNED
+}
+
+enum BranchStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Branch {
+  id        String       @id @default(cuid())
+  name      String
+  code      String       @unique
+  address   String?
+  status    BranchStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  settings  BranchSettings?
+  users     User[]
+
+  @@index([status])
+}
+
+model BranchSettings {
+  id                  String   @id @default(cuid())
+  branchId            String   @unique
+  timezone            String   @default("Asia/Manila")
+  orderingOpenTime    String   @default("08:00")
+  orderingCloseTime   String   @default("18:00")
+  normalDeliveryKm    Decimal  @default(1.00) @db.Decimal(8, 2)
+  reservationsEnabled Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String     @id @default(cuid())
+  branchId     String?
+  email        String     @unique
+  passwordHash String
+  role         UserRole
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  branch          Branch?          @relation(fields: [branchId], references: [id])
+  profile         UserProfile?
+  refreshSessions RefreshSession[]
+
+  @@index([branchId])
+  @@index([role])
+  @@index([status])
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  firstName   String
+  lastName    String
+  phoneNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshSession {
+  id           String    @id @default(cuid())
+  userId       String
+  tokenHash    String    @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}

@@ -25,12 +25,21 @@
 - [x] Created Prisma schema
 - [x] Connected Prisma to NestJS API
 - [x] Verified database health endpoint
+- [x] Created initial identity and branch database schema
+- [x] Applied first Prisma migration
 
 ## Current
 
+- [ ] Seed Tinoc branch and default administrator
+
 ## Pending
 
-- [ ] Create initial database schema
+- [ ] Create menu database schema
+- [ ] Create order database schema
+- [ ] Create reservation database schema
+- [ ] Create payment and refund database schema
+- [ ] Create rider delivery database schema
+- [ ] Create inventory and audit log database schema
 - [ ] Create Next.js PWA web app
 - [ ] Implement authentication
 - [ ] Implement branch and menu foundation
