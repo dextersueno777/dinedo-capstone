@@ -51,10 +51,12 @@
 - [x] Tested customer and admin login endpoints
 - [x] Added JWT authentication guard
 - [x] Added protected current-user endpoint
+- [x] Added role-based access guard
+- [x] Tested admin-only role route
 
 ## Current
 
-- [ ] Add role-based access guard
+- [ ] Create branch and menu API foundation
 
 ## Pending
 
