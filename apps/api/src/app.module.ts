@@ -13,6 +13,7 @@ import { OrdersModule } from './orders/orders.module';
 import { AdminOrdersModule } from './admin-orders/admin-orders.module';
 import { KitchenOrdersModule } from './kitchen-orders/kitchen-orders.module';
 import { RiderDeliveriesModule } from './rider-deliveries/rider-deliveries.module';
+import { PaymentProofsModule } from './payment-proofs/payment-proofs.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { RiderDeliveriesModule } from './rider-deliveries/rider-deliveries.modul
     AdminOrdersModule,
     KitchenOrdersModule,
     RiderDeliveriesModule,
+    PaymentProofsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

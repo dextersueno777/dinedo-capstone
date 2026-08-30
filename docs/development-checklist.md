@@ -83,10 +83,13 @@
 - [x] Created proof of delivery API foundation
 - [x] Tested proof of delivery endpoint
 - [x] Tested delivery and order status update to DELIVERED
+- [x] Created payment proof upload API foundation
+- [x] Tested manual GCash payment proof submission
+- [x] Tested order payment state update to PROOF_SUBMITTED
 
 ## Current
 
-- [ ] Create payment proof upload API foundation
+- [ ] Create admin payment proof review API foundation
 
 ## Pending
 
