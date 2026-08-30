@@ -134,10 +134,18 @@
 - [x] Created access token storage helper
 - [x] Tested web API client typecheck
 - [x] Tested web API client production build
+- [x] Created frontend auth API helper
+- [x] Created frontend auth provider
+- [x] Connected auth provider to web layout
+- [x] Created demo login panel
+- [x] Connected login panel to homepage
+- [x] Tested frontend and backend auth smoke test
+- [x] Tested web auth typecheck
+- [x] Tested web auth production build
 
 ## Current
 
-- [ ] Create web authentication foundation
+- [ ] Create customer menu browsing screen
 
 ## Pending
 

@@ -1,3 +1,5 @@
+import { AuthPanel } from '@/components/auth-panel';
+
 const modules = [
   'Customer Ordering',
   'Table Reservation',
@@ -21,6 +23,8 @@ export default function HomePage() {
           <a className="secondary" href="#status">System Status</a>
         </div>
       </section>
+
+      <AuthPanel />
 
       <section id="modules" className="card">
         <h2>Core Modules</h2>
