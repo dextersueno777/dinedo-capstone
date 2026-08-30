@@ -56,10 +56,13 @@
 - [x] Created branches API foundation
 - [x] Created menu API foundation
 - [x] Tested branch and menu endpoints
+- [x] Created customer address API foundation
+- [x] Fixed shared auth guard dependency
+- [x] Tested customer address create and list endpoints
 
 ## Current
 
-- [ ] Create customer address API foundation
+- [ ] Create cart API foundation
 
 ## Pending
 
