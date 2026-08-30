@@ -16,6 +16,7 @@ import { RiderDeliveriesModule } from './rider-deliveries/rider-deliveries.modul
 import { PaymentProofsModule } from './payment-proofs/payment-proofs.module';
 import { AdminPaymentProofsModule } from './admin-payment-proofs/admin-payment-proofs.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { AdminReservationsModule } from './admin-reservations/admin-reservations.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ReservationsModule } from './reservations/reservations.module';
     PaymentProofsModule,
     AdminPaymentProofsModule,
     ReservationsModule,
+    AdminReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

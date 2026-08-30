@@ -94,10 +94,15 @@
 - [x] Tested customer reservation creation endpoint
 - [x] Tested customer reservation list and detail endpoints
 - [x] Tested customer reservation cancellation endpoint
+- [x] Created admin reservation management API foundation
+- [x] Tested admin reservation list endpoint
+- [x] Tested admin reservation approval endpoint
+- [x] Tested reservation table assignment
+- [x] Tested reservation completion endpoint
 
 ## Current
 
-- [ ] Create admin reservation management API foundation
+- [ ] Create inventory API foundation
 
 ## Pending
 
