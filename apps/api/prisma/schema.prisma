@@ -102,6 +102,25 @@ enum TableStatus {
   INACTIVE
 }
 
+enum PaymentProofStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum RefundMethod {
+  GCASH_MANUAL
+  CASH_MANUAL
+}
+
 model Branch {
   id        String       @id @default(cuid())
   name      String
@@ -157,6 +176,11 @@ model User {
   orders          Order[]              @relation("CustomerOrders")
   statusUpdates   OrderStatusHistory[] @relation("OrderStatusActor")
   reservations    Reservation[]        @relation("CustomerReservations")
+  uploadedPaymentProofs PaymentProof[] @relation("PaymentProofUploader")
+  reviewedPaymentProofs PaymentProof[] @relation("PaymentProofReviewer")
+  customerRefunds Refund[]             @relation("CustomerRefunds")
+  requestedRefunds Refund[]            @relation("RefundRequester")
+  processedRefunds Refund[]            @relation("RefundProcessor")
 
   @@index([branchId])
   @@index([role])
@@ -417,6 +441,8 @@ model Order {
   items         OrderItem[]
   statusHistory OrderStatusHistory[]
   reservation   Reservation?
+  paymentProofs PaymentProof[]
+  refunds       Refund[]
 
   @@index([branchId])
   @@index([customerId])
@@ -550,4 +576,68 @@ model ReservationTable {
   @@unique([reservationId, tableId])
   @@index([reservationId])
   @@index([tableId])
+}
+
+
+model PaymentProof {
+  id                   String             @id @default(cuid())
+  orderId              String
+  uploadedById          String
+  reviewedById          String?
+  status               PaymentProofStatus @default(PENDING_REVIEW)
+  amount               Decimal            @db.Decimal(10, 2)
+  proofImageUrl         String
+  gcashReferenceNumber  String?
+  payerName             String?
+  payerAccountLast4     String?
+  rejectionReason       String?
+  reviewNotes           String?
+  submittedAt           DateTime           @default(now())
+  reviewedAt            DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  deletedAt             DateTime?
+
+  order      Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  uploadedBy User  @relation("PaymentProofUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  reviewedBy User? @relation("PaymentProofReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([uploadedById])
+  @@index([reviewedById])
+  @@index([status])
+  @@index([submittedAt])
+}
+
+model Refund {
+  id                   String       @id @default(cuid())
+  orderId              String
+  customerId           String
+  requestedById         String?
+  processedById         String?
+  status               RefundStatus @default(PENDING)
+  method               RefundMethod @default(GCASH_MANUAL)
+  amount               Decimal      @db.Decimal(10, 2)
+  reason               String
+  adminNotes           String?
+  gcashReferenceNumber  String?
+  refundProofImageUrl   String?
+  requestedAt           DateTime     @default(now())
+  processedAt           DateTime?
+  completedAt           DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  deletedAt             DateTime?
+
+  order       Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer    User  @relation("CustomerRefunds", fields: [customerId], references: [id], onDelete: Restrict)
+  requestedBy User? @relation("RefundRequester", fields: [requestedById], references: [id], onDelete: SetNull)
+  processedBy User? @relation("RefundProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([requestedById])
+  @@index([processedById])
+  @@index([status])
+  @@index([requestedAt])
 }

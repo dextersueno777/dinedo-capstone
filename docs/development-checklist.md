@@ -38,14 +38,15 @@
 - [x] Applied order/cart Prisma migration
 - [x] Created reservation database schema
 - [x] Applied reservation Prisma migration
+- [x] Created payment and refund database schema
+- [x] Applied payment/refund Prisma migration
 
 ## Current
 
-- [ ] Create payment and refund database schema
+- [ ] Create rider delivery database schema
 
 ## Pending
 
-- [ ] Create payment and refund database schema
 - [ ] Create rider delivery database schema
 - [ ] Create inventory and audit log database schema
 - [ ] Create Next.js PWA web app
