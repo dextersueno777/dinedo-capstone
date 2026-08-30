@@ -59,10 +59,12 @@
 - [x] Created customer address API foundation
 - [x] Fixed shared auth guard dependency
 - [x] Tested customer address create and list endpoints
+- [x] Created cart API foundation
+- [x] Tested empty cart get and clear endpoints
 
 ## Current
 
-- [ ] Create cart API foundation
+- [ ] Create admin menu item API foundation
 
 ## Pending
 
