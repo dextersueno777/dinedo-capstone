@@ -86,10 +86,14 @@
 - [x] Created payment proof upload API foundation
 - [x] Tested manual GCash payment proof submission
 - [x] Tested order payment state update to PROOF_SUBMITTED
+- [x] Created admin payment proof review API foundation
+- [x] Tested admin payment proof list endpoint
+- [x] Tested admin payment proof approval endpoint
+- [x] Tested order payment state update to APPROVED
 
 ## Current
 
-- [ ] Create admin payment proof review API foundation
+- [ ] Create reservation API foundation
 
 ## Pending
 
