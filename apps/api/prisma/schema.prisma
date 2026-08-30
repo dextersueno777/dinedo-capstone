@@ -25,6 +25,17 @@ enum BranchStatus {
   INACTIVE
 }
 
+enum MenuItemStatus {
+  AVAILABLE
+  SOLD_OUT
+  HIDDEN
+}
+
+enum MenuOptionGroupType {
+  SINGLE
+  MULTIPLE
+}
+
 model Branch {
   id        String       @id @default(cuid())
   name      String
@@ -34,8 +45,10 @@ model Branch {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  settings  BranchSettings?
-  users     User[]
+  settings       BranchSettings?
+  users          User[]
+  menuCategories MenuCategory[]
+  menuItems      MenuItem[]
 
   @@index([status])
 }
@@ -68,6 +81,7 @@ model User {
   branch          Branch?          @relation(fields: [branchId], references: [id])
   profile         UserProfile?
   refreshSessions RefreshSession[]
+  favorites       Favorite[]
 
   @@index([branchId])
   @@index([role])
@@ -100,4 +114,116 @@ model RefreshSession {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+
+model MenuCategory {
+  id          String   @id @default(cuid())
+  branchId    String
+  name        String
+  slug        String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  branch    Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  menuItems MenuItem[]
+
+  @@unique([branchId, slug])
+  @@index([branchId])
+  @@index([isActive])
+}
+
+model MenuItem {
+  id          String         @id @default(cuid())
+  branchId    String
+  categoryId  String
+  name        String
+  slug        String
+  description String?
+  price       Decimal        @db.Decimal(10, 2)
+  status      MenuItemStatus @default(AVAILABLE)
+  isFeatured  Boolean        @default(false)
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
+
+  branch       Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  category     MenuCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images       MenuItemImage[]
+  optionGroups MenuOptionGroup[]
+  favorites    Favorite[]
+
+  @@unique([branchId, slug])
+  @@index([branchId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([isFeatured])
+}
+
+model MenuItemImage {
+  id         String   @id @default(cuid())
+  menuItemId String
+  url        String
+  altText    String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId])
+}
+
+model MenuOptionGroup {
+  id          String              @id @default(cuid())
+  menuItemId  String
+  name        String
+  type        MenuOptionGroupType
+  isRequired  Boolean             @default(false)
+  minSelect   Int                 @default(0)
+  maxSelect   Int                 @default(1)
+  sortOrder   Int                 @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  deletedAt   DateTime?
+
+  menuItem MenuItem     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  options  MenuOption[]
+
+  @@index([menuItemId])
+}
+
+model MenuOption {
+  id             String   @id @default(cuid())
+  optionGroupId  String
+  name           String
+  priceDelta     Decimal  @default(0.00) @db.Decimal(10, 2)
+  isAvailable    Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  optionGroup MenuOptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  @@index([optionGroupId])
+  @@index([isAvailable])
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  menuItemId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId])
+  @@index([userId])
+  @@index([menuItemId])
 }

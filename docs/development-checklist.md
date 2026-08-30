@@ -32,10 +32,12 @@
 - [x] Created seed script
 - [x] Seeded Tinoc branch
 - [x] Seeded default local administrator
+- [x] Created menu database schema
+- [x] Applied menu Prisma migration
 
 ## Current
 
-- [ ] Create menu database schema
+- [ ] Create order database schema
 
 ## Pending
 
