@@ -70,10 +70,14 @@
 - [x] Created admin order management API foundation
 - [x] Tested admin view order endpoint
 - [x] Tested admin order status update endpoint
+- [x] Created kitchen order queue API foundation
+- [x] Created local kitchen test account
+- [x] Tested kitchen queue endpoint
+- [x] Tested kitchen order status update endpoint
 
 ## Current
 
-- [ ] Create kitchen order queue API foundation
+- [ ] Create rider delivery API foundation
 
 ## Pending
 

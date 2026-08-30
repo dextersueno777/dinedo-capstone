@@ -11,6 +11,7 @@ import { CartModule } from './cart/cart.module';
 import { AdminMenuModule } from './admin-menu/admin-menu.module';
 import { OrdersModule } from './orders/orders.module';
 import { AdminOrdersModule } from './admin-orders/admin-orders.module';
+import { KitchenOrdersModule } from './kitchen-orders/kitchen-orders.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AdminOrdersModule } from './admin-orders/admin-orders.module';
     AdminMenuModule,
     OrdersModule,
     AdminOrdersModule,
+    KitchenOrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
