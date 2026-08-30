@@ -49,10 +49,12 @@
 - [x] Installed authentication packages
 - [x] Created authentication API foundation
 - [x] Tested customer and admin login endpoints
+- [x] Added JWT authentication guard
+- [x] Added protected current-user endpoint
 
 ## Current
 
-- [ ] Add JWT authentication guard
+- [ ] Add role-based access guard
 
 ## Pending
 
