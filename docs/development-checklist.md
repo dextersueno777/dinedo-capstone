@@ -21,10 +21,12 @@
 - [x] Verified API typecheck
 - [x] Verified API build
 - [x] Verified API routes using curl
+- [x] Installed Prisma and Prisma Client
+- [x] Created Prisma schema
+- [x] Connected Prisma to NestJS API
+- [x] Verified database health endpoint
 
 ## Current
-
-- [ ] Configure Prisma
 
 ## Pending
 

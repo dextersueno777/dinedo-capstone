@@ -18,4 +18,14 @@ export class AppController {
   getHealth(): { status: string; service: string; timestamp: string } {
     return this.appService.getHealth();
   }
+
+  @Get('health/database')
+  @ApiOkResponse({ description: 'Returns database health status.' })
+  getDatabaseHealth(): Promise<{
+    status: string;
+    database: string;
+    timestamp: string;
+  }> {
+    return this.appService.getDatabaseHealth();
+  }
 }
