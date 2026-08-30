@@ -20,6 +20,7 @@ import { AdminReservationsModule } from './admin-reservations/admin-reservations
 import { AdminInventoryModule } from './admin-inventory/admin-inventory.module';
 import { AdminReportsModule } from './admin-reports/admin-reports.module';
 import { AdminAuditLogsModule } from './admin-audit-logs/admin-audit-logs.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AdminAuditLogsModule } from './admin-audit-logs/admin-audit-logs.module
     AdminInventoryModule,
     AdminReportsModule,
     AdminAuditLogsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

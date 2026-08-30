@@ -111,10 +111,18 @@
 - [x] Tested admin audit log list endpoint
 - [x] Tested admin audit log detail endpoint
 - [x] Tested audit log branch and action filters
+- [x] Added notification database schema
+- [x] Created notification migration
+- [x] Created user notification API foundation
+- [x] Tested notification list endpoint
+- [x] Tested unread count endpoint
+- [x] Tested mark as read endpoint
+- [x] Tested archive notification endpoint
+- [x] Tested delete notification endpoint
 
 ## Current
 
-- [ ] Create notification API foundation
+- [ ] Create web PWA foundation
 
 ## Pending
 

@@ -20,6 +20,20 @@ enum UserStatus {
   BANNED
 }
 
+enum NotificationType {
+  ORDER_STATUS
+  PAYMENT
+  RESERVATION
+  DELIVERY
+  SYSTEM
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
 enum BranchStatus {
   ACTIVE
   INACTIVE
@@ -206,13 +220,14 @@ model Branch {
   carts          Cart[]
   tables         RestaurantTable[]
   reservations   Reservation[]
-  riderProfiles RiderProfile[]
-  riderShifts   RiderShift[]
-  deliveries    Delivery[]
+  riderProfiles  RiderProfile[]
+  riderShifts    RiderShift[]
+  deliveries     Delivery[]
   codRemittances CodRemittance[]
   inventoryItems InventoryItem[]
   stockMovements StockMovement[]
-  auditLogs AuditLog[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]    @relation("BranchNotifications")
 
   @@index([status])
 }
@@ -242,29 +257,31 @@ model User {
   updatedAt    DateTime   @updatedAt
   deletedAt    DateTime?
 
-  branch          Branch?          @relation(fields: [branchId], references: [id])
-  profile         UserProfile?
-  refreshSessions RefreshSession[]
-  favorites       Favorite[]
-  addresses       Address[]
-  carts           Cart[]
-  orders          Order[]              @relation("CustomerOrders")
-  statusUpdates   OrderStatusHistory[] @relation("OrderStatusActor")
-  reservations    Reservation[]        @relation("CustomerReservations")
-  uploadedPaymentProofs PaymentProof[] @relation("PaymentProofUploader")
-  reviewedPaymentProofs PaymentProof[] @relation("PaymentProofReviewer")
-  customerRefunds Refund[]             @relation("CustomerRefunds")
-  requestedRefunds Refund[]            @relation("RefundRequester")
-  processedRefunds Refund[]            @relation("RefundProcessor")
-  riderProfile RiderProfile?
-  riderShifts RiderShift[]              @relation("RiderShifts")
-  assignedDeliveries Delivery[]          @relation("AssignedDeliveries")
-  reportedDeliveryIssues DeliveryIssue[] @relation("DeliveryIssueReporter")
-  capturedProofs ProofOfDelivery[]       @relation("ProofOfDeliveryCapturer")
-  codRemittances CodRemittance[]         @relation("RiderCodRemittances")
-  verifiedCodRemittances CodRemittance[] @relation("CodRemittanceVerifier")
-  stockMovements StockMovement[]          @relation("StockMovementActor")
-  auditLogs AuditLog[]                    @relation("AuditLogActor")
+  branch                 Branch?              @relation(fields: [branchId], references: [id])
+  profile                UserProfile?
+  refreshSessions        RefreshSession[]
+  favorites              Favorite[]
+  addresses              Address[]
+  carts                  Cart[]
+  orders                 Order[]              @relation("CustomerOrders")
+  statusUpdates          OrderStatusHistory[] @relation("OrderStatusActor")
+  reservations           Reservation[]        @relation("CustomerReservations")
+  uploadedPaymentProofs  PaymentProof[]       @relation("PaymentProofUploader")
+  reviewedPaymentProofs  PaymentProof[]       @relation("PaymentProofReviewer")
+  customerRefunds        Refund[]             @relation("CustomerRefunds")
+  requestedRefunds       Refund[]             @relation("RefundRequester")
+  processedRefunds       Refund[]             @relation("RefundProcessor")
+  riderProfile           RiderProfile?
+  riderShifts            RiderShift[]         @relation("RiderShifts")
+  assignedDeliveries     Delivery[]           @relation("AssignedDeliveries")
+  reportedDeliveryIssues DeliveryIssue[]      @relation("DeliveryIssueReporter")
+  capturedProofs         ProofOfDelivery[]    @relation("ProofOfDeliveryCapturer")
+  codRemittances         CodRemittance[]      @relation("RiderCodRemittances")
+  verifiedCodRemittances CodRemittance[]      @relation("CodRemittanceVerifier")
+  stockMovements         StockMovement[]      @relation("StockMovementActor")
+  auditLogs              AuditLog[]           @relation("AuditLogActor")
+
+  notifications Notification[] @relation("UserNotifications")
 
   @@index([branchId])
   @@index([role])
@@ -284,14 +301,14 @@ model UserProfile {
 }
 
 model RefreshSession {
-  id           String    @id @default(cuid())
-  userId       String
-  tokenHash    String    @unique
-  userAgent    String?
-  ipAddress    String?
-  expiresAt    DateTime
-  revokedAt    DateTime?
-  createdAt    DateTime  @default(now())
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -299,17 +316,16 @@ model RefreshSession {
   @@index([expiresAt])
 }
 
-
 model MenuCategory {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   branchId    String
   name        String
   slug        String
   description String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
   branch    Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
@@ -364,17 +380,17 @@ model MenuItemImage {
 }
 
 model MenuOptionGroup {
-  id          String              @id @default(cuid())
-  menuItemId  String
-  name        String
-  type        MenuOptionGroupType
-  isRequired  Boolean             @default(false)
-  minSelect   Int                 @default(0)
-  maxSelect   Int                 @default(1)
-  sortOrder   Int                 @default(0)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  deletedAt   DateTime?
+  id         String              @id @default(cuid())
+  menuItemId String
+  name       String
+  type       MenuOptionGroupType
+  isRequired Boolean             @default(false)
+  minSelect  Int                 @default(0)
+  maxSelect  Int                 @default(1)
+  sortOrder  Int                 @default(0)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  deletedAt  DateTime?
 
   menuItem MenuItem     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   options  MenuOption[]
@@ -383,17 +399,17 @@ model MenuOptionGroup {
 }
 
 model MenuOption {
-  id             String   @id @default(cuid())
-  optionGroupId  String
-  name           String
-  priceDelta     Decimal  @default(0.00) @db.Decimal(10, 2)
-  isAvailable    Boolean  @default(true)
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  deletedAt      DateTime?
+  id            String    @id @default(cuid())
+  optionGroupId String
+  name          String
+  priceDelta    Decimal   @default(0.00) @db.Decimal(10, 2)
+  isAvailable   Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
 
-  optionGroup      MenuOptionGroup  @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+  optionGroup      MenuOptionGroup   @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
   cartItemOptions  CartItemOption[]
   orderItemOptions OrderItemOption[]
 
@@ -415,9 +431,8 @@ model Favorite {
   @@index([menuItemId])
 }
 
-
 model Address {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   userId       String
   label        String
   recipient    String
@@ -428,11 +443,11 @@ model Address {
   province     String
   postalCode   String?
   landmark     String?
-  latitude     Decimal? @db.Decimal(10, 7)
-  longitude    Decimal? @db.Decimal(10, 7)
-  isDefault    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  latitude     Decimal?  @db.Decimal(10, 7)
+  longitude    Decimal?  @db.Decimal(10, 7)
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -490,7 +505,6 @@ model CartItemOption {
   @@index([menuOptionId])
 }
 
-
 model Order {
   id                          String            @id @default(cuid())
   orderNumber                 String            @unique
@@ -500,10 +514,10 @@ model Order {
   serviceType                 ServiceType
   timingType                  OrderTimingType
   scheduledFor                DateTime?
-  status                      OrderStatus        @default(PENDING)
+  status                      OrderStatus       @default(PENDING)
   paymentMethod               PaymentMethod
-  paymentState                PaymentState       @default(UNPAID)
-  deliveryFeeStatus           DeliveryFeeStatus  @default(NOT_REQUIRED)
+  paymentState                PaymentState      @default(UNPAID)
+  deliveryFeeStatus           DeliveryFeeStatus @default(NOT_REQUIRED)
   subtotalAmount              Decimal           @default(0.00) @db.Decimal(10, 2)
   discountAmount              Decimal           @default(0.00) @db.Decimal(10, 2)
   deliveryFeeAmount           Decimal           @default(0.00) @db.Decimal(10, 2)
@@ -519,16 +533,17 @@ model Order {
   updatedAt                   DateTime          @updatedAt
   deletedAt                   DateTime?
 
-  branch        Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  customer      User                 @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Restrict)
-  address       Address?             @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
-  statusHistory OrderStatusHistory[]
-  reservation   Reservation?
-  paymentProofs PaymentProof[]
-  refunds       Refund[]
-  delivery      Delivery?
+  branch         Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  customer       User                 @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Restrict)
+  address        Address?             @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  reservation    Reservation?
+  paymentProofs  PaymentProof[]
+  refunds        Refund[]
+  delivery       Delivery?
   stockMovements StockMovement[]
+  notifications  Notification[]       @relation("OrderNotifications")
 
   @@index([branchId])
   @@index([customerId])
@@ -538,7 +553,6 @@ model Order {
   @@index([createdAt])
   @@index([scheduledFor])
 }
-
 
 model OrderItem {
   id           String   @id @default(cuid())
@@ -594,19 +608,18 @@ model OrderStatusHistory {
   @@index([createdAt])
 }
 
-
 model RestaurantTable {
-  id          String      @id @default(cuid())
-  branchId    String
-  name        String
-  capacity    Int
-  status      TableStatus @default(ACTIVE)
-  location    String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?
+  id        String      @id @default(cuid())
+  branchId  String
+  name      String
+  capacity  Int
+  status    TableStatus @default(ACTIVE)
+  location  String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
 
-  branch       Branch              @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  branch       Branch             @relation(fields: [branchId], references: [id], onDelete: Cascade)
   reservations ReservationTable[]
 
   @@unique([branchId, name])
@@ -615,33 +628,34 @@ model RestaurantTable {
 }
 
 model Reservation {
-  id                String            @id @default(cuid())
-  reservationNumber String            @unique
-  branchId          String
-  customerId        String
-  linkedOrderId     String?           @unique
-  status            ReservationStatus @default(PENDING)
-  reservedFor       DateTime
-  guestCount        Int
-  customerName      String
-  customerPhone     String
-  notes             String?
-  downPaymentAmount Decimal           @default(0.00) @db.Decimal(10, 2)
-  totalEstimate     Decimal           @default(0.00) @db.Decimal(10, 2)
-  adminNotes        String?
-  rejectionReason   String?
+  id                 String            @id @default(cuid())
+  reservationNumber  String            @unique
+  branchId           String
+  customerId         String
+  linkedOrderId      String?           @unique
+  status             ReservationStatus @default(PENDING)
+  reservedFor        DateTime
+  guestCount         Int
+  customerName       String
+  customerPhone      String
+  notes              String?
+  downPaymentAmount  Decimal           @default(0.00) @db.Decimal(10, 2)
+  totalEstimate      Decimal           @default(0.00) @db.Decimal(10, 2)
+  adminNotes         String?
+  rejectionReason    String?
   cancellationReason String?
-  approvedAt        DateTime?
-  cancelledAt       DateTime?
-  completedAt       DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  deletedAt         DateTime?
+  approvedAt         DateTime?
+  cancelledAt        DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  deletedAt          DateTime?
 
-  branch      Branch             @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  customer    User               @relation("CustomerReservations", fields: [customerId], references: [id], onDelete: Restrict)
-  linkedOrder Order?             @relation(fields: [linkedOrderId], references: [id], onDelete: SetNull)
-  tables      ReservationTable[]
+  branch        Branch             @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  customer      User               @relation("CustomerReservations", fields: [customerId], references: [id], onDelete: Restrict)
+  linkedOrder   Order?             @relation(fields: [linkedOrderId], references: [id], onDelete: SetNull)
+  tables        ReservationTable[]
+  notifications Notification[]     @relation("ReservationNotifications")
 
   @@index([branchId])
   @@index([customerId])
@@ -656,7 +670,7 @@ model ReservationTable {
   tableId       String
   createdAt     DateTime @default(now())
 
-  reservation Reservation    @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  reservation Reservation     @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   table       RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
 
   @@unique([reservationId, tableId])
@@ -664,25 +678,24 @@ model ReservationTable {
   @@index([tableId])
 }
 
-
 model PaymentProof {
   id                   String             @id @default(cuid())
   orderId              String
-  uploadedById          String
-  reviewedById          String?
+  uploadedById         String
+  reviewedById         String?
   status               PaymentProofStatus @default(PENDING_REVIEW)
   amount               Decimal            @db.Decimal(10, 2)
-  proofImageUrl         String
-  gcashReferenceNumber  String?
-  payerName             String?
-  payerAccountLast4     String?
-  rejectionReason       String?
-  reviewNotes           String?
-  submittedAt           DateTime           @default(now())
-  reviewedAt            DateTime?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  deletedAt             DateTime?
+  proofImageUrl        String
+  gcashReferenceNumber String?
+  payerName            String?
+  payerAccountLast4    String?
+  rejectionReason      String?
+  reviewNotes          String?
+  submittedAt          DateTime           @default(now())
+  reviewedAt           DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  deletedAt            DateTime?
 
   order      Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   uploadedBy User  @relation("PaymentProofUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
@@ -699,21 +712,21 @@ model Refund {
   id                   String       @id @default(cuid())
   orderId              String
   customerId           String
-  requestedById         String?
-  processedById         String?
+  requestedById        String?
+  processedById        String?
   status               RefundStatus @default(PENDING)
   method               RefundMethod @default(GCASH_MANUAL)
   amount               Decimal      @db.Decimal(10, 2)
   reason               String
   adminNotes           String?
-  gcashReferenceNumber  String?
-  refundProofImageUrl   String?
-  requestedAt           DateTime     @default(now())
-  processedAt           DateTime?
-  completedAt           DateTime?
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
-  deletedAt             DateTime?
+  gcashReferenceNumber String?
+  refundProofImageUrl  String?
+  requestedAt          DateTime     @default(now())
+  processedAt          DateTime?
+  completedAt          DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  deletedAt            DateTime?
 
   order       Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   customer    User  @relation("CustomerRefunds", fields: [customerId], references: [id], onDelete: Restrict)
@@ -727,7 +740,6 @@ model Refund {
   @@index([status])
   @@index([requestedAt])
 }
-
 
 model RiderProfile {
   id                 String                  @id @default(cuid())
@@ -768,7 +780,6 @@ model RiderShift {
   @@index([startedAt])
 }
 
-
 model Delivery {
   id                      String         @id @default(cuid())
   branchId                String
@@ -797,8 +808,8 @@ model Delivery {
   order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   rider  User?  @relation("AssignedDeliveries", fields: [riderId], references: [id], onDelete: SetNull)
 
-  issues DeliveryIssue[]
-  proofs ProofOfDelivery[]
+  issues             DeliveryIssue[]
+  proofs             ProofOfDelivery[]
   codRemittanceItems CodRemittanceDelivery[]
 
   @@index([branchId])
@@ -809,19 +820,18 @@ model Delivery {
   @@index([deliveredAt])
 }
 
-
 model DeliveryIssue {
-  id          String              @id @default(cuid())
-  deliveryId  String
+  id           String              @id @default(cuid())
+  deliveryId   String
   reportedById String?
-  status      DeliveryIssueStatus @default(OPEN)
-  title       String
-  description String
-  resolution  String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  resolvedAt  DateTime?
-  deletedAt   DateTime?
+  status       DeliveryIssueStatus @default(OPEN)
+  title        String
+  description  String
+  resolution   String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  resolvedAt   DateTime?
+  deletedAt    DateTime?
 
   delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
   reportedBy User?    @relation("DeliveryIssueReporter", fields: [reportedById], references: [id], onDelete: SetNull)
@@ -853,7 +863,6 @@ model ProofOfDelivery {
   @@index([capturedAt])
 }
 
-
 model CodRemittance {
   id              String              @id @default(cuid())
   branchId        String
@@ -873,9 +882,9 @@ model CodRemittance {
   updatedAt       DateTime            @updatedAt
   deletedAt       DateTime?
 
-  branch     Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  rider      User   @relation("RiderCodRemittances", fields: [riderId], references: [id], onDelete: Restrict)
-  verifiedBy User?  @relation("CodRemittanceVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  branch     Branch                  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  rider      User                    @relation("RiderCodRemittances", fields: [riderId], references: [id], onDelete: Restrict)
+  verifiedBy User?                   @relation("CodRemittanceVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
   deliveries CodRemittanceDelivery[]
 
   @@index([branchId])
@@ -900,7 +909,6 @@ model CodRemittanceDelivery {
   @@index([deliveryId])
 }
 
-
 model InventoryItem {
   id              String              @id @default(cuid())
   branchId        String
@@ -923,7 +931,6 @@ model InventoryItem {
   @@index([branchId])
   @@index([status])
 }
-
 
 model StockMovement {
   id              String            @id @default(cuid())
@@ -952,7 +959,6 @@ model StockMovement {
   @@index([createdAt])
 }
 
-
 model AuditLog {
   id          String   @id @default(cuid())
   branchId    String?
@@ -974,5 +980,34 @@ model AuditLog {
   @@index([action])
   @@index([entityType])
   @@index([entityId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id            String             @id @default(cuid())
+  userId        String
+  branchId      String?
+  orderId       String?
+  reservationId String?
+  type          NotificationType
+  status        NotificationStatus @default(UNREAD)
+  title         String
+  message       String
+  data          Json?
+  readAt        DateTime?
+  createdAt     DateTime           @default(now())
+  deletedAt     DateTime?
+
+  user        User         @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  branch      Branch?      @relation("BranchNotifications", fields: [branchId], references: [id], onDelete: SetNull)
+  order       Order?       @relation("OrderNotifications", fields: [orderId], references: [id], onDelete: SetNull)
+  reservation Reservation? @relation("ReservationNotifications", fields: [reservationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([branchId])
+  @@index([orderId])
+  @@index([reservationId])
+  @@index([type])
+  @@index([status])
   @@index([createdAt])
 }
