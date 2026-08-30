@@ -44,10 +44,12 @@
 - [x] Applied rider delivery Prisma migration
 - [x] Created inventory and audit log database schema
 - [x] Applied inventory/audit Prisma migration
+- [x] Created branch data seed script
+- [x] Seeded menu categories and starter restaurant tables
 
 ## Current
 
-- [ ] Seed menu categories and branch tables
+- [ ] Create authentication API foundation
 
 ## Pending
 
