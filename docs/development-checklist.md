@@ -53,10 +53,13 @@
 - [x] Added protected current-user endpoint
 - [x] Added role-based access guard
 - [x] Tested admin-only role route
+- [x] Created branches API foundation
+- [x] Created menu API foundation
+- [x] Tested branch and menu endpoints
 
 ## Current
 
-- [ ] Create branch and menu API foundation
+- [ ] Create customer address API foundation
 
 ## Pending
 
