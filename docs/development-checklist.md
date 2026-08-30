@@ -10,16 +10,17 @@
 - [x] Created Docker Compose file
 - [x] Created VS Code settings
 - [x] Created README
+- [x] Initialized Git repository
+- [x] Started PostgreSQL and Redis
+- [x] Verified database connection
+- [x] Verified Redis connection
 
 ## Current
 
-- [ ] Initialize Git repository
-- [ ] Start PostgreSQL and Redis
-- [ ] Verify database connection
+- [ ] Create NestJS API app
 
 ## Pending
 
-- [ ] Create NestJS API app
 - [ ] Configure Prisma
 - [ ] Create initial database schema
 - [ ] Create Next.js PWA web app
