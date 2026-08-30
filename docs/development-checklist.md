@@ -42,14 +42,15 @@
 - [x] Applied payment/refund Prisma migration
 - [x] Created rider delivery database schema
 - [x] Applied rider delivery Prisma migration
+- [x] Created inventory and audit log database schema
+- [x] Applied inventory/audit Prisma migration
 
 ## Current
 
-- [ ] Create inventory and audit log database schema
+- [ ] Seed menu categories and branch tables
 
 ## Pending
 
-- [ ] Create inventory and audit log database schema
 - [ ] Create Next.js PWA web app
 - [ ] Implement authentication
 - [ ] Implement branch and menu foundation
