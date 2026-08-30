@@ -88,6 +88,20 @@ enum DeliveryFeeStatus {
   REJECTED
 }
 
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum TableStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model Branch {
   id        String       @id @default(cuid())
   name      String
@@ -103,6 +117,8 @@ model Branch {
   menuItems      MenuItem[]
   orders         Order[]
   carts          Cart[]
+  tables         RestaurantTable[]
+  reservations   Reservation[]
 
   @@index([status])
 }
@@ -140,6 +156,7 @@ model User {
   carts           Cart[]
   orders          Order[]              @relation("CustomerOrders")
   statusUpdates   OrderStatusHistory[] @relation("OrderStatusActor")
+  reservations    Reservation[]        @relation("CustomerReservations")
 
   @@index([branchId])
   @@index([role])
@@ -399,6 +416,7 @@ model Order {
   address       Address?             @relation(fields: [addressId], references: [id], onDelete: SetNull)
   items         OrderItem[]
   statusHistory OrderStatusHistory[]
+  reservation   Reservation?
 
   @@index([branchId])
   @@index([customerId])
@@ -462,4 +480,74 @@ model OrderStatusHistory {
   @@index([changedById])
   @@index([toStatus])
   @@index([createdAt])
+}
+
+
+model RestaurantTable {
+  id          String      @id @default(cuid())
+  branchId    String
+  name        String
+  capacity    Int
+  status      TableStatus @default(ACTIVE)
+  location    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+
+  branch       Branch              @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  reservations ReservationTable[]
+
+  @@unique([branchId, name])
+  @@index([branchId])
+  @@index([status])
+}
+
+model Reservation {
+  id                String            @id @default(cuid())
+  reservationNumber String            @unique
+  branchId          String
+  customerId        String
+  linkedOrderId     String?           @unique
+  status            ReservationStatus @default(PENDING)
+  reservedFor       DateTime
+  guestCount        Int
+  customerName      String
+  customerPhone     String
+  notes             String?
+  downPaymentAmount Decimal           @default(0.00) @db.Decimal(10, 2)
+  totalEstimate     Decimal           @default(0.00) @db.Decimal(10, 2)
+  adminNotes        String?
+  rejectionReason   String?
+  cancellationReason String?
+  approvedAt        DateTime?
+  cancelledAt       DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?
+
+  branch      Branch             @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  customer    User               @relation("CustomerReservations", fields: [customerId], references: [id], onDelete: Restrict)
+  linkedOrder Order?             @relation(fields: [linkedOrderId], references: [id], onDelete: SetNull)
+  tables      ReservationTable[]
+
+  @@index([branchId])
+  @@index([customerId])
+  @@index([status])
+  @@index([reservedFor])
+  @@index([createdAt])
+}
+
+model ReservationTable {
+  id            String   @id @default(cuid())
+  reservationId String
+  tableId       String
+  createdAt     DateTime @default(now())
+
+  reservation Reservation    @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  table       RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+
+  @@unique([reservationId, tableId])
+  @@index([reservationId])
+  @@index([tableId])
 }

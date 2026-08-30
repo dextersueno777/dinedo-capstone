@@ -36,14 +36,15 @@
 - [x] Applied menu Prisma migration
 - [x] Created order and cart database schema
 - [x] Applied order/cart Prisma migration
+- [x] Created reservation database schema
+- [x] Applied reservation Prisma migration
 
 ## Current
 
-- [ ] Create reservation database schema
+- [ ] Create payment and refund database schema
 
 ## Pending
 
-- [ ] Create reservation database schema
 - [ ] Create payment and refund database schema
 - [ ] Create rider delivery database schema
 - [ ] Create inventory and audit log database schema
