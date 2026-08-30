@@ -34,14 +34,15 @@
 - [x] Seeded default local administrator
 - [x] Created menu database schema
 - [x] Applied menu Prisma migration
+- [x] Created order and cart database schema
+- [x] Applied order/cart Prisma migration
 
 ## Current
 
-- [ ] Create order database schema
+- [ ] Create reservation database schema
 
 ## Pending
 
-- [ ] Create order database schema
 - [ ] Create reservation database schema
 - [ ] Create payment and refund database schema
 - [ ] Create rider delivery database schema
