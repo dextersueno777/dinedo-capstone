@@ -64,10 +64,13 @@
 - [x] Created admin menu item API foundation
 - [x] Tested admin menu item create endpoint
 - [x] Tested cart add item endpoint
+- [x] Created checkout and order API foundation
+- [x] Tested cart checkout endpoint
+- [x] Tested cart clears after checkout
 
 ## Current
 
-- [ ] Create checkout and order API foundation
+- [ ] Create admin order management API foundation
 
 ## Pending
 
