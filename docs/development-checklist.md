@@ -14,14 +14,20 @@
 - [x] Started PostgreSQL and Redis
 - [x] Verified database connection
 - [x] Verified Redis connection
+- [x] Created NestJS API app foundation
+- [x] Added API welcome route
+- [x] Added API health route
+- [x] Added Swagger docs route
+- [x] Verified API typecheck
+- [x] Verified API build
+- [x] Verified API routes using curl
 
 ## Current
 
-- [ ] Create NestJS API app
+- [ ] Configure Prisma
 
 ## Pending
 
-- [ ] Configure Prisma
 - [ ] Create initial database schema
 - [ ] Create Next.js PWA web app
 - [ ] Implement authentication
