@@ -61,10 +61,13 @@
 - [x] Tested customer address create and list endpoints
 - [x] Created cart API foundation
 - [x] Tested empty cart get and clear endpoints
+- [x] Created admin menu item API foundation
+- [x] Tested admin menu item create endpoint
+- [x] Tested cart add item endpoint
 
 ## Current
 
-- [ ] Create admin menu item API foundation
+- [ ] Create checkout and order API foundation
 
 ## Pending
 
