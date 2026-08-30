@@ -67,10 +67,13 @@
 - [x] Created checkout and order API foundation
 - [x] Tested cart checkout endpoint
 - [x] Tested cart clears after checkout
+- [x] Created admin order management API foundation
+- [x] Tested admin view order endpoint
+- [x] Tested admin order status update endpoint
 
 ## Current
 
-- [ ] Create admin order management API foundation
+- [ ] Create kitchen order queue API foundation
 
 ## Pending
 
