@@ -90,10 +90,14 @@
 - [x] Tested admin payment proof list endpoint
 - [x] Tested admin payment proof approval endpoint
 - [x] Tested order payment state update to APPROVED
+- [x] Created reservation API foundation
+- [x] Tested customer reservation creation endpoint
+- [x] Tested customer reservation list and detail endpoints
+- [x] Tested customer reservation cancellation endpoint
 
 ## Current
 
-- [ ] Create reservation API foundation
+- [ ] Create admin reservation management API foundation
 
 ## Pending
 

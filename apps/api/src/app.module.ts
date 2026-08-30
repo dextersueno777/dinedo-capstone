@@ -15,6 +15,7 @@ import { KitchenOrdersModule } from './kitchen-orders/kitchen-orders.module';
 import { RiderDeliveriesModule } from './rider-deliveries/rider-deliveries.module';
 import { PaymentProofsModule } from './payment-proofs/payment-proofs.module';
 import { AdminPaymentProofsModule } from './admin-payment-proofs/admin-payment-proofs.module';
+import { ReservationsModule } from './reservations/reservations.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AdminPaymentProofsModule } from './admin-payment-proofs/admin-payment-p
     RiderDeliveriesModule,
     PaymentProofsModule,
     AdminPaymentProofsModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
