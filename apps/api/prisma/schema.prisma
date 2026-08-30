@@ -121,6 +121,50 @@ enum RefundMethod {
   CASH_MANUAL
 }
 
+enum RiderAvailabilityStatus {
+  AVAILABLE
+  BUSY
+  OFF_DUTY
+  DISABLED
+}
+
+enum RiderShiftStatus {
+  OPEN
+  CLOSED
+}
+
+enum DeliveryStatus {
+  PENDING_ASSIGNMENT
+  ASSIGNED
+  ACCEPTED
+  REJECTED_BY_RIDER
+  OUT_FOR_DELIVERY
+  ARRIVED
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+enum DeliveryIssueStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  CANCELLED
+}
+
+enum ProofOfDeliveryType {
+  PHOTO
+  SIGNATURE
+  ADMIN_BYPASS
+}
+
+enum CodRemittanceStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+  REJECTED
+}
+
 model Branch {
   id        String       @id @default(cuid())
   name      String
@@ -138,6 +182,10 @@ model Branch {
   carts          Cart[]
   tables         RestaurantTable[]
   reservations   Reservation[]
+  riderProfiles RiderProfile[]
+  riderShifts   RiderShift[]
+  deliveries    Delivery[]
+  codRemittances CodRemittance[]
 
   @@index([status])
 }
@@ -181,6 +229,13 @@ model User {
   customerRefunds Refund[]             @relation("CustomerRefunds")
   requestedRefunds Refund[]            @relation("RefundRequester")
   processedRefunds Refund[]            @relation("RefundProcessor")
+  riderProfile RiderProfile?
+  riderShifts RiderShift[]              @relation("RiderShifts")
+  assignedDeliveries Delivery[]          @relation("AssignedDeliveries")
+  reportedDeliveryIssues DeliveryIssue[] @relation("DeliveryIssueReporter")
+  capturedProofs ProofOfDelivery[]       @relation("ProofOfDeliveryCapturer")
+  codRemittances CodRemittance[]         @relation("RiderCodRemittances")
+  verifiedCodRemittances CodRemittance[] @relation("CodRemittanceVerifier")
 
   @@index([branchId])
   @@index([role])
@@ -443,6 +498,7 @@ model Order {
   reservation   Reservation?
   paymentProofs PaymentProof[]
   refunds       Refund[]
+  delivery      Delivery?
 
   @@index([branchId])
   @@index([customerId])
@@ -640,4 +696,176 @@ model Refund {
   @@index([processedById])
   @@index([status])
   @@index([requestedAt])
+}
+
+
+model RiderProfile {
+  id                 String                  @id @default(cuid())
+  userId             String                  @unique
+  branchId           String
+  availabilityStatus RiderAvailabilityStatus @default(OFF_DUTY)
+  vehicleType        String?
+  plateNumber        String?
+  emergencyContact   String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  deletedAt          DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@index([branchId])
+  @@index([availabilityStatus])
+}
+
+model RiderShift {
+  id        String           @id @default(cuid())
+  branchId  String
+  riderId   String
+  status    RiderShiftStatus @default(OPEN)
+  startedAt DateTime         @default(now())
+  endedAt   DateTime?
+  notes     String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  rider  User   @relation("RiderShifts", fields: [riderId], references: [id], onDelete: Restrict)
+
+  @@index([branchId])
+  @@index([riderId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+
+model Delivery {
+  id                      String         @id @default(cuid())
+  branchId                String
+  orderId                 String         @unique
+  riderId                 String?
+  status                  DeliveryStatus @default(PENDING_ASSIGNMENT)
+  assignedAt              DateTime?
+  acceptedAt              DateTime?
+  rejectedAt              DateTime?
+  rejectionReason         String?
+  outForDeliveryAt        DateTime?
+  arrivedAt               DateTime?
+  deliveredAt             DateTime?
+  cancelledAt             DateTime?
+  failedAt                DateTime?
+  issueSummary            String?
+  navigationAddress       String?
+  customerContactSnapshot String?
+  codAmountToCollect      Decimal        @default(0.00) @db.Decimal(10, 2)
+  deliveryFeeAmount       Decimal        @default(0.00) @db.Decimal(10, 2)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  deletedAt               DateTime?
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  rider  User?  @relation("AssignedDeliveries", fields: [riderId], references: [id], onDelete: SetNull)
+
+  issues DeliveryIssue[]
+  proofs ProofOfDelivery[]
+  codRemittanceItems CodRemittanceDelivery[]
+
+  @@index([branchId])
+  @@index([orderId])
+  @@index([riderId])
+  @@index([status])
+  @@index([assignedAt])
+  @@index([deliveredAt])
+}
+
+
+model DeliveryIssue {
+  id          String              @id @default(cuid())
+  deliveryId  String
+  reportedById String?
+  status      DeliveryIssueStatus @default(OPEN)
+  title       String
+  description String
+  resolution  String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  resolvedAt  DateTime?
+  deletedAt   DateTime?
+
+  delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  reportedBy User?    @relation("DeliveryIssueReporter", fields: [reportedById], references: [id], onDelete: SetNull)
+
+  @@index([deliveryId])
+  @@index([reportedById])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ProofOfDelivery {
+  id           String              @id @default(cuid())
+  deliveryId   String
+  capturedById String?
+  type         ProofOfDeliveryType
+  imageUrl     String?
+  signatureUrl String?
+  notes        String?
+  capturedAt   DateTime            @default(now())
+  createdAt    DateTime            @default(now())
+  deletedAt    DateTime?
+
+  delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  capturedBy User?    @relation("ProofOfDeliveryCapturer", fields: [capturedById], references: [id], onDelete: SetNull)
+
+  @@index([deliveryId])
+  @@index([capturedById])
+  @@index([type])
+  @@index([capturedAt])
+}
+
+
+model CodRemittance {
+  id              String              @id @default(cuid())
+  branchId        String
+  riderId         String
+  verifiedById    String?
+  status          CodRemittanceStatus @default(PENDING)
+  remittanceDate  DateTime
+  expectedAmount  Decimal             @default(0.00) @db.Decimal(10, 2)
+  submittedAmount Decimal?            @db.Decimal(10, 2)
+  varianceAmount  Decimal             @default(0.00) @db.Decimal(10, 2)
+  proofImageUrl   String?
+  riderNotes      String?
+  adminNotes      String?
+  submittedAt     DateTime?
+  verifiedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  deletedAt       DateTime?
+
+  branch     Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  rider      User   @relation("RiderCodRemittances", fields: [riderId], references: [id], onDelete: Restrict)
+  verifiedBy User?  @relation("CodRemittanceVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  deliveries CodRemittanceDelivery[]
+
+  @@index([branchId])
+  @@index([riderId])
+  @@index([verifiedById])
+  @@index([status])
+  @@index([remittanceDate])
+}
+
+model CodRemittanceDelivery {
+  id              String   @id @default(cuid())
+  codRemittanceId String
+  deliveryId      String
+  amount          Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+
+  codRemittance CodRemittance @relation(fields: [codRemittanceId], references: [id], onDelete: Cascade)
+  delivery      Delivery      @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
+
+  @@unique([codRemittanceId, deliveryId])
+  @@index([codRemittanceId])
+  @@index([deliveryId])
 }
