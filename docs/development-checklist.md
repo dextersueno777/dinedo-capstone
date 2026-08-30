@@ -99,10 +99,14 @@
 - [x] Tested admin reservation approval endpoint
 - [x] Tested reservation table assignment
 - [x] Tested reservation completion endpoint
+- [x] Created inventory API foundation
+- [x] Tested inventory item creation endpoint
+- [x] Tested stock movement endpoint
+- [x] Tested inventory quantity update after stock movement
 
 ## Current
 
-- [ ] Create inventory API foundation
+- [ ] Create reports API foundation
 
 ## Pending
 

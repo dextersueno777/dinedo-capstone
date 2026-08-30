@@ -17,6 +17,7 @@ import { PaymentProofsModule } from './payment-proofs/payment-proofs.module';
 import { AdminPaymentProofsModule } from './admin-payment-proofs/admin-payment-proofs.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { AdminReservationsModule } from './admin-reservations/admin-reservations.module';
+import { AdminInventoryModule } from './admin-inventory/admin-inventory.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AdminReservationsModule } from './admin-reservations/admin-reservations
     AdminPaymentProofsModule,
     ReservationsModule,
     AdminReservationsModule,
+    AdminInventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
