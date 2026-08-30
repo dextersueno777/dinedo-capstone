@@ -74,10 +74,16 @@
 - [x] Created local kitchen test account
 - [x] Tested kitchen queue endpoint
 - [x] Tested kitchen order status update endpoint
+- [x] Created rider delivery API foundation
+- [x] Created local rider test account
+- [x] Tested rider delivery list endpoint
+- [x] Tested rider accept delivery endpoint
+- [x] Tested rider delivery status update endpoint
+- [x] Tested rider delivery issue report endpoint
 
 ## Current
 
-- [ ] Create rider delivery API foundation
+- [ ] Create proof of delivery API foundation
 
 ## Pending
 

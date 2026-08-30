@@ -12,6 +12,7 @@ import { AdminMenuModule } from './admin-menu/admin-menu.module';
 import { OrdersModule } from './orders/orders.module';
 import { AdminOrdersModule } from './admin-orders/admin-orders.module';
 import { KitchenOrdersModule } from './kitchen-orders/kitchen-orders.module';
+import { RiderDeliveriesModule } from './rider-deliveries/rider-deliveries.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { KitchenOrdersModule } from './kitchen-orders/kitchen-orders.module';
     OrdersModule,
     AdminOrdersModule,
     KitchenOrdersModule,
+    RiderDeliveriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
