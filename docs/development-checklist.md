@@ -128,10 +128,16 @@
 - [x] Added service worker and offline page
 - [x] Tested web typecheck
 - [x] Tested web production build
+- [x] Created web API environment config
+- [x] Created reusable web API client
+- [x] Created frontend API response types
+- [x] Created access token storage helper
+- [x] Tested web API client typecheck
+- [x] Tested web API client production build
 
 ## Current
 
-- [ ] Create web API client foundation
+- [ ] Create web authentication foundation
 
 ## Pending
 
