@@ -27,14 +27,18 @@
 - [x] Verified database health endpoint
 - [x] Created initial identity and branch database schema
 - [x] Applied first Prisma migration
+- [x] Added local seed environment variables
+- [x] Installed Argon2 password hashing
+- [x] Created seed script
+- [x] Seeded Tinoc branch
+- [x] Seeded default local administrator
 
 ## Current
 
-- [ ] Seed Tinoc branch and default administrator
+- [ ] Create menu database schema
 
 ## Pending
 
-- [ ] Create menu database schema
 - [ ] Create order database schema
 - [ ] Create reservation database schema
 - [ ] Create payment and refund database schema
