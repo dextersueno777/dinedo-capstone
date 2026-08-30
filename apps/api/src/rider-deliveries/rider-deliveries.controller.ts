@@ -17,6 +17,7 @@ import { AuthUser } from '../auth/types/auth-user.type';
 import { RejectRiderDeliveryDto } from './dto/reject-rider-delivery.dto';
 import { ReportDeliveryIssueDto } from './dto/report-delivery-issue.dto';
 import { UpdateRiderDeliveryStatusDto } from './dto/update-rider-delivery-status.dto';
+import { CaptureProofOfDeliveryDto } from './dto/capture-proof-of-delivery.dto';
 import { RiderDeliveriesService } from './rider-deliveries.service';
 
 @ApiTags('Rider Deliveries')
@@ -58,6 +59,16 @@ export class RiderDeliveriesController {
     @Body() dto: UpdateRiderDeliveryStatusDto,
   ) {
     return this.riderDeliveriesService.updateStatus(user.id, id, dto);
+  }
+
+
+  @Post(':id/proofs')
+  captureProofOfDelivery(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: CaptureProofOfDeliveryDto,
+  ) {
+    return this.riderDeliveriesService.captureProofOfDelivery(user.id, id, dto);
   }
 
   @Post(':id/issues')

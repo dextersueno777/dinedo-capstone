@@ -80,10 +80,13 @@
 - [x] Tested rider accept delivery endpoint
 - [x] Tested rider delivery status update endpoint
 - [x] Tested rider delivery issue report endpoint
+- [x] Created proof of delivery API foundation
+- [x] Tested proof of delivery endpoint
+- [x] Tested delivery and order status update to DELIVERED
 
 ## Current
 
-- [ ] Create proof of delivery API foundation
+- [ ] Create payment proof upload API foundation
 
 ## Pending
 

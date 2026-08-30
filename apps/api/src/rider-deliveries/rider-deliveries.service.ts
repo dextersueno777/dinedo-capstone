@@ -7,11 +7,13 @@ import {
   DeliveryStatus,
   OrderStatus,
   Prisma,
+  ProofOfDeliveryType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RejectRiderDeliveryDto } from './dto/reject-rider-delivery.dto';
 import { ReportDeliveryIssueDto } from './dto/report-delivery-issue.dto';
 import { UpdateRiderDeliveryStatusDto } from './dto/update-rider-delivery-status.dto';
+import { CaptureProofOfDeliveryDto } from './dto/capture-proof-of-delivery.dto';
 
 @Injectable()
 export class RiderDeliveriesService {
@@ -178,6 +180,85 @@ export class RiderDeliveriesService {
           },
         });
       }
+
+      return tx.delivery.findUniqueOrThrow({
+        where: {
+          id: deliveryId,
+        },
+        select: this.deliverySelect(),
+      });
+    });
+  }
+
+
+  async captureProofOfDelivery(
+    riderId: string,
+    deliveryId: string,
+    dto: CaptureProofOfDeliveryDto,
+  ) {
+    const delivery = await this.findOwnedDelivery(riderId, deliveryId);
+
+    if (
+      delivery.status !== DeliveryStatus.ARRIVED &&
+      delivery.status !== DeliveryStatus.OUT_FOR_DELIVERY
+    ) {
+      throw new BadRequestException(
+        'Delivery must be out for delivery or arrived before proof can be captured.',
+      );
+    }
+
+    if (dto.type === ProofOfDeliveryType.ADMIN_BYPASS) {
+      throw new BadRequestException('Admin bypass is not allowed from rider account.');
+    }
+
+    if (dto.type === ProofOfDeliveryType.PHOTO && !dto.imageUrl) {
+      throw new BadRequestException('Photo proof requires imageUrl.');
+    }
+
+    if (dto.type === ProofOfDeliveryType.SIGNATURE && !dto.signatureUrl) {
+      throw new BadRequestException('Signature proof requires signatureUrl.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.proofOfDelivery.create({
+        data: {
+          deliveryId,
+          capturedById: riderId,
+          type: dto.type,
+          imageUrl: dto.imageUrl,
+          signatureUrl: dto.signatureUrl,
+          notes: dto.notes?.trim(),
+        },
+      });
+
+      await tx.delivery.update({
+        where: {
+          id: deliveryId,
+        },
+        data: {
+          status: DeliveryStatus.DELIVERED,
+          deliveredAt: new Date(),
+        },
+      });
+
+      await tx.order.update({
+        where: {
+          id: delivery.orderId,
+        },
+        data: {
+          status: OrderStatus.DELIVERED,
+        },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: delivery.orderId,
+          fromStatus: delivery.order.status,
+          toStatus: OrderStatus.DELIVERED,
+          changedById: riderId,
+          notes: dto.notes?.trim() ?? 'Proof of delivery captured by rider.',
+        },
+      });
 
       return tx.delivery.findUniqueOrThrow({
         where: {
