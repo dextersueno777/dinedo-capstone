@@ -633,3 +633,60 @@ export type ReviewPaymentProofPayload = {
   reviewNotes?: string;
   rejectionReason?: string;
 };
+
+
+export type AdminReservation = {
+  id: string;
+  reservationNumber: string;
+  status: ReservationStatus;
+  reservedFor: string;
+  guestCount: number;
+  customerName: string;
+  customerPhone: string;
+  notes: string | null;
+  downPaymentAmount: string | number;
+  totalEstimate: string | number | null;
+  adminNotes: string | null;
+  rejectionReason: string | null;
+  cancellationReason: string | null;
+  approvedAt: string | null;
+  cancelledAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  branch: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  customer: {
+    id: string;
+    email: string;
+    role: string;
+  };
+  tables: Array<{
+    table: {
+      id: string;
+      name: string;
+      capacity: number;
+      location: string | null;
+      status: string;
+    };
+  }>;
+};
+
+export type ReviewAdminReservationPayload = {
+  status: ReservationStatus;
+  tableIds?: string[];
+  adminNotes?: string;
+  rejectionReason?: string;
+};
+
+export type AssignAdminReservationTablesPayload = {
+  tableIds: string[];
+};
+
+export type UpdateAdminReservationStatusPayload = {
+  status: ReservationStatus;
+  adminNotes?: string;
+  cancellationReason?: string;
+};
