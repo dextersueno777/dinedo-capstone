@@ -246,10 +246,19 @@
 - [x] Tested kitchen order status update flow
 - [x] Confirmed web page contains Kitchen Order Queue
 - [x] Tested kitchen order frontend build
+- [x] Created frontend rider delivery API helper
+- [x] Added frontend rider delivery types
+- [x] Created rider delivery management panel
+- [x] Connected rider delivery panel to homepage
+- [x] Added rider delivery management styles
+- [x] Tested rider delivery API list flow
+- [x] Tested rider delivery detail flow
+- [x] Confirmed web page contains Rider Delivery Management
+- [x] Tested rider delivery frontend build
 
 ## Current
 
-- [ ] Create rider delivery management screen
+- [ ] Create admin payment proof review screen
 
 ## Pending
 

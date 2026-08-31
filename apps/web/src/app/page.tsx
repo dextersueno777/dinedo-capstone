@@ -9,6 +9,7 @@ import { NotificationPanel } from '@/components/notification-panel';
 import { AdminDashboardPanel } from '@/components/admin-dashboard-panel';
 import { AdminOrderPanel } from '@/components/admin-order-panel';
 import { KitchenOrderPanel } from '@/components/kitchen-order-panel';
+import { RiderDeliveryPanel } from '@/components/rider-delivery-panel';
 
 const modules = [
   'Customer Ordering',
@@ -59,6 +60,8 @@ export default function HomePage() {
       <AdminOrderPanel />
 
       <KitchenOrderPanel />
+
+      <RiderDeliveryPanel />
 
       <NotificationPanel />
 

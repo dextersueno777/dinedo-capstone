@@ -519,3 +519,73 @@ export type UpdateKitchenOrderStatusPayload = {
   status: OrderStatus;
   notes?: string;
 };
+
+
+export type DeliveryStatus =
+  | 'ASSIGNED'
+  | 'ACCEPTED'
+  | 'REJECTED_BY_RIDER'
+  | 'OUT_FOR_DELIVERY'
+  | 'ARRIVED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'FAILED';
+
+export type ProofOfDeliveryType =
+  | 'PHOTO'
+  | 'SIGNATURE';
+
+export type RiderDelivery = {
+  id: string;
+  status: DeliveryStatus;
+  assignedAt: string | null;
+  acceptedAt: string | null;
+  rejectedAt: string | null;
+  rejectionReason: string | null;
+  outForDeliveryAt: string | null;
+  arrivedAt: string | null;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  failedAt: string | null;
+  issueSummary: string | null;
+  navigationAddress: unknown;
+  customerContactSnapshot: unknown;
+  codAmountToCollect: string | number;
+  deliveryFeeAmount: string | number;
+  createdAt: string;
+  branch: {
+    id: string;
+    name: string;
+    code: string;
+  };
+  order: {
+    id: string;
+    orderNumber: string;
+    status: OrderStatus;
+    serviceType: ServiceType;
+    paymentMethod: PaymentMethod;
+    paymentState: PaymentState;
+    totalAmount: string | number;
+  };
+};
+
+export type RejectRiderDeliveryPayload = {
+  reason: string;
+};
+
+export type UpdateRiderDeliveryStatusPayload = {
+  status: DeliveryStatus;
+  notes?: string;
+};
+
+export type ReportDeliveryIssuePayload = {
+  title: string;
+  description: string;
+};
+
+export type CaptureProofOfDeliveryPayload = {
+  type: ProofOfDeliveryType;
+  imageUrl?: string;
+  signatureUrl?: string;
+  notes?: string;
+};
