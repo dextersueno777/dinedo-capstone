@@ -197,10 +197,20 @@
 - [x] Confirmed proof status returns Pending Review
 - [x] Confirmed web page contains GCash Payment Proof
 - [x] Tested payment proof frontend build
+- [x] Created frontend reservation API helper
+- [x] Added frontend reservation types
+- [x] Created customer reservation panel
+- [x] Connected reservation panel to homepage
+- [x] Added reservation form and list styles
+- [x] Tested reservation API create flow
+- [x] Tested reservation API list flow
+- [x] Tested reservation API cancel flow
+- [x] Confirmed web page contains Table Reservation
+- [x] Tested reservation frontend build
 
 ## Current
 
-- [ ] Create customer reservation screen
+- [ ] Create customer notification screen
 
 ## Pending
 

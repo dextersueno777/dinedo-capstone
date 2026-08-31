@@ -566,3 +566,51 @@ h2 {
 .payment-proof-form button {
   width: 100%;
 }
+
+.reservation-form,
+.reservation-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.reservation-form label,
+.cancel-reason-field {
+  display: grid;
+  gap: 0.45rem;
+  color: #7c2d12;
+  font-weight: 700;
+}
+
+.reservation-form input,
+.reservation-form textarea,
+.cancel-reason-field input {
+  width: 100%;
+  border: 1px solid #fed7aa;
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+}
+
+.reservation-form textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.reservation-item {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fff7ed;
+}
+
+.reservation-item-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}

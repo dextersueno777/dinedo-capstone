@@ -271,3 +271,64 @@ export type SubmitPaymentProofPayload = {
   payerName?: string;
   payerAccountLast4?: string;
 };
+
+
+export type ReservationStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'COMPLETED'
+  | 'NO_SHOW';
+
+export type ReservationBranch = {
+  id: string;
+  code: string;
+  name: string;
+};
+
+export type ReservationTable = {
+  table: {
+    id: string;
+    name: string;
+    capacity: number;
+    location: string | null;
+  };
+};
+
+export type Reservation = {
+  id: string;
+  reservationNumber: string;
+  status: ReservationStatus;
+  reservedFor: string;
+  guestCount: number;
+  customerName: string;
+  customerPhone: string;
+  notes: string | null;
+  downPaymentAmount: string | number;
+  totalEstimate: string | number;
+  adminNotes: string | null;
+  rejectionReason: string | null;
+  cancellationReason: string | null;
+  approvedAt: string | null;
+  cancelledAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  branch: ReservationBranch;
+  tables: ReservationTable[];
+};
+
+export type CreateReservationPayload = {
+  branchCode: string;
+  reservedFor: string;
+  guestCount: number;
+  customerName: string;
+  customerPhone: string;
+  notes?: string;
+  downPaymentAmount?: number;
+  totalEstimate?: number;
+};
+
+export type CancelReservationPayload = {
+  cancellationReason: string;
+};
