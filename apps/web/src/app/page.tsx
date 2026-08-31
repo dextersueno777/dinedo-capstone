@@ -1,5 +1,6 @@
 import { AuthPanel } from '@/components/auth-panel';
 import { MenuBrowser } from '@/components/menu-browser';
+import { CartPanel } from '@/components/cart-panel';
 
 const modules = [
   'Customer Ordering',
@@ -40,6 +41,8 @@ export default function HomePage() {
       </section>
 
       <MenuBrowser />
+
+      <CartPanel />
 
       <section id="status" className="card">
         <h2>Foundation Status</h2>

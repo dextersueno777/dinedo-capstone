@@ -60,3 +60,44 @@ export type MenuItem = {
   };
   images: MenuItemImage[];
 };
+
+
+export type CartItemOption = {
+  id: string;
+  quantity: number;
+  priceDelta: string | number;
+};
+
+export type CartItem = {
+  id: string;
+  quantity: number;
+  specialNotes: string | null;
+  menuItem: {
+    id: string;
+    name: string;
+    slug: string;
+    price: string | number;
+    status: MenuItemStatus;
+  };
+  options: CartItemOption[];
+};
+
+export type Cart = {
+  id: string;
+  branchId: string;
+  userId: string;
+  items: CartItem[];
+};
+
+export type AddCartItemPayload = {
+  branchCode: string;
+  menuItemId: string;
+  quantity: number;
+  specialNotes?: string;
+  optionIds?: string[];
+};
+
+export type UpdateCartItemPayload = {
+  quantity?: number;
+  specialNotes?: string;
+};

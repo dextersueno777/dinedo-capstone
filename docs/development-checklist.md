@@ -152,10 +152,20 @@
 - [x] Tested menu categories API with web app
 - [x] Tested menu items API with web app
 - [x] Tested customer menu browsing build
+- [x] Created frontend cart API helper
+- [x] Added frontend cart types
+- [x] Created cart provider
+- [x] Connected cart provider to web layout
+- [x] Created customer cart panel
+- [x] Connected cart panel to homepage
+- [x] Added add-to-cart button to menu items
+- [x] Tested cart clear API
+- [x] Tested add item to cart API
+- [x] Tested customer cart frontend build
 
 ## Current
 
-- [ ] Create customer cart foundation
+- [ ] Create customer checkout foundation
 
 ## Pending
 

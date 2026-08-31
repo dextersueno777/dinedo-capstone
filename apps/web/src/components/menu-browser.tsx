@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MenuCategory, MenuItem } from '@/lib/api-types';
 import { getMenuCategories, getMenuItems } from '@/lib/menu-api';
+import { useAuth } from './auth-provider';
+import { useCart } from './cart-provider';
 
 function formatPrice(price: string | number) {
   return new Intl.NumberFormat('en-PH', {
@@ -17,7 +19,10 @@ export function MenuBrowser() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('Loading menu...');
+  const [cartMessage, setCartMessage] = useState('');
   const [error, setError] = useState('');
+  const { user } = useAuth();
+  const { addMenuItem } = useCart();
 
   useEffect(() => {
     let isActive = true;
@@ -69,6 +74,32 @@ export function MenuBrowser() {
     });
   }, [items, selectedCategory, search]);
 
+  async function handleAddToCart(item: MenuItem) {
+    setCartMessage('');
+    setError('');
+
+    if (!user || user.role !== 'CUSTOMER') {
+      setError('Please login as a customer before adding items to cart.');
+      return;
+    }
+
+    if (item.status !== 'AVAILABLE') {
+      setError('This menu item is currently sold out.');
+      return;
+    }
+
+    try {
+      await addMenuItem(item.id, 1);
+      setCartMessage(`${item.name} added to cart.`);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to add item to cart.',
+      );
+    }
+  }
+
   return (
     <section id="menu" className="card">
       <div className="section-heading">
@@ -110,6 +141,7 @@ export function MenuBrowser() {
       </div>
 
       {message ? <p>{message}</p> : null}
+      {cartMessage ? <p className="success-text">{cartMessage}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
       <div className="menu-grid">
@@ -122,10 +154,21 @@ export function MenuBrowser() {
             </div>
 
             <div className="menu-footer">
-              <strong>{formatPrice(item.price)}</strong>
-              <span className={item.status === 'SOLD_OUT' ? 'sold-out' : 'available'}>
-                {item.status === 'SOLD_OUT' ? 'Sold Out' : 'Available'}
-              </span>
+              <div>
+                <strong>{formatPrice(item.price)}</strong>
+                <span className={item.status === 'SOLD_OUT' ? 'sold-out' : 'available'}>
+                  {item.status === 'SOLD_OUT' ? 'Sold Out' : 'Available'}
+                </span>
+              </div>
+
+              <button
+                className="primary add-cart-button"
+                type="button"
+                disabled={item.status !== 'AVAILABLE'}
+                onClick={() => handleAddToCart(item)}
+              >
+                Add to Cart
+              </button>
             </div>
           </article>
         ))}

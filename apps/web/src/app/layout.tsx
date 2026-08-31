@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { PwaServiceWorker } from '@/components/pwa-service-worker';
 import { AuthProvider } from '@/components/auth-provider';
+import { CartProvider } from '@/components/cart-provider';
 
 export const metadata: Metadata = {
   title: 'DineDo',
@@ -23,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <PwaServiceWorker />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider><CartProvider>{children}</CartProvider></AuthProvider>
       </body>
     </html>
   );
