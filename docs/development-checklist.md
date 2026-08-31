@@ -188,10 +188,19 @@
 - [x] Confirmed customer order count displays from backend
 - [x] Confirmed web page contains Order History
 - [x] Tested order history frontend build
+- [x] Created frontend payment proof API helper
+- [x] Added frontend payment proof types
+- [x] Created customer GCash payment proof panel
+- [x] Connected payment proof panel to homepage
+- [x] Added payment proof form styles
+- [x] Tested manual GCash proof API submission
+- [x] Confirmed proof status returns Pending Review
+- [x] Confirmed web page contains GCash Payment Proof
+- [x] Tested payment proof frontend build
 
 ## Current
 
-- [ ] Create customer payment proof upload screen
+- [ ] Create customer reservation screen
 
 ## Pending
 

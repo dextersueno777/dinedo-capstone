@@ -241,3 +241,33 @@ export type CreateAddressPayload = {
 };
 
 export type UpdateAddressPayload = Partial<CreateAddressPayload>;
+
+
+export type PaymentProofStatus =
+  | 'PENDING_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED';
+
+export type PaymentProof = {
+  id: string;
+  orderId: string;
+  status: PaymentProofStatus;
+  amount: string | number;
+  proofImageUrl: string;
+  gcashReferenceNumber: string | null;
+  payerName: string | null;
+  payerAccountLast4: string | null;
+  rejectionReason: string | null;
+  reviewNotes: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+  createdAt: string;
+};
+
+export type SubmitPaymentProofPayload = {
+  amount: number;
+  proofImageUrl: string;
+  gcashReferenceNumber?: string;
+  payerName?: string;
+  payerAccountLast4?: string;
+};
