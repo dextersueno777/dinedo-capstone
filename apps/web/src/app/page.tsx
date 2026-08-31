@@ -8,6 +8,7 @@ import { ReservationPanel } from '@/components/reservation-panel';
 import { NotificationPanel } from '@/components/notification-panel';
 import { AdminDashboardPanel } from '@/components/admin-dashboard-panel';
 import { AdminOrderPanel } from '@/components/admin-order-panel';
+import { KitchenOrderPanel } from '@/components/kitchen-order-panel';
 
 const modules = [
   'Customer Ordering',
@@ -56,6 +57,8 @@ export default function HomePage() {
       <AdminDashboardPanel />
 
       <AdminOrderPanel />
+
+      <KitchenOrderPanel />
 
       <NotificationPanel />
 

@@ -237,10 +237,19 @@
 - [x] Tested admin delivery fee update flow
 - [x] Confirmed web page contains Admin Order Management
 - [x] Tested admin order frontend build
+- [x] Created frontend kitchen order API helper
+- [x] Added frontend kitchen order types
+- [x] Created kitchen order queue panel
+- [x] Connected kitchen order panel to homepage
+- [x] Added kitchen order queue styles
+- [x] Tested kitchen order API queue flow
+- [x] Tested kitchen order status update flow
+- [x] Confirmed web page contains Kitchen Order Queue
+- [x] Tested kitchen order frontend build
 
 ## Current
 
-- [ ] Create kitchen order queue screen
+- [ ] Create rider delivery management screen
 
 ## Pending
 

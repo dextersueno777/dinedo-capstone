@@ -485,3 +485,37 @@ export type SetAdminDeliveryFeePayload = {
   additionalDeliveryFeeAmount: number;
   adminNotes?: string;
 };
+
+
+export type KitchenOrder = {
+  id: string;
+  orderNumber: string;
+  serviceType: ServiceType;
+  timingType: OrderTimingType;
+  scheduledFor: string | null;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  paymentState: PaymentState;
+  deliveryFeeStatus: DeliveryFeeStatus;
+  subtotalAmount: string | number;
+  totalAmount: string | number;
+  customerNotes: string | null;
+  preparationStartedAt: string | null;
+  createdAt: string;
+  branch: {
+    id: string;
+    name: string;
+    code: string;
+  };
+  customer: {
+    id: string;
+    email: string;
+  };
+  items: OrderItem[];
+  statusHistory: OrderStatusHistory[];
+};
+
+export type UpdateKitchenOrderStatusPayload = {
+  status: OrderStatus;
+  notes?: string;
+};
