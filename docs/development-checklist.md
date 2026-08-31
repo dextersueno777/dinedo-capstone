@@ -218,10 +218,19 @@
 - [x] Tested notification archive flow
 - [x] Confirmed web page contains Notifications
 - [x] Tested notification frontend build
+- [x] Created frontend admin dashboard API helper
+- [x] Added frontend admin dashboard summary types
+- [x] Created admin dashboard panel
+- [x] Connected admin dashboard panel to homepage
+- [x] Added admin dashboard metric styles
+- [x] Tested admin dashboard API summary
+- [x] Confirmed Tinoc branch summary loads from backend
+- [x] Confirmed web page contains Admin Dashboard
+- [x] Tested admin dashboard frontend build
 
 ## Current
 
-- [ ] Create admin dashboard foundation
+- [ ] Create admin order management screen
 
 ## Pending
 

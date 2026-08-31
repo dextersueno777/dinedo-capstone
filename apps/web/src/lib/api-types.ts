@@ -382,3 +382,59 @@ export type Notification = {
 export type UnreadNotificationCount = {
   unreadCount: number;
 };
+
+
+export type AdminDashboardSummary = {
+  branch: {
+    id: string;
+    code: string;
+    name: string;
+  } | null;
+  period: {
+    from: string | null;
+    to: string | null;
+  };
+  orders: {
+    total: number;
+    pending: number;
+    approved: number;
+    cooking: number;
+    delivered: number;
+    completed: number;
+    cancelled: number;
+    grossSales: number;
+    approvedPaymentsAmount: number;
+  };
+  reservations: {
+    total: number;
+    pending: number;
+    approved: number;
+    completed: number;
+    cancelled: number;
+    noShow: number;
+    guestCountTotal: number;
+  };
+  deliveries: {
+    total: number;
+    pendingAssignment: number;
+    assigned: number;
+    outForDelivery: number;
+    delivered: number;
+    cancelled: number;
+    failed: number;
+    codAmountToCollect: number;
+    deliveryFees: number;
+  };
+  payments: {
+    proofsTotal: number;
+    pendingReview: number;
+    approved: number;
+    rejected: number;
+    submittedAmount: number;
+  };
+  inventory: {
+    totalItems: number;
+    activeItems: number;
+    lowStockItems: number;
+  };
+};
