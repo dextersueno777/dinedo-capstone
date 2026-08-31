@@ -181,10 +181,17 @@
 - [x] Tested delivery checkout API with address
 - [x] Confirmed delivery order includes selected address
 - [x] Tested address selector frontend build
+- [x] Created customer order history component
+- [x] Connected order history to homepage
+- [x] Added order history card styles
+- [x] Tested customer orders API
+- [x] Confirmed customer order count displays from backend
+- [x] Confirmed web page contains Order History
+- [x] Tested order history frontend build
 
 ## Current
 
-- [ ] Create customer order history screen
+- [ ] Create customer payment proof upload screen
 
 ## Pending
 
