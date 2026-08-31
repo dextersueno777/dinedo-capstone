@@ -171,10 +171,20 @@
 - [x] Confirmed order is created with Pending status
 - [x] Confirmed cart clears after checkout
 - [x] Tested customer checkout frontend build
+- [x] Created frontend address API helper
+- [x] Added frontend customer address types
+- [x] Created customer address selector component
+- [x] Connected address selector to checkout panel
+- [x] Added delivery service type to checkout
+- [x] Added COD and manual GCash options for delivery
+- [x] Added delivery distance field
+- [x] Tested delivery checkout API with address
+- [x] Confirmed delivery order includes selected address
+- [x] Tested address selector frontend build
 
 ## Current
 
-- [ ] Create customer address selector for delivery checkout
+- [ ] Create customer order history screen
 
 ## Pending
 

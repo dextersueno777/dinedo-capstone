@@ -422,3 +422,52 @@ h2 {
     align-items: start;
   }
 }
+
+.checkout-form input {
+  width: 100%;
+  border: 1px solid #fed7aa;
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+}
+
+.address-selector {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fff7ed;
+}
+
+.address-selector h3 {
+  color: #7c2d12;
+}
+
+.address-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.address-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  border: 1px solid #fed7aa;
+  border-radius: 0.9rem;
+  padding: 0.85rem;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.address-option span {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.address-option small {
+  color: #4b5563;
+  line-height: 1.5;
+}

@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import type { Order, PaymentMethod, ServiceType } from '@/lib/api-types';
 import { checkout } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
+import { AddressSelector } from './address-selector';
 import { useCart } from './cart-provider';
 
 function formatPrice(price: string | number) {
@@ -20,6 +21,8 @@ export function CheckoutPanel() {
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>('PAY_AT_COUNTER');
   const [customerNotes, setCustomerNotes] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [deliveryDistanceKm, setDeliveryDistanceKm] = useState('0.5');
   const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -44,6 +47,11 @@ export function CheckoutPanel() {
       return;
     }
 
+    if (serviceType === 'DELIVERY' && !selectedAddressId) {
+      setError('Please select a delivery address.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -52,6 +60,9 @@ export function CheckoutPanel() {
         serviceType,
         timingType: 'IMMEDIATE',
         paymentMethod,
+        addressId: serviceType === 'DELIVERY' ? selectedAddressId : undefined,
+        deliveryDistanceKm:
+          serviceType === 'DELIVERY' ? Number(deliveryDistanceKm) : undefined,
         customerNotes: customerNotes.trim() || undefined,
       });
 
@@ -89,13 +100,18 @@ export function CheckoutPanel() {
             onChange={(event) => {
               const value = event.target.value as ServiceType;
               setServiceType(value);
-              setPaymentMethod(
-                value === 'DINE_IN' ? 'PAY_AFTER_EATING' : 'PAY_AT_COUNTER',
-              );
+              if (value === 'DELIVERY') {
+                setPaymentMethod('COD');
+              } else {
+                setPaymentMethod(
+                  value === 'DINE_IN' ? 'PAY_AFTER_EATING' : 'PAY_AT_COUNTER',
+                );
+              }
             }}
           >
             <option value="TAKE_OUT">Take-out</option>
             <option value="DINE_IN">Dine-in</option>
+            <option value="DELIVERY">Delivery</option>
           </select>
         </label>
 
@@ -107,10 +123,39 @@ export function CheckoutPanel() {
               setPaymentMethod(event.target.value as PaymentMethod)
             }
           >
-            <option value="PAY_AT_COUNTER">Pay at counter</option>
-            <option value="PAY_AFTER_EATING">Pay after eating</option>
+            {serviceType === 'DELIVERY' ? (
+              <>
+                <option value="COD">Cash on delivery</option>
+                <option value="GCASH_MANUAL">Manual GCash</option>
+              </>
+            ) : (
+              <>
+                <option value="PAY_AT_COUNTER">Pay at counter</option>
+                <option value="PAY_AFTER_EATING">Pay after eating</option>
+              </>
+            )}
           </select>
         </label>
+
+        {serviceType === 'DELIVERY' ? (
+          <>
+            <AddressSelector
+              selectedAddressId={selectedAddressId}
+              onSelectAddress={setSelectedAddressId}
+            />
+
+            <label>
+              Delivery Distance in Kilometers
+              <input
+                type="number"
+                min="0"
+                step="0.1"
+                value={deliveryDistanceKm}
+                onChange={(event) => setDeliveryDistanceKm(event.target.value)}
+              />
+            </label>
+          </>
+        ) : null}
 
         <label>
           Notes

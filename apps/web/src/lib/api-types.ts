@@ -205,3 +205,39 @@ export type Order = {
   items: OrderItem[];
   statusHistory: OrderStatusHistory[];
 };
+
+
+export type CustomerAddress = {
+  id: string;
+  label: string;
+  recipient: string;
+  phoneNumber: string;
+  line1: string;
+  barangay: string | null;
+  municipality: string;
+  province: string;
+  postalCode: string | null;
+  landmark: string | null;
+  latitude: string | number | null;
+  longitude: string | number | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateAddressPayload = {
+  label: string;
+  recipient: string;
+  phoneNumber: string;
+  line1: string;
+  barangay?: string;
+  municipality: string;
+  province: string;
+  postalCode?: string;
+  landmark?: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault?: boolean;
+};
+
+export type UpdateAddressPayload = Partial<CreateAddressPayload>;
