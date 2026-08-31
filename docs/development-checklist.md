@@ -162,10 +162,19 @@
 - [x] Tested cart clear API
 - [x] Tested add item to cart API
 - [x] Tested customer cart frontend build
+- [x] Created frontend checkout/order API helper
+- [x] Added frontend checkout payload types
+- [x] Added frontend order response types
+- [x] Created customer checkout panel
+- [x] Connected checkout panel to homepage
+- [x] Tested take-out checkout API
+- [x] Confirmed order is created with Pending status
+- [x] Confirmed cart clears after checkout
+- [x] Tested customer checkout frontend build
 
 ## Current
 
-- [ ] Create customer checkout foundation
+- [ ] Create customer address selector for delivery checkout
 
 ## Pending
 

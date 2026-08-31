@@ -1,6 +1,7 @@
 import { AuthPanel } from '@/components/auth-panel';
 import { MenuBrowser } from '@/components/menu-browser';
 import { CartPanel } from '@/components/cart-panel';
+import { CheckoutPanel } from '@/components/checkout-panel';
 
 const modules = [
   'Customer Ordering',
@@ -43,6 +44,8 @@ export default function HomePage() {
       <MenuBrowser />
 
       <CartPanel />
+
+      <CheckoutPanel />
 
       <section id="status" className="card">
         <h2>Foundation Status</h2>
