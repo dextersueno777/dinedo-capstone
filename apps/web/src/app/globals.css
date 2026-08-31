@@ -731,3 +731,76 @@ h2 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.admin-order-heading,
+.admin-order-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-order-notes {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-order-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-order-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fff7ed;
+}
+
+.admin-order-card h3 {
+  color: #7c2d12;
+}
+
+.admin-order-summary-grid {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-order-field,
+.admin-order-notes label {
+  display: grid;
+  gap: 0.45rem;
+  color: #7c2d12;
+  font-weight: 700;
+}
+
+.admin-order-field input,
+.admin-order-field select,
+.admin-order-notes input {
+  width: 100%;
+  border: 1px solid #fed7aa;
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+}
+
+.admin-order-items,
+.admin-order-history {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid #fed7aa;
+  padding-top: 0.75rem;
+}
+
+@media (min-width: 720px) {
+  .admin-order-summary-grid,
+  .admin-order-notes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -438,3 +438,50 @@ export type AdminDashboardSummary = {
     lowStockItems: number;
   };
 };
+
+
+export type AdminOrder = {
+  id: string;
+  orderNumber: string;
+  serviceType: ServiceType;
+  timingType: OrderTimingType;
+  scheduledFor: string | null;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  paymentState: PaymentState;
+  deliveryFeeStatus: DeliveryFeeStatus;
+  subtotalAmount: string | number;
+  deliveryFeeAmount: string | number;
+  additionalDeliveryFeeAmount: string | number;
+  totalAmount: string | number;
+  customerNotes: string | null;
+  adminNotes: string | null;
+  cancellationReason: string | null;
+  preparationStartedAt: string | null;
+  cancelledAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  branch: {
+    id: string;
+    name: string;
+    code: string;
+  };
+  customer: {
+    id: string;
+    email: string;
+  };
+  address: OrderAddress | null;
+  items: OrderItem[];
+  statusHistory: OrderStatusHistory[];
+};
+
+export type UpdateAdminOrderStatusPayload = {
+  status: OrderStatus;
+  reason?: string;
+  notes?: string;
+};
+
+export type SetAdminDeliveryFeePayload = {
+  additionalDeliveryFeeAmount: number;
+  adminNotes?: string;
+};

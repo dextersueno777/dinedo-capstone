@@ -7,6 +7,7 @@ import { PaymentProofPanel } from '@/components/payment-proof-panel';
 import { ReservationPanel } from '@/components/reservation-panel';
 import { NotificationPanel } from '@/components/notification-panel';
 import { AdminDashboardPanel } from '@/components/admin-dashboard-panel';
+import { AdminOrderPanel } from '@/components/admin-order-panel';
 
 const modules = [
   'Customer Ordering',
@@ -53,6 +54,8 @@ export default function HomePage() {
       <CheckoutPanel />
 
       <AdminDashboardPanel />
+
+      <AdminOrderPanel />
 
       <NotificationPanel />
 

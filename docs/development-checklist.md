@@ -227,10 +227,20 @@
 - [x] Confirmed Tinoc branch summary loads from backend
 - [x] Confirmed web page contains Admin Dashboard
 - [x] Tested admin dashboard frontend build
+- [x] Created frontend admin order API helper
+- [x] Added frontend admin order types
+- [x] Created admin order management panel
+- [x] Connected admin order panel to homepage
+- [x] Added admin order management styles
+- [x] Tested admin order API list flow
+- [x] Tested admin order status update flow
+- [x] Tested admin delivery fee update flow
+- [x] Confirmed web page contains Admin Order Management
+- [x] Tested admin order frontend build
 
 ## Current
 
-- [ ] Create admin order management screen
+- [ ] Create kitchen order queue screen
 
 ## Pending
 
