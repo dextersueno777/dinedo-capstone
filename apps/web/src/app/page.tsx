@@ -5,6 +5,7 @@ import { CheckoutPanel } from '@/components/checkout-panel';
 import { OrderHistory } from '@/components/order-history';
 import { PaymentProofPanel } from '@/components/payment-proof-panel';
 import { ReservationPanel } from '@/components/reservation-panel';
+import { NotificationPanel } from '@/components/notification-panel';
 
 const modules = [
   'Customer Ordering',
@@ -49,6 +50,8 @@ export default function HomePage() {
       <CartPanel />
 
       <CheckoutPanel />
+
+      <NotificationPanel />
 
       <ReservationPanel />
 

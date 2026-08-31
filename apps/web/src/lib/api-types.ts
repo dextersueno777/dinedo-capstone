@@ -332,3 +332,53 @@ export type CreateReservationPayload = {
 export type CancelReservationPayload = {
   cancellationReason: string;
 };
+
+
+export type NotificationType =
+  | 'ORDER_STATUS'
+  | 'PAYMENT'
+  | 'RESERVATION'
+  | 'DELIVERY'
+  | 'SYSTEM';
+
+export type NotificationStatus =
+  | 'UNREAD'
+  | 'READ'
+  | 'ARCHIVED';
+
+export type NotificationBranch = {
+  id: string;
+  code: string;
+  name: string;
+} | null;
+
+export type NotificationOrder = {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+} | null;
+
+export type NotificationReservation = {
+  id: string;
+  reservationNumber: string;
+  status: ReservationStatus;
+  reservedFor: string;
+} | null;
+
+export type Notification = {
+  id: string;
+  type: NotificationType;
+  status: NotificationStatus;
+  title: string;
+  message: string;
+  data: unknown;
+  readAt: string | null;
+  createdAt: string;
+  branch: NotificationBranch;
+  order: NotificationOrder;
+  reservation: NotificationReservation;
+};
+
+export type UnreadNotificationCount = {
+  unreadCount: number;
+};

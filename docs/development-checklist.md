@@ -207,10 +207,21 @@
 - [x] Tested reservation API cancel flow
 - [x] Confirmed web page contains Table Reservation
 - [x] Tested reservation frontend build
+- [x] Created frontend notification API helper
+- [x] Added frontend notification types
+- [x] Created customer notification panel
+- [x] Connected notification panel to homepage
+- [x] Added notification styles
+- [x] Tested notification API unread count
+- [x] Tested notification API list flow
+- [x] Tested notification mark as read flow
+- [x] Tested notification archive flow
+- [x] Confirmed web page contains Notifications
+- [x] Tested notification frontend build
 
 ## Current
 
-- [ ] Create customer notification screen
+- [ ] Create admin dashboard foundation
 
 ## Pending
 
