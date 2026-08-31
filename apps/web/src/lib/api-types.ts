@@ -24,3 +24,39 @@ export type ApiErrorPayload = {
   error?: string;
   statusCode?: number;
 };
+
+
+export type MenuItemStatus = 'AVAILABLE' | 'SOLD_OUT' | 'HIDDEN';
+
+export type MenuCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type MenuItemImage = {
+  id: string;
+  url: string;
+  altText: string | null;
+  sortOrder: number;
+};
+
+export type MenuItem = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: string | number;
+  status: MenuItemStatus;
+  isFeatured: boolean;
+  sortOrder: number;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  images: MenuItemImage[];
+};

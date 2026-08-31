@@ -142,10 +142,20 @@
 - [x] Tested frontend and backend auth smoke test
 - [x] Tested web auth typecheck
 - [x] Tested web auth production build
+- [x] Created frontend menu API helper
+- [x] Added frontend menu category and item types
+- [x] Created customer menu browsing component
+- [x] Added category filter
+- [x] Added menu search
+- [x] Added item availability display
+- [x] Connected menu browser to homepage
+- [x] Tested menu categories API with web app
+- [x] Tested menu items API with web app
+- [x] Tested customer menu browsing build
 
 ## Current
 
-- [ ] Create customer menu browsing screen
+- [ ] Create customer cart foundation
 
 ## Pending
 

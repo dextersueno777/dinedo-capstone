@@ -1,4 +1,5 @@
 import { AuthPanel } from '@/components/auth-panel';
+import { MenuBrowser } from '@/components/menu-browser';
 
 const modules = [
   'Customer Ordering',
@@ -37,6 +38,8 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <MenuBrowser />
 
       <section id="status" className="card">
         <h2>Foundation Status</h2>
