@@ -941,3 +941,78 @@ h2 {
   }
 }
 
+.admin-payment-proof-heading,
+.admin-payment-proof-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-payment-proof-filter {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  color: #581c87;
+  font-weight: 700;
+}
+
+.admin-payment-proof-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-payment-proof-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #e9d5ff;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #faf5ff;
+}
+
+.admin-payment-proof-card h3 {
+  color: #581c87;
+}
+
+.admin-payment-proof-summary-grid,
+.admin-payment-proof-review {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-payment-proof-image {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid #e9d5ff;
+  padding-top: 0.75rem;
+  word-break: break-word;
+}
+
+.admin-payment-proof-field {
+  display: grid;
+  gap: 0.45rem;
+  color: #581c87;
+  font-weight: 700;
+}
+
+.admin-payment-proof-field input,
+.admin-payment-proof-field select,
+.admin-payment-proof-filter select {
+  width: 100%;
+  border: 1px solid #e9d5ff;
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+}
+
+@media (min-width: 720px) {
+  .admin-payment-proof-summary-grid,
+  .admin-payment-proof-review {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

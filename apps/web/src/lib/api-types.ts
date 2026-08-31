@@ -589,3 +589,47 @@ export type CaptureProofOfDeliveryPayload = {
   signatureUrl?: string;
   notes?: string;
 };
+
+
+export type AdminPaymentProof = {
+  id: string;
+  orderId: string;
+  uploadedById: string;
+  reviewedById: string | null;
+  status: PaymentProofStatus;
+  amount: string | number;
+  proofImageUrl: string;
+  gcashReferenceNumber: string;
+  payerName: string;
+  payerAccountLast4: string | null;
+  rejectionReason: string | null;
+  reviewNotes: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+  createdAt: string;
+  order: {
+    id: string;
+    orderNumber: string;
+    status: OrderStatus;
+    serviceType: ServiceType;
+    paymentMethod: PaymentMethod;
+    paymentState: PaymentState;
+    totalAmount: string | number;
+  };
+  uploadedBy: {
+    id: string;
+    email: string;
+    role: string;
+  };
+  reviewedBy: {
+    id: string;
+    email: string;
+    role: string;
+  } | null;
+};
+
+export type ReviewPaymentProofPayload = {
+  status: PaymentProofStatus;
+  reviewNotes?: string;
+  rejectionReason?: string;
+};

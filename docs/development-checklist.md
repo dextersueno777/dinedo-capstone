@@ -255,10 +255,19 @@
 - [x] Tested rider delivery detail flow
 - [x] Confirmed web page contains Rider Delivery Management
 - [x] Tested rider delivery frontend build
+- [x] Created frontend admin payment proof API helper
+- [x] Added frontend admin payment proof types
+- [x] Created admin payment proof review panel
+- [x] Connected payment proof review panel to homepage
+- [x] Added payment proof review styles
+- [x] Tested admin payment proof API list flow
+- [x] Tested admin payment proof approval flow
+- [x] Confirmed web page contains Payment Proof Review
+- [x] Tested payment proof review frontend build
 
 ## Current
 
-- [ ] Create admin payment proof review screen
+- [ ] Create admin reservation management screen
 
 ## Pending
 
