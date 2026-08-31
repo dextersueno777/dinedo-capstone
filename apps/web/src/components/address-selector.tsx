@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CustomerAddress } from '@/lib/api-types';
 import { createAddress, getMyAddresses } from '@/lib/address-api';
 import { useAuth } from './auth-provider';
@@ -52,9 +52,7 @@ export function AddressSelector({
     }
   }
 
-  async function handleCreateDemoAddress(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  async function handleCreateDemoAddress() {
     if (!token) {
       setError('Please login before creating an address.');
       return;
@@ -134,15 +132,16 @@ export function AddressSelector({
       </div>
 
       {addresses.length === 0 ? (
-        <form onSubmit={handleCreateDemoAddress}>
+        <div>
           <button
             className="secondary full-button"
-            type="submit"
+            type="button"
+            onClick={handleCreateDemoAddress}
             disabled={isCreating}
           >
             {isCreating ? 'Creating...' : 'Create Demo Address'}
           </button>
-        </form>
+        </div>
       ) : null}
     </div>
   );
