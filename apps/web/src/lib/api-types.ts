@@ -690,3 +690,87 @@ export type UpdateAdminReservationStatusPayload = {
   adminNotes?: string;
   cancellationReason?: string;
 };
+
+export type InventoryItemStatus = 'ACTIVE' | 'INACTIVE';
+
+export type InventoryUnit =
+  | 'PIECE'
+  | 'SERVING'
+  | 'GRAM'
+  | 'KILOGRAM'
+  | 'MILLILITER'
+  | 'LITER'
+  | 'PACK';
+
+export type StockMovementType =
+  | 'INITIAL_STOCK'
+  | 'PURCHASE'
+  | 'ORDER_USAGE'
+  | 'WASTE'
+  | 'ADJUSTMENT'
+  | 'RETURNED';
+
+export type AdminInventoryItem = {
+  id: string;
+  name: string;
+  sku: string | null;
+  unit: InventoryUnit;
+  status: InventoryItemStatus;
+  currentQuantity: string;
+  reorderLevel: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  branch: {
+    id: string;
+    code: string;
+    name: string;
+  };
+};
+
+export type AdminStockMovement = {
+  id: string;
+  type: StockMovementType;
+  quantityChange: string;
+  quantityAfter: string;
+  reason: string | null;
+  notes: string | null;
+  createdAt: string;
+  inventoryItem: {
+    id: string;
+    name: string;
+    sku: string | null;
+    unit: InventoryUnit;
+  };
+  actor: {
+    id: string;
+    email: string;
+    role: UserRole;
+  } | null;
+};
+
+export type CreateAdminInventoryItemPayload = {
+  branchCode: string;
+  name: string;
+  sku?: string;
+  unit: InventoryUnit;
+  currentQuantity?: number;
+  reorderLevel?: number;
+  notes?: string;
+};
+
+export type UpdateAdminInventoryItemPayload = {
+  name?: string;
+  sku?: string;
+  unit?: InventoryUnit;
+  status?: InventoryItemStatus;
+  reorderLevel?: number;
+  notes?: string;
+};
+
+export type CreateAdminStockMovementPayload = {
+  type: StockMovementType;
+  quantityChange: number;
+  reason?: string;
+  notes?: string;
+};

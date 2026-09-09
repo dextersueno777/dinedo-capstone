@@ -12,6 +12,7 @@ import { KitchenOrderPanel } from '@/components/kitchen-order-panel';
 import { RiderDeliveryPanel } from '@/components/rider-delivery-panel';
 import { AdminPaymentProofPanel } from '@/components/admin-payment-proof-panel';
 import { AdminReservationPanel } from '@/components/admin-reservation-panel';
+import { AdminInventoryPanel } from '@/components/admin-inventory-panel';
 
 const modules = [
   'Customer Ordering',
@@ -70,6 +71,8 @@ export default function HomePage() {
       <ReservationPanel />
 
       <AdminReservationPanel />
+
+      <AdminInventoryPanel />
 
       <PaymentProofPanel />
 
