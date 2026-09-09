@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { AdminOrder, OrderStatus } from '@/lib/api-types';
+import type { AdminOrder, AdminRider, OrderStatus } from '@/lib/api-types';
 import {
   assignAdminOrderRider,
   getAdminOrders,
   setAdminDeliveryFee,
   updateAdminOrderStatus,
 } from '@/lib/admin-order-api';
+import { getAdminRiders } from '@/lib/admin-rider-api';
 import { useAuth } from './auth-provider';
 
 const orderStatuses: OrderStatus[] = [
@@ -43,6 +44,7 @@ function formatDate(value: string) {
 export function AdminOrderPanel() {
   const { user, token } = useAuth();
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [riders, setRiders] = useState<AdminRider[]>([]);
   const [statusByOrderId, setStatusByOrderId] = useState<Record<string, OrderStatus>>({});
   const [feeByOrderId, setFeeByOrderId] = useState<Record<string, string>>({});
   const [riderIdByOrderId, setRiderIdByOrderId] = useState<Record<string, string>>({});
@@ -52,6 +54,24 @@ export function AdminOrderPanel() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isBusy, setIsBusy] = useState(false);
+
+  async function loadRiders() {
+    if (!token || user?.role !== 'ADMIN') {
+      setRiders([]);
+      return;
+    }
+
+    try {
+      const loadedRiders = await getAdminRiders(token, 'TINOC');
+      setRiders(loadedRiders);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to load riders.',
+      );
+    }
+  }
 
   async function loadOrders() {
     if (!token || user?.role !== 'ADMIN') {
@@ -181,6 +201,7 @@ export function AdminOrderPanel() {
 
   useEffect(() => {
     loadOrders();
+    loadRiders();
   }, [token, user?.role]);
 
   return (
@@ -192,7 +213,7 @@ export function AdminOrderPanel() {
           <p>Review customer orders, update status, and set extra delivery fees.</p>
         </div>
 
-        <button className="secondary" type="button" onClick={loadOrders}>
+        <button className="secondary" type="button" onClick={() => { loadOrders(); loadRiders(); }}>
           Refresh
         </button>
       </div>
@@ -331,8 +352,8 @@ export function AdminOrderPanel() {
                 </button>
 
                 <label className="admin-order-field">
-                  Rider User ID
-                  <input
+                  Assign Rider
+                  <select
                     value={riderIdByOrderId[order.id] ?? ''}
                     onChange={(event) =>
                       setRiderIdByOrderId((current) => ({
@@ -340,8 +361,23 @@ export function AdminOrderPanel() {
                         [order.id]: event.target.value,
                       }))
                     }
-                    placeholder="Paste rider user ID"
-                  />
+                  >
+                    <option value="">
+                      {riders.length === 0
+                        ? 'No active Tinoc riders found'
+                        : 'Select active rider'}
+                    </option>
+                    {riders.map((rider) => (
+                      <option key={rider.id} value={rider.id}>
+                        {rider.profile
+                          ? `${rider.profile.firstName} ${rider.profile.lastName}`
+                          : rider.email}
+                        {rider.riderProfile?.vehicleType
+                          ? ` - ${rider.riderProfile.vehicleType}`
+                          : ''}
+                      </option>
+                    ))}
+                  </select>
                 </label>
 
                 <button

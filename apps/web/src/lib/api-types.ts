@@ -814,3 +814,29 @@ export type AdminAuditLogFilters = {
   to?: string;
 };
 
+
+export type AdminRider = {
+  id: string;
+  email: string;
+  status: string;
+  branch: {
+    id: string;
+    code: string;
+    name: string;
+  } | null;
+  profile: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string | null;
+  } | null;
+  riderProfile: {
+    availabilityStatus: string;
+    vehicleType: string | null;
+    plateNumber: string | null;
+    branch: {
+      id: string;
+      code: string;
+      name: string;
+    } | null;
+  } | null;
+};
