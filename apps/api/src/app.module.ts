@@ -21,6 +21,7 @@ import { AdminInventoryModule } from './admin-inventory/admin-inventory.module';
 import { AdminReportsModule } from './admin-reports/admin-reports.module';
 import { AdminAuditLogsModule } from './admin-audit-logs/admin-audit-logs.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AdminRidersModule } from './admin-riders/admin-riders.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AdminInventoryModule,
     AdminReportsModule,
     AdminAuditLogsModule,
+    AdminRidersModule,
     NotificationsModule,
   ],
   controllers: [AppController],
