@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Order } from '@/lib/api-types';
-import { getMyOrders } from '@/lib/orders-api';
+import { getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
 
 function formatPrice(price: string | number) {
@@ -25,6 +25,7 @@ export function OrderHistory() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [feeBusyByOrderId, setFeeBusyByOrderId] = useState<Record<string, boolean>>({});
 
   async function loadOrders() {
     if (!token || user?.role !== 'CUSTOMER') {
@@ -47,6 +48,41 @@ export function OrderHistory() {
       );
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleDeliveryFee(orderId: string, accept: boolean) {
+    if (!token) return;
+
+    setFeeBusyByOrderId((current) => ({ ...current, [orderId]: true }));
+    setMessage('');
+    setError('');
+
+    try {
+      const updatedOrder = await respondDeliveryFee(token, orderId, {
+        accept,
+        notes: accept
+          ? 'Customer accepted additional delivery fee.'
+          : 'Customer rejected additional delivery fee.',
+      });
+
+      setOrders((current) =>
+        current.map((order) => (order.id === orderId ? updatedOrder : order)),
+      );
+
+      setMessage(
+        accept
+          ? 'Additional delivery fee accepted.'
+          : 'Additional delivery fee rejected. Order cancelled.',
+      );
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to respond to delivery fee.',
+      );
+    } finally {
+      setFeeBusyByOrderId((current) => ({ ...current, [orderId]: false }));
     }
   }
 
@@ -110,6 +146,41 @@ export function OrderHistory() {
                 <strong>Total:</strong> {formatPrice(order.totalAmount)}
               </p>
             </div>
+
+            {order.serviceType === 'DELIVERY' ? (
+              <div className="fee-review-box">
+                <p>
+                  <strong>Delivery Fee Status:</strong> {order.deliveryFeeStatus}
+                </p>
+
+                {Number(order.additionalDeliveryFeeAmount) > 0 ? (
+                  <p>
+                    <strong>Additional Fee:</strong>{' '}
+                    {formatPrice(order.additionalDeliveryFeeAmount)}
+                  </p>
+                ) : null}
+
+                {order.deliveryFeeStatus === 'PENDING_CUSTOMER_ACCEPTANCE' ? (
+                  <div className="button-row">
+                    <button
+                      type="button"
+                      disabled={feeBusyByOrderId[order.id]}
+                      onClick={() => handleDeliveryFee(order.id, true)}
+                    >
+                      Accept Fee
+                    </button>
+                    <button
+                      className="secondary"
+                      type="button"
+                      disabled={feeBusyByOrderId[order.id]}
+                      onClick={() => handleDeliveryFee(order.id, false)}
+                    >
+                      Reject Fee
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             {order.address ? (
               <p>

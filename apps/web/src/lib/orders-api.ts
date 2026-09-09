@@ -20,3 +20,15 @@ export function getOrderById(token: string, orderId: string) {
     token,
   });
 }
+
+export function respondDeliveryFee(
+  token: string,
+  orderId: string,
+  payload: { accept: boolean; notes?: string },
+) {
+  return apiClient<Order>(`/orders/${orderId}/delivery-fee-response`, {
+    method: 'PATCH',
+    token,
+    body: payload,
+  });
+}
