@@ -774,3 +774,36 @@ export type CreateAdminStockMovementPayload = {
   reason?: string;
   notes?: string;
 };
+
+export type AdminAuditLog = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  description: string | null;
+  metadata: unknown | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  branch: {
+    id: string;
+    code: string;
+    name: string;
+  } | null;
+  actor: {
+    id: string;
+    email: string;
+    role: UserRole;
+  } | null;
+};
+
+export type AdminAuditLogFilters = {
+  branchCode?: string;
+  action?: string;
+  entityType?: string;
+  entityId?: string;
+  actorId?: string;
+  from?: string;
+  to?: string;
+};
+

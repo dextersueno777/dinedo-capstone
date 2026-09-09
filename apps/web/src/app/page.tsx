@@ -13,6 +13,7 @@ import { RiderDeliveryPanel } from '@/components/rider-delivery-panel';
 import { AdminPaymentProofPanel } from '@/components/admin-payment-proof-panel';
 import { AdminReservationPanel } from '@/components/admin-reservation-panel';
 import { AdminInventoryPanel } from '@/components/admin-inventory-panel';
+import { AdminAuditLogPanel } from '@/components/admin-audit-log-panel';
 
 const modules = [
   'Customer Ordering',
@@ -73,6 +74,8 @@ export default function HomePage() {
       <AdminReservationPanel />
 
       <AdminInventoryPanel />
+
+      <AdminAuditLogPanel />
 
       <PaymentProofPanel />
 
