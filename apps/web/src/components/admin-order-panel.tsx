@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { AdminOrder, OrderStatus } from '@/lib/api-types';
 import {
+  assignAdminOrderRider,
   getAdminOrders,
   setAdminDeliveryFee,
   updateAdminOrderStatus,
@@ -44,6 +45,7 @@ export function AdminOrderPanel() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [statusByOrderId, setStatusByOrderId] = useState<Record<string, OrderStatus>>({});
   const [feeByOrderId, setFeeByOrderId] = useState<Record<string, string>>({});
+  const [riderIdByOrderId, setRiderIdByOrderId] = useState<Record<string, string>>({});
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
@@ -65,14 +67,17 @@ export function AdminOrderPanel() {
 
       const nextStatus: Record<string, OrderStatus> = {};
       const nextFee: Record<string, string> = {};
+      const nextRider: Record<string, string> = {};
 
       for (const order of loadedOrders) {
         nextStatus[order.id] = order.status;
         nextFee[order.id] = String(order.additionalDeliveryFeeAmount ?? 0);
+        nextRider[order.id] = '';
       }
 
       setStatusByOrderId(nextStatus);
       setFeeByOrderId(nextFee);
+      setRiderIdByOrderId(nextRider);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -133,6 +138,41 @@ export function AdminOrderPanel() {
         caughtError instanceof Error
           ? caughtError.message
           : 'Unable to set delivery fee.',
+      );
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function handleAssignRider(orderId: string) {
+    if (!token) {
+      return;
+    }
+
+    const riderId = riderIdByOrderId[orderId]?.trim();
+
+    if (!riderId) {
+      setError('Enter a rider user ID before assigning.');
+      return;
+    }
+
+    setIsBusy(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const updated = await assignAdminOrderRider(token, orderId, {
+        riderId,
+        notes: notes.trim() || undefined,
+      });
+
+      setMessage(`Rider assigned: ${updated.orderNumber}`);
+      await loadOrders();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to assign rider.',
       );
     } finally {
       setIsBusy(false);
@@ -288,6 +328,29 @@ export function AdminOrderPanel() {
                   onClick={() => handleSetDeliveryFee(order.id)}
                 >
                   Set Delivery Fee
+                </button>
+
+                <label className="admin-order-field">
+                  Rider User ID
+                  <input
+                    value={riderIdByOrderId[order.id] ?? ''}
+                    onChange={(event) =>
+                      setRiderIdByOrderId((current) => ({
+                        ...current,
+                        [order.id]: event.target.value,
+                      }))
+                    }
+                    placeholder="Paste rider user ID"
+                  />
+                </label>
+
+                <button
+                  className="secondary full-button"
+                  type="button"
+                  disabled={isBusy}
+                  onClick={() => handleAssignRider(order.id)}
+                >
+                  Assign Rider
                 </button>
               </>
             ) : null}

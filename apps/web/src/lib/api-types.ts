@@ -487,6 +487,13 @@ export type SetAdminDeliveryFeePayload = {
 };
 
 
+export type AssignAdminRiderPayload = {
+  riderId: string;
+  notes?: string;
+};
+
+
+
 export type KitchenOrder = {
   id: string;
   orderNumber: string;

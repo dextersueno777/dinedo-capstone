@@ -1,6 +1,7 @@
 import { apiClient } from './api-client';
 import type {
   AdminOrder,
+  AssignAdminRiderPayload,
   SetAdminDeliveryFeePayload,
   UpdateAdminOrderStatusPayload,
 } from './api-types';
@@ -40,3 +41,17 @@ export function setAdminDeliveryFee(
     body: payload,
   });
 }
+
+
+export function assignAdminOrderRider(
+  token: string,
+  orderId: string,
+  payload: AssignAdminRiderPayload,
+) {
+  return apiClient<AdminOrder>(`/admin/orders/${orderId}/assign-rider`, {
+    method: 'PATCH',
+    token,
+    body: payload,
+  });
+}
+
