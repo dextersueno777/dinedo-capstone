@@ -5,11 +5,16 @@ import {
 } from '@nestjs/common';
 import {
   DeliveryFeeStatus,
+  UserStatus,
+  UserRole,
+  PaymentMethod,
+  DeliveryStatus,
   OrderStatus,
   Prisma,
   ServiceType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AssignRiderDto } from './dto/assign-rider.dto';
 import { SetDeliveryFeeDto } from './dto/set-delivery-fee.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
@@ -110,6 +115,131 @@ export class AdminOrdersService {
         where: {
           id: orderId,
         },
+        select: this.orderSelect(),
+      });
+    });
+  }
+
+  async assignRider(adminId: string, orderId: string, dto: AssignRiderDto) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, deletedAt: null },
+      select: {
+        id: true,
+        branchId: true,
+        serviceType: true,
+        status: true,
+        paymentMethod: true,
+        totalAmount: true,
+        deliveryFeeAmount: true,
+        additionalDeliveryFeeAmount: true,
+        address: {
+          select: {
+            recipient: true,
+            phoneNumber: true,
+            line1: true,
+            barangay: true,
+            municipality: true,
+            province: true,
+            landmark: true,
+          },
+        },
+        delivery: { select: { id: true } },
+      },
+    });
+
+    if (!order) throw new NotFoundException('Order not found.');
+
+    if (order.serviceType !== ServiceType.DELIVERY) {
+      throw new BadRequestException(
+        'Rider assignment is only for delivery orders.',
+      );
+    }
+
+    const rider = await this.prisma.user.findFirst({
+      where: {
+        id: dto.riderId,
+        role: UserRole.RIDER,
+        status: UserStatus.ACTIVE,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        branchId: true,
+        riderProfile: { select: { branchId: true } },
+      },
+    });
+
+    if (!rider) throw new NotFoundException('Active rider not found.');
+
+    const riderBranchId = rider.riderProfile?.branchId ?? rider.branchId;
+
+    if (riderBranchId !== order.branchId) {
+      throw new BadRequestException('Rider must belong to the same branch.');
+    }
+
+    const navigationAddress = order.address
+      ? [
+          order.address.line1,
+          order.address.barangay,
+          order.address.municipality,
+          order.address.province,
+          order.address.landmark,
+        ]
+          .filter(Boolean)
+          .join(', ')
+      : null;
+
+    const customerContactSnapshot = order.address
+      ? `${order.address.recipient} - ${order.address.phoneNumber}`
+      : null;
+
+    return this.prisma.$transaction(async (tx) => {
+      const deliveryData = {
+        riderId: rider.id,
+        status: DeliveryStatus.ASSIGNED,
+        assignedAt: new Date(),
+        rejectionReason: null,
+        navigationAddress,
+        customerContactSnapshot,
+        codAmountToCollect:
+          order.paymentMethod === PaymentMethod.COD ? order.totalAmount : 0,
+        deliveryFeeAmount:
+          Number(order.deliveryFeeAmount) +
+          Number(order.additionalDeliveryFeeAmount),
+      };
+
+      if (order.delivery?.id) {
+        await tx.delivery.update({
+          where: { id: order.delivery.id },
+          data: deliveryData,
+        });
+      } else {
+        await tx.delivery.create({
+          data: {
+            branchId: order.branchId,
+            orderId: order.id,
+            ...deliveryData,
+          },
+        });
+      }
+
+      await tx.order.update({
+        where: { id: order.id },
+        data: { status: OrderStatus.ASSIGNED_TO_RIDER },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: order.id,
+          fromStatus: order.status,
+          toStatus: OrderStatus.ASSIGNED_TO_RIDER,
+          changedById: adminId,
+          notes: dto.notes?.trim() ?? 'Rider assigned by admin.',
+        },
+      });
+
+      return tx.order.findUniqueOrThrow({
+        where: { id: order.id },
         select: this.orderSelect(),
       });
     });

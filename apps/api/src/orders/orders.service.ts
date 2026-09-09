@@ -6,6 +6,7 @@ import {
 import {
   BranchStatus,
   DeliveryFeeStatus,
+  DeliveryStatus,
   MenuItemStatus,
   OrderStatus,
   OrderTimingType,
@@ -116,6 +117,19 @@ export class OrdersService {
           },
         },
       });
+
+      if (dto.serviceType === ServiceType.DELIVERY) {
+        await tx.delivery.create({
+          data: {
+            branchId: branch.id,
+            orderId: createdOrder.id,
+            status: DeliveryStatus.PENDING_ASSIGNMENT,
+            codAmountToCollect:
+              dto.paymentMethod === PaymentMethod.COD ? totalAmount : 0,
+            deliveryFeeAmount: 0,
+          },
+        });
+      }
 
       await tx.cartItem.deleteMany({
         where: {

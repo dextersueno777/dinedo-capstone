@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AuthUser } from '../auth/types/auth-user.type';
 import { AdminOrdersService } from './admin-orders.service';
+import { AssignRiderDto } from './dto/assign-rider.dto';
 import { SetDeliveryFeeDto } from './dto/set-delivery-fee.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
@@ -42,6 +43,15 @@ export class AdminOrdersController {
     @Body() dto: UpdateOrderStatusDto,
   ) {
     return this.adminOrdersService.updateStatus(user.id, id, dto);
+  }
+
+  @Patch(':id/assign-rider')
+  assignRider(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: AssignRiderDto,
+  ) {
+    return this.adminOrdersService.assignRider(user.id, id, dto);
   }
 
   @Patch(':id/delivery-fee')
