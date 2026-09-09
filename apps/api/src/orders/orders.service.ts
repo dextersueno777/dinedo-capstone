@@ -17,6 +17,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutDto } from './dto/checkout.dto';
+import { RespondDeliveryFeeDto } from './dto/respond-delivery-fee.dto';
 
 @Injectable()
 export class OrdersService {
@@ -141,6 +142,82 @@ export class OrdersService {
     });
 
     return this.getOrderById(customerId, order.id);
+  }
+
+  async respondDeliveryFee(
+    customerId: string,
+    orderId: string,
+    dto: RespondDeliveryFeeDto,
+  ) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id: orderId,
+        customerId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        serviceType: true,
+        deliveryFeeStatus: true,
+        subtotalAmount: true,
+        deliveryFeeAmount: true,
+        additionalDeliveryFeeAmount: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    if (order.serviceType !== ServiceType.DELIVERY) {
+      throw new BadRequestException('Delivery fee response is only for delivery orders.');
+    }
+
+    if (order.deliveryFeeStatus !== DeliveryFeeStatus.PENDING_CUSTOMER_ACCEPTANCE) {
+      throw new BadRequestException('This order is not waiting for customer fee approval.');
+    }
+
+    const nextFeeStatus = dto.accept
+      ? DeliveryFeeStatus.ACCEPTED
+      : DeliveryFeeStatus.REJECTED;
+
+    const nextOrderStatus = dto.accept ? order.status : OrderStatus.CANCELLED;
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          deliveryFeeStatus: nextFeeStatus,
+          status: nextOrderStatus,
+          totalAmount:
+            Number(order.subtotalAmount) +
+            Number(order.deliveryFeeAmount) +
+            Number(order.additionalDeliveryFeeAmount),
+          cancelledAt: dto.accept ? undefined : new Date(),
+          cancellationReason: dto.accept
+            ? undefined
+            : 'Customer rejected additional delivery fee.',
+        },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: order.id,
+          fromStatus: order.status,
+          toStatus: nextOrderStatus,
+          changedById: customerId,
+          notes: dto.accept
+            ? (dto.notes?.trim() || 'Customer accepted additional delivery fee.')
+            : (dto.notes?.trim() || 'Customer rejected additional delivery fee.'),
+        },
+      });
+
+      return tx.order.findUniqueOrThrow({
+        where: { id: order.id },
+        select: this.orderSelect(),
+      });
+    });
   }
 
   async getMyOrders(customerId: string) {

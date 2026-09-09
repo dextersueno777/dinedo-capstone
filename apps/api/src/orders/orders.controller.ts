@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AuthUser } from '../auth/types/auth-user.type';
 import { CheckoutDto } from './dto/checkout.dto';
+import { RespondDeliveryFeeDto } from './dto/respond-delivery-fee.dto';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -32,6 +34,15 @@ export class OrdersController {
   @Get()
   getMyOrders(@CurrentUser() user: AuthUser) {
     return this.ordersService.getMyOrders(user.id);
+  }
+
+  @Patch(':id/delivery-fee-response')
+  respondDeliveryFee(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: RespondDeliveryFeeDto,
+  ) {
+    return this.ordersService.respondDeliveryFee(user.id, id, dto);
   }
 
   @Get(':id')
