@@ -9,6 +9,7 @@ import {
   UserRole,
   PaymentMethod,
   PaymentState,
+  NotificationType,
   RefundMethod,
   DeliveryStatus,
   OrderStatus,
@@ -66,6 +67,7 @@ export class AdminOrdersService {
         id: true,
         status: true,
         customerId: true,
+        branchId: true,
         paymentMethod: true,
         paymentState: true,
         totalAmount: true,
@@ -189,6 +191,22 @@ export class AdminOrdersService {
           changedById: adminId,
           reason: dto.reason?.trim(),
           notes: dto.notes?.trim(),
+        },
+      });
+
+      await tx.notification.create({
+        data: {
+          userId: existingOrder.customerId,
+          branchId: existingOrder.branchId,
+          orderId,
+          type: NotificationType.ORDER_STATUS,
+          title: `Order ${dto.status.replaceAll('_', ' ')}`,
+          message: `Your order status was updated to ${dto.status.replaceAll('_', ' ')}.`,
+          data: {
+            fromStatus: existingOrder.status,
+            toStatus: dto.status,
+            reason: dto.reason?.trim() || null,
+          },
         },
       });
 
