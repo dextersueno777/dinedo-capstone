@@ -29,6 +29,8 @@ export class OrdersService {
 
     this.validateTiming(dto);
 
+    this.validateOrderingTime(branch, dto);
+
     const addressId = await this.validateServiceAndPayment(customerId, dto);
 
     const cart = await this.prisma.cart.findUnique({
@@ -319,6 +321,54 @@ export class OrdersService {
     return order;
   }
 
+  private validateOrderingTime(
+    branch: {
+      settings: {
+        timezone: string;
+        orderingOpenTime: string;
+        orderingCloseTime: string;
+      } | null;
+    },
+    dto: CheckoutDto,
+  ) {
+    const timezone = branch.settings?.timezone ?? 'Asia/Manila';
+    const openTime = branch.settings?.orderingOpenTime ?? '08:00';
+    const closeTime = branch.settings?.orderingCloseTime ?? '18:00';
+
+    const targetDate =
+      dto.timingType === OrderTimingType.ADVANCE && dto.scheduledFor
+        ? new Date(dto.scheduledFor)
+        : new Date();
+
+    const localParts = new Intl.DateTimeFormat('en-PH', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(targetDate);
+
+    const hour = Number(localParts.find((part) => part.type === 'hour')?.value);
+    const minute = Number(
+      localParts.find((part) => part.type === 'minute')?.value,
+    );
+
+    const orderMinutes = hour * 60 + minute;
+    const openMinutes = this.timeToMinutes(openTime);
+    const closeMinutes = this.timeToMinutes(closeTime);
+
+    if (orderMinutes < openMinutes || orderMinutes >= closeMinutes) {
+      throw new BadRequestException(
+        `Orders can only be placed within branch hours ${openTime}-${closeTime}.`,
+      );
+    }
+  }
+
+  private timeToMinutes(time: string) {
+    const [hour, minute] = time.split(':').map(Number);
+
+    return hour * 60 + minute;
+  }
+
   private async findActiveBranch(branchCode: string) {
     const branch = await this.prisma.branch.findUnique({
       where: {
@@ -329,6 +379,9 @@ export class OrdersService {
         status: true,
         settings: {
           select: {
+            timezone: true,
+            orderingOpenTime: true,
+            orderingCloseTime: true,
             normalDeliveryKm: true,
           },
         },
