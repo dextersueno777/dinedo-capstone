@@ -8,6 +8,8 @@ import {
   UserStatus,
   UserRole,
   PaymentMethod,
+  PaymentState,
+  RefundMethod,
   DeliveryStatus,
   OrderStatus,
   Prisma,
@@ -63,6 +65,18 @@ export class AdminOrdersService {
       select: {
         id: true,
         status: true,
+        customerId: true,
+        paymentMethod: true,
+        paymentState: true,
+        totalAmount: true,
+        refunds: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
@@ -99,6 +113,30 @@ export class AdminOrdersService {
           ...timestampData,
         },
       });
+
+      if (
+        dto.status === OrderStatus.CANCELLED &&
+        existingOrder.paymentMethod === PaymentMethod.GCASH_MANUAL &&
+        (existingOrder.paymentState === PaymentState.PAID ||
+          existingOrder.paymentState === PaymentState.APPROVED) &&
+        existingOrder.refunds.length === 0
+      ) {
+        await tx.refund.create({
+          data: {
+            orderId,
+            customerId: existingOrder.customerId,
+            requestedById: adminId,
+            method: RefundMethod.GCASH_MANUAL,
+            amount: existingOrder.totalAmount,
+            reason:
+              dto.reason?.trim() ||
+              'Paid GCash order was cancelled and needs refund review.',
+            adminNotes:
+              dto.notes?.trim() ||
+              'Auto-created after admin cancelled paid GCash order.',
+          },
+        });
+      }
 
       await tx.orderStatusHistory.create({
         data: {
