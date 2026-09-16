@@ -22,6 +22,7 @@ import { AdminReportsModule } from './admin-reports/admin-reports.module';
 import { AdminAuditLogsModule } from './admin-audit-logs/admin-audit-logs.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AdminRidersModule } from './admin-riders/admin-riders.module';
+import { AdminRefundsModule } from './admin-refunds/admin-refunds.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AdminRidersModule } from './admin-riders/admin-riders.module';
     AdminReportsModule,
     AdminAuditLogsModule,
     AdminRidersModule,
+    AdminRefundsModule,
     NotificationsModule,
   ],
   controllers: [AppController],
