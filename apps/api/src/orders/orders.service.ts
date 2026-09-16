@@ -17,6 +17,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutDto } from './dto/checkout.dto';
+import { CancelOrderDto } from './dto/cancel-order.dto';
 import { RespondDeliveryFeeDto } from './dto/respond-delivery-fee.dto';
 
 @Injectable()
@@ -142,6 +143,74 @@ export class OrdersService {
     });
 
     return this.getOrderById(customerId, order.id);
+  }
+
+  async cancelMyOrder(
+    customerId: string,
+    orderId: string,
+    dto: CancelOrderDto,
+  ) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id: orderId,
+        customerId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        serviceType: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(
+        'Only pending orders can be cancelled by the customer.',
+      );
+    }
+
+    const reason =
+      dto.cancellationReason?.trim() || 'Customer cancelled pending order.';
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: OrderStatus.CANCELLED,
+          cancelledAt: new Date(),
+          cancellationReason: reason,
+        },
+      });
+
+      if (order.serviceType === ServiceType.DELIVERY) {
+        await tx.delivery.updateMany({
+          where: { orderId: order.id },
+          data: {
+            status: DeliveryStatus.CANCELLED,
+            cancelledAt: new Date(),
+          },
+        });
+      }
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: order.id,
+          fromStatus: order.status,
+          toStatus: OrderStatus.CANCELLED,
+          changedById: customerId,
+          notes: reason,
+        },
+      });
+
+      return tx.order.findUniqueOrThrow({
+        where: { id: order.id },
+        select: this.orderSelect(),
+      });
+    });
   }
 
   async respondDeliveryFee(

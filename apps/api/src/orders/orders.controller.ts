@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AuthUser } from '../auth/types/auth-user.type';
 import { CheckoutDto } from './dto/checkout.dto';
+import { CancelOrderDto } from './dto/cancel-order.dto';
 import { RespondDeliveryFeeDto } from './dto/respond-delivery-fee.dto';
 import { OrdersService } from './orders.service';
 
@@ -34,6 +35,15 @@ export class OrdersController {
   @Get()
   getMyOrders(@CurrentUser() user: AuthUser) {
     return this.ordersService.getMyOrders(user.id);
+  }
+
+  @Patch(':id/cancel')
+  cancelMyOrder(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: CancelOrderDto,
+  ) {
+    return this.ordersService.cancelMyOrder(user.id, id, dto);
   }
 
   @Patch(':id/delivery-fee-response')
