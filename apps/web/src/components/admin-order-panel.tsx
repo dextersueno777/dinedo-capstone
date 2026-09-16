@@ -48,6 +48,8 @@ export function AdminOrderPanel() {
   const [statusByOrderId, setStatusByOrderId] = useState<Record<string, OrderStatus>>({});
   const [feeByOrderId, setFeeByOrderId] = useState<Record<string, string>>({});
   const [riderIdByOrderId, setRiderIdByOrderId] = useState<Record<string, string>>({});
+  const [issueStrikeByOrderId, setIssueStrikeByOrderId] = useState<Record<string, boolean>>({});
+  const [strikeReasonByOrderId, setStrikeReasonByOrderId] = useState<Record<string, string>>({});
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
@@ -88,16 +90,22 @@ export function AdminOrderPanel() {
       const nextStatus: Record<string, OrderStatus> = {};
       const nextFee: Record<string, string> = {};
       const nextRider: Record<string, string> = {};
+      const nextStrike: Record<string, boolean> = {};
+      const nextStrikeReason: Record<string, string> = {};
 
       for (const order of loadedOrders) {
         nextStatus[order.id] = order.status;
         nextFee[order.id] = String(order.additionalDeliveryFeeAmount ?? 0);
         nextRider[order.id] = '';
+        nextStrike[order.id] = false;
+        nextStrikeReason[order.id] = '';
       }
 
       setStatusByOrderId(nextStatus);
       setFeeByOrderId(nextFee);
       setRiderIdByOrderId(nextRider);
+      setIssueStrikeByOrderId(nextStrike);
+      setStrikeReasonByOrderId(nextStrikeReason);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -117,10 +125,20 @@ export function AdminOrderPanel() {
     setError('');
 
     try {
+      const nextStatus = statusByOrderId[orderId];
+
       const updated = await updateAdminOrderStatus(token, orderId, {
-        status: statusByOrderId[orderId],
+        status: nextStatus,
         reason: reason.trim() || undefined,
         notes: notes.trim() || undefined,
+        issueCustomerStrike:
+          nextStatus === 'CANCELLED'
+            ? issueStrikeByOrderId[orderId]
+            : undefined,
+        strikeReason:
+          nextStatus === 'CANCELLED' && issueStrikeByOrderId[orderId]
+            ? strikeReasonByOrderId[orderId]?.trim() || undefined
+            : undefined,
       });
 
       setMessage(`Order updated: ${updated.orderNumber}`);
@@ -314,6 +332,37 @@ export function AdminOrderPanel() {
                 ))}
               </select>
             </label>
+
+            {statusByOrderId[order.id] === 'CANCELLED' ? (
+              <div className="admin-order-field">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={issueStrikeByOrderId[order.id] ?? false}
+                    onChange={(event) =>
+                      setIssueStrikeByOrderId((current) => ({
+                        ...current,
+                        [order.id]: event.target.checked,
+                      }))
+                    }
+                  />
+                  {' '}Issue customer strike
+                </label>
+
+                {issueStrikeByOrderId[order.id] ? (
+                  <input
+                    value={strikeReasonByOrderId[order.id] ?? ''}
+                    onChange={(event) =>
+                      setStrikeReasonByOrderId((current) => ({
+                        ...current,
+                        [order.id]: event.target.value,
+                      }))
+                    }
+                    placeholder="Example: Bogus buyer / cancelled after preparation."
+                  />
+                ) : null}
+              </div>
+            ) : null}
 
             <button
               className="secondary full-button"

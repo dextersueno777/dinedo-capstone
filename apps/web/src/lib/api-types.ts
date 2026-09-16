@@ -479,6 +479,8 @@ export type UpdateAdminOrderStatusPayload = {
   status: OrderStatus;
   reason?: string;
   notes?: string;
+  issueCustomerStrike?: boolean;
+  strikeReason?: string;
 };
 
 export type SetAdminDeliveryFeePayload = {
