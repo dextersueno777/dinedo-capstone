@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Order } from '@/lib/api-types';
-import { getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
+import { cancelOrder, getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
 
 function formatPrice(price: string | number) {
@@ -26,6 +26,7 @@ export function OrderHistory() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [feeBusyByOrderId, setFeeBusyByOrderId] = useState<Record<string, boolean>>({});
+  const [cancelBusyByOrderId, setCancelBusyByOrderId] = useState<Record<string, boolean>>({});
 
   async function loadOrders() {
     if (!token || user?.role !== 'CUSTOMER') {
@@ -83,6 +84,40 @@ export function OrderHistory() {
       );
     } finally {
       setFeeBusyByOrderId((current) => ({ ...current, [orderId]: false }));
+    }
+  }
+
+  async function handleCancelOrder(orderId: string) {
+    if (!token) return;
+
+    const confirmed = window.confirm(
+      'Cancel this pending order? This is only allowed before preparation.',
+    );
+
+    if (!confirmed) return;
+
+    setCancelBusyByOrderId((current) => ({ ...current, [orderId]: true }));
+    setMessage('');
+    setError('');
+
+    try {
+      const updatedOrder = await cancelOrder(token, orderId, {
+        cancellationReason: 'Customer cancelled pending order.',
+      });
+
+      setOrders((current) =>
+        current.map((order) => (order.id === orderId ? updatedOrder : order)),
+      );
+
+      setMessage('Order cancelled successfully.');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to cancel order.',
+      );
+    } finally {
+      setCancelBusyByOrderId((current) => ({ ...current, [orderId]: false }));
     }
   }
 
@@ -146,6 +181,19 @@ export function OrderHistory() {
                 <strong>Total:</strong> {formatPrice(order.totalAmount)}
               </p>
             </div>
+
+            {order.status === 'PENDING' ? (
+              <div className="button-row">
+                <button
+                  className="secondary"
+                  type="button"
+                  disabled={cancelBusyByOrderId[order.id]}
+                  onClick={() => handleCancelOrder(order.id)}
+                >
+                  Cancel Order
+                </button>
+              </div>
+            ) : null}
 
             {order.serviceType === 'DELIVERY' ? (
               <div className="fee-review-box">

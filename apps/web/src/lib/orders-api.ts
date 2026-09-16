@@ -32,3 +32,15 @@ export function respondDeliveryFee(
     body: payload,
   });
 }
+
+export function cancelOrder(
+  token: string,
+  orderId: string,
+  payload: { cancellationReason?: string },
+) {
+  return apiClient<Order>(`/orders/${orderId}/cancel`, {
+    method: 'PATCH',
+    token,
+    body: payload,
+  });
+}
