@@ -14,6 +14,7 @@ import { AdminPaymentProofPanel } from '@/components/admin-payment-proof-panel';
 import { AdminReservationPanel } from '@/components/admin-reservation-panel';
 import { AdminInventoryPanel } from '@/components/admin-inventory-panel';
 import { AdminAuditLogPanel } from '@/components/admin-audit-log-panel';
+import { AdminRefundPanel } from '@/components/admin-refund-panel';
 
 const modules = [
   'Customer Ordering',
@@ -76,6 +77,8 @@ export default function HomePage() {
       <AdminInventoryPanel />
 
       <AdminAuditLogPanel />
+
+      <AdminRefundPanel />
 
       <PaymentProofPanel />
 

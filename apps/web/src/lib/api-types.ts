@@ -840,3 +840,42 @@ export type AdminRider = {
     } | null;
   } | null;
 };
+
+export type RefundStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export type RefundMethod = 'GCASH_MANUAL' | 'CASH_MANUAL';
+
+export type AdminRefund = {
+  id: string;
+  orderId: string;
+  customerId: string;
+  requestedById: string | null;
+  processedById: string | null;
+  status: RefundStatus;
+  method: RefundMethod;
+  amount: string | number;
+  reason: string;
+  adminNotes: string | null;
+  gcashReferenceNumber: string | null;
+  refundProofImageUrl: string | null;
+  requestedAt: string;
+  processedAt: string | null;
+  completedAt: string | null;
+  order: {
+    id: string;
+    orderNumber: string;
+    status: OrderStatus;
+    paymentMethod: PaymentMethod;
+    paymentState: PaymentState;
+    totalAmount: string | number;
+  };
+  customer: {
+    id: string;
+    email: string;
+  };
+};
