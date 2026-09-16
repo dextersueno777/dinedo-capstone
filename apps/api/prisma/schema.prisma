@@ -264,6 +264,8 @@ model User {
   addresses              Address[]
   carts                  Cart[]
   orders                 Order[]              @relation("CustomerOrders")
+  customerStrikes        CustomerStrike[]     @relation("CustomerStrikeCustomer")
+  issuedCustomerStrikes  CustomerStrike[]     @relation("CustomerStrikeIssuer")
   statusUpdates          OrderStatusHistory[] @relation("OrderStatusActor")
   reservations           Reservation[]        @relation("CustomerReservations")
   uploadedPaymentProofs  PaymentProof[]       @relation("PaymentProofUploader")
@@ -541,6 +543,7 @@ model Order {
   reservation    Reservation?
   paymentProofs  PaymentProof[]
   refunds        Refund[]
+  customerStrikes CustomerStrike[]
   delivery       Delivery?
   stockMovements StockMovement[]
   notifications  Notification[]       @relation("OrderNotifications")
@@ -706,6 +709,26 @@ model PaymentProof {
   @@index([reviewedById])
   @@index([status])
   @@index([submittedAt])
+}
+
+model CustomerStrike {
+  id         String    @id @default(cuid())
+  customerId String
+  orderId    String?
+  issuedById String?
+  reason     String
+  notes      String?
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+
+  customer User   @relation("CustomerStrikeCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  issuedBy User?  @relation("CustomerStrikeIssuer", fields: [issuedById], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([orderId])
+  @@index([issuedById])
+  @@index([createdAt])
 }
 
 model Refund {
