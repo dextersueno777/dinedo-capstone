@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsOptional,
   IsString,
@@ -19,4 +20,13 @@ export class UpdateOrderStatusDto {
   @IsString()
   @Length(1, 500)
   notes?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  issueCustomerStrike?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 500)
+  strikeReason?: string;
 }

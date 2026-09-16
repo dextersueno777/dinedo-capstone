@@ -77,6 +77,14 @@ export class AdminOrdersService {
             id: true,
           },
         },
+        customerStrikes: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
@@ -136,6 +144,41 @@ export class AdminOrdersService {
               'Auto-created after admin cancelled paid GCash order.',
           },
         });
+      }
+
+      if (dto.status === OrderStatus.CANCELLED && dto.issueCustomerStrike) {
+        const strikeReason =
+          dto.strikeReason?.trim() ||
+          dto.reason?.trim() ||
+          'Customer violated order cancellation policy.';
+
+        await tx.customerStrike.create({
+          data: {
+            customerId: existingOrder.customerId,
+            orderId,
+            issuedById: adminId,
+            reason: strikeReason,
+            notes: dto.notes?.trim(),
+          },
+        });
+
+        const totalStrikes = await tx.customerStrike.count({
+          where: {
+            customerId: existingOrder.customerId,
+            deletedAt: null,
+          },
+        });
+
+        if (totalStrikes >= 3) {
+          await tx.user.update({
+            where: {
+              id: existingOrder.customerId,
+            },
+            data: {
+              status: UserStatus.BANNED,
+            },
+          });
+        }
       }
 
       await tx.orderStatusHistory.create({
