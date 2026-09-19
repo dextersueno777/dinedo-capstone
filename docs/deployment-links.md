@@ -55,7 +55,29 @@ Frontend Vercel variables needed:
 | --- | --- |
 | Backend deployed | Done |
 | Database migrated | Done |
-| Seed data added | Pending |
+| Seed data added | Done |
 | Frontend deployed | Pending |
 | Client testing link shared | Pending |
 | SOS/UAT testing completed | Pending |
+
+
+## Verified Demo Accounts
+
+These accounts were verified against the Railway API:
+
+| Role | Email | Status |
+| --- | --- | --- |
+| Admin | admin@dinedo.local | Working |
+| Customer | customer.demo@dinedo.local | Working |
+| Kitchen | kitchen@dinedo.local | Working |
+| Rider | rider@dinedo.local | Working |
+
+## Verified API Data
+
+| Item | Status |
+| --- | --- |
+| API health endpoint | Working |
+| Tinoc branch | Working |
+| Menu categories | Working |
+| Menu items | 7 seeded items |
+| Swagger API docs | Working |
