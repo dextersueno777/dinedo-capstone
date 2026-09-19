@@ -32,7 +32,7 @@ Railway PostgreSQL
 
 PWA URL:
 
-To be added after Vercel deployment
+https://dinedo-web.vercel.app
 
 ## Production Environment Variables
 
@@ -56,8 +56,8 @@ Frontend Vercel variables needed:
 | Backend deployed | Done |
 | Database migrated | Done |
 | Seed data added | Done |
-| Frontend deployed | Pending |
-| Client testing link shared | Pending |
+| Frontend deployed | Done |
+| Client testing link shared | Ready to share |
 | SOS/UAT testing completed | Pending |
 
 
@@ -81,3 +81,13 @@ These accounts were verified against the Railway API:
 | Menu categories | Working |
 | Menu items | 7 seeded items |
 | Swagger API docs | Working |
+
+
+## Final Production Links
+
+| System Part | Link |
+| --- | --- |
+| PWA Frontend | https://dinedo-web.vercel.app |
+| Railway API | https://dinedo-capstone-production-d8b8.up.railway.app |
+| API Docs | https://dinedo-capstone-production-d8b8.up.railway.app/api/docs |
+| API Health | https://dinedo-capstone-production-d8b8.up.railway.app/api/health |
