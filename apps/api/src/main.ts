@@ -9,7 +9,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
-  const apiPort = configService.get<number>('API_PORT', 4000);
+  const apiPort = Number(process.env.PORT ?? configService.get<number>('API_PORT', 4000));
   const webOrigin = configService.get<string>('WEB_ORIGIN', 'http://localhost:3000');
 
   app.setGlobalPrefix('api');

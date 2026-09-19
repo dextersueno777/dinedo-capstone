@@ -13,7 +13,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "db:seed": "ts-node prisma/seed.ts",
-    "db:seed:branch-data": "ts-node prisma/seed-branch-data.ts"
+    "db:seed:branch-data": "ts-node prisma/seed-branch-data.ts",
+    "start:prod": "node dist/main.js",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "deploy:start": "prisma migrate deploy && node dist/main.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.3",
