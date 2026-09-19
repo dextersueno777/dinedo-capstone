@@ -1,7 +1,5 @@
 # DineDo Deployment Links
 
-Fill this after deployment.
-
 ## GitHub Repository
 
 Repository:
@@ -12,15 +10,29 @@ https://github.com/dextersueno777/dinedo-capstone
 
 API URL:
 
+https://dinedo-capstone-production-d8b8.up.railway.app
+
 API Health Check:
+
+https://dinedo-capstone-production-d8b8.up.railway.app/healthz
+
+API Health Endpoint:
+
+https://dinedo-capstone-production-d8b8.up.railway.app/api/health
 
 API Documentation:
 
+https://dinedo-capstone-production-d8b8.up.railway.app/api/docs
+
 Database:
+
+Railway PostgreSQL
 
 ## Vercel Frontend
 
 PWA URL:
+
+To be added after Vercel deployment
 
 ## Production Environment Variables
 
@@ -41,8 +53,8 @@ Frontend Vercel variables needed:
 
 | Item | Status |
 | --- | --- |
-| Backend deployed | Pending |
-| Database migrated | Pending |
+| Backend deployed | Done |
+| Database migrated | Done |
 | Seed data added | Pending |
 | Frontend deployed | Pending |
 | Client testing link shared | Pending |
