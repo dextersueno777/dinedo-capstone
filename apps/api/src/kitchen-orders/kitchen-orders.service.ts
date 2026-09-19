@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  NotificationType,
   OrderStatus,
   Prisma,
 } from '@prisma/client';
@@ -75,6 +76,8 @@ export class KitchenOrdersService {
       select: {
         id: true,
         status: true,
+        customerId: true,
+        branchId: true,
       },
     });
 
@@ -110,6 +113,22 @@ export class KitchenOrdersService {
           toStatus: dto.status,
           changedById: kitchenUserId,
           notes: dto.notes?.trim(),
+        },
+      });
+
+      await tx.notification.create({
+        data: {
+          userId: existingOrder.customerId,
+          branchId: existingOrder.branchId,
+          orderId,
+          type: NotificationType.ORDER_STATUS,
+          title: `Order ${dto.status.replaceAll('_', ' ')}`,
+          message: `Your order status was updated to ${dto.status.replaceAll('_', ' ')}.`,
+          data: {
+            fromStatus: existingOrder.status,
+            toStatus: dto.status,
+            notes: dto.notes?.trim() || null,
+          },
         },
       });
 
