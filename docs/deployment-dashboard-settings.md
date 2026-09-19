@@ -34,7 +34,7 @@ pnpm --filter @dinedo/api deploy:start
 
 Health check path:
 
-/api/health
+/healthz
 
 Required Railway environment variables:
 
@@ -96,7 +96,7 @@ After deployment, test these:
 
 API health:
 
-https://your-railway-api-url/api/health
+https://your-railway-api-url/healthz
 
 API docs:
 

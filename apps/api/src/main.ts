@@ -8,6 +8,11 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.get('/healthz', (_req: unknown, res: { status: (code: number) => { send: (body: string) => void } }) => {
+    res.status(200).send('ok');
+  });
+
   const configService = app.get(ConfigService);
   const apiPort = Number(process.env.PORT ?? configService.get<number>('API_PORT', 4000));
   const webOrigin = configService.get<string>('WEB_ORIGIN', 'http://localhost:3000');
@@ -37,7 +42,7 @@ async function bootstrap(): Promise<void> {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, swaggerDocument);
 
-  await app.listen(apiPort);
+  await app.listen(apiPort, '0.0.0.0');
 }
 
 void bootstrap();
