@@ -14,9 +14,9 @@
     "test:watch": "jest --watch",
     "db:seed": "ts-node prisma/seed.ts",
     "db:seed:branch-data": "ts-node prisma/seed-branch-data.ts",
-    "start:prod": "node dist/main.js",
+    "start:prod": "node start-production.js",
     "db:migrate:deploy": "prisma migrate deploy",
-    "deploy:start": "prisma migrate deploy && node dist/main.js",
+    "deploy:start": "prisma migrate deploy && node start-production.js",
     "db:generate": "prisma generate"
   },
   "dependencies": {
