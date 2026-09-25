@@ -145,15 +145,31 @@ export function MenuBrowser() {
       {error ? <p className="error-text">{error}</p> : null}
 
       <div className="menu-grid">
-        {filteredItems.map((item) => (
-          <article className="menu-card" key={item.id}>
-            <div>
-              <p className="menu-category">{item.category.name}</p>
-              <h3>{item.name}</h3>
-              <p>{item.description ?? 'No description available.'}</p>
-            </div>
+        {filteredItems.map((item) => {
+          const menuImage = item.images?.[0]?.url;
 
-            <div className="menu-footer">
+          return (
+            <article className="menu-card" key={item.id}>
+              {menuImage ? (
+                <img
+                  className="menu-card-image"
+                  src={menuImage}
+                  alt={item.images?.[0]?.altText ?? item.name}
+                  loading="lazy"
+                />
+              ) : (
+                <div className="menu-card-image menu-card-image-placeholder">
+                  No Image
+                </div>
+              )}
+
+              <div>
+                <p className="menu-category">{item.category.name}</p>
+                <h3>{item.name}</h3>
+                <p>{item.description ?? 'No description available.'}</p>
+              </div>
+
+              <div className="menu-footer">
               <div>
                 <strong>{formatPrice(item.price)}</strong>
                 <span className={item.status === 'SOLD_OUT' ? 'sold-out' : 'available'}>
@@ -170,8 +186,9 @@ export function MenuBrowser() {
                 Add to Cart
               </button>
             </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
 
       {!message && !error && filteredItems.length === 0 ? (

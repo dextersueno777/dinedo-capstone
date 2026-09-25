@@ -1225,3 +1225,35 @@ h2 {
   }
 }
 
+
+/* Real food photo cards */
+.menu-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.menu-card-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  background: #f3f4f6;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.menu-card-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.menu-card > div:not(.menu-footer):not(.menu-card-image-placeholder) {
+  padding: 1rem 1rem 0;
+}
+
+.menu-card .menu-footer {
+  padding: 1rem;
+}
