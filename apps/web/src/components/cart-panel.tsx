@@ -29,49 +29,58 @@ function getCartTotal(cart: Cart | null) {
 
 export function CartPanel() {
   const { user } = useAuth();
-  const {
-    cart,
-    isLoading,
-    error,
-    updateItem,
-    removeItem,
-    clearMyCart,
-  } = useCart();
+  const { cart, isLoading, error, updateItem, removeItem, clearMyCart } = useCart();
+
+  const cartCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  const cartTotal = getCartTotal(cart);
 
   if (!user) {
     return (
-      <section id="cart" className="card">
-        <h2>My Cart</h2>
-        <p>Please login as a customer to view and manage your cart.</p>
+      <section id="cart" className="card cart-card cart-empty-card">
+        <p className="eyebrow">Cart</p>
+        <h2>Sign in to view cart</h2>
+        <p>Please login as a customer to add meals, review quantities, and checkout.</p>
       </section>
     );
   }
 
   if (user.role !== 'CUSTOMER') {
     return (
-      <section id="cart" className="card">
-        <h2>My Cart</h2>
-        <p>Cart is available for customer accounts only.</p>
+      <section id="cart" className="card cart-card cart-empty-card">
+        <p className="eyebrow">Cart</p>
+        <h2>Customer cart only</h2>
+        <p>Use a customer account to add food items and submit orders.</p>
       </section>
     );
   }
 
   return (
-    <section id="cart" className="card">
+    <section id="cart" className="card cart-card">
       <div className="cart-heading">
         <div>
-          <p className="eyebrow">Customer Module</p>
+          <p className="eyebrow">Order Summary</p>
           <h2>My Cart</h2>
+          <p className="section-subtitle">
+            {cartCount === 1 ? '1 item selected' : `${cartCount} items selected`}
+          </p>
         </div>
 
-        <strong>{formatPrice(getCartTotal(cart))}</strong>
+        <strong>{formatPrice(cartTotal)}</strong>
       </div>
 
       {isLoading ? <p>Loading cart...</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
       {!isLoading && cart && cart.items.length === 0 ? (
-        <p>Your cart is empty.</p>
+        <div className="empty-cart-state">
+          <span aria-hidden="true">🛒</span>
+          <h3>Your cart is empty</h3>
+          <p>Start by choosing meals from the Dindo menu.</p>
+          <a className="primary cart-link-button" href="#menu">
+            Browse Menu
+          </a>
+        </div>
       ) : null}
 
       <div className="cart-list">
@@ -118,9 +127,20 @@ export function CartPanel() {
       </div>
 
       {cart && cart.items.length > 0 ? (
-        <button className="danger-button" type="button" onClick={clearMyCart}>
-          Clear Cart
-        </button>
+        <div className="cart-summary-bar">
+          <div>
+            <span>Total</span>
+            <strong>{formatPrice(cartTotal)}</strong>
+          </div>
+
+          <a className="primary cart-link-button" href="#checkout">
+            Go to Checkout
+          </a>
+
+          <button className="danger-button" type="button" onClick={clearMyCart}>
+            Clear Cart
+          </button>
+        </div>
       ) : null}
     </section>
   );
