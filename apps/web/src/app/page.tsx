@@ -175,6 +175,25 @@ export default function HomePage() {
           API connection, authentication, and PWA installation support.
         </p>
       </section>
+      <nav className="mobile-bottom-nav" aria-label="Mobile app navigation">
+        <a href="#menu">
+          <span>🍽️</span>
+          Menu
+        </a>
+        <a href="#cart">
+          <span>🛒</span>
+          Cart
+        </a>
+        <a href="#reservations">
+          <span>📅</span>
+          Reserve
+        </a>
+        <a href="#orders">
+          <span>📦</span>
+          Orders
+        </a>
+      </nav>
+
     </main>
   );
 }
