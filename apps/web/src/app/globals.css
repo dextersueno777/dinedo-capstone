@@ -1491,3 +1491,128 @@ h2 {
   margin-top: 0.25rem;
   color: rgba(255, 255, 255, 0.92);
 }
+
+/* Sticky branded app header */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: -1rem -1rem 0;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 247, 237, 0.9);
+  border-bottom: 1px solid rgba(254, 215, 170, 0.9);
+  backdrop-filter: blur(18px);
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #7c2d12;
+  text-decoration: none;
+}
+
+.topbar-brand img {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+  object-fit: cover;
+  background: #ffffff;
+  box-shadow: 0 0.45rem 1.3rem rgba(124, 45, 18, 0.14);
+}
+
+.topbar-brand span {
+  display: grid;
+  line-height: 1.1;
+}
+
+.topbar-brand strong {
+  font-size: 1rem;
+}
+
+.topbar-brand small {
+  color: #9a3412;
+  font-weight: 800;
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow-x: auto;
+}
+
+.topbar-nav a {
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+  color: #7c2d12;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.topbar-nav a:hover {
+  background: #ffedd5;
+}
+
+/* Restaurant status card */
+.restaurant-status-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1.4rem;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.25), transparent 18rem),
+    #ffffff;
+  box-shadow: 0 1rem 2.5rem rgba(124, 45, 18, 0.08);
+}
+
+.restaurant-status-card h2,
+.restaurant-status-card p {
+  margin: 0;
+}
+
+.restaurant-status-card h2 {
+  color: #7c2d12;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+}
+
+.restaurant-status-card p {
+  margin-top: 0.5rem;
+  color: #4b5563;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.status-grid span {
+  border-radius: 1rem;
+  padding: 0.8rem;
+  background: #fff7ed;
+  color: #7c2d12;
+  font-weight: 900;
+}
+
+@media (max-width: 720px) {
+  .app-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topbar-nav {
+    width: 100%;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}

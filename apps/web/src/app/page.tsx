@@ -41,7 +41,24 @@ const modules = [
 
 export default function HomePage() {
   return (
-    <main className="page">
+    <main id="top" className="page">
+      <header className="app-topbar">
+        <a className="topbar-brand" href="#top" aria-label="Go to DineDo home">
+          <img src="/brand/dindos-logo.jpg" alt="Dindo's Restaurant logo" />
+          <span>
+            <strong>DineDo</strong>
+            <small>Tinoc Branch</small>
+          </span>
+        </a>
+
+        <nav className="topbar-nav" aria-label="Main app shortcuts">
+          <a href="#menu">Menu</a>
+          <a href="#cart">Cart</a>
+          <a href="#reservations">Reserve</a>
+          <a href="#orders">Orders</a>
+        </nav>
+      </header>
+
       <section className="app-hero">
         <div className="app-hero-copy">
           <div className="brand-lockup">
@@ -79,6 +96,24 @@ export default function HomePage() {
         <a href="#checkout">🛒 Checkout</a>
         <a href="#reservations">📅 Reservation</a>
         <a href="#orders">📦 Order Status</a>
+      </section>
+
+      <section className="restaurant-status-card" aria-label="Restaurant ordering information">
+        <div>
+          <p className="eyebrow">Restaurant Status</p>
+          <h2>Ready for dine-in, take-out, delivery, and reservations.</h2>
+          <p>
+            Ordering hours are from 8:00 AM to 6:00 PM. Customers may pay by COD
+            or upload GCash proof for manual verification.
+          </p>
+        </div>
+
+        <div className="status-grid">
+          <span>🕗 8:00 AM - 6:00 PM</span>
+          <span>🏍️ 1 km base delivery area</span>
+          <span>💳 COD / GCash proof</span>
+          <span>📦 Status updates</span>
+        </div>
       </section>
 
       <AuthPanel />
