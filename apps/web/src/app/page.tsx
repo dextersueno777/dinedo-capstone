@@ -17,38 +17,78 @@ import { AdminAuditLogPanel } from '@/components/admin-audit-log-panel';
 import { AdminRefundPanel } from '@/components/admin-refund-panel';
 
 const modules = [
-  'Customer Ordering',
-  'Table Reservation',
-  'Kitchen Queue',
-  'Rider Delivery',
-  'Admin Dashboard',
+  {
+    title: 'Customer Ordering',
+    description: 'Browse real Dindo menu photos, add food to cart, and checkout.',
+  },
+  {
+    title: 'Table Reservation',
+    description: 'Reserve tables for dine-in customers within branch hours.',
+  },
+  {
+    title: 'Kitchen Queue',
+    description: 'Let kitchen staff view approved orders and update preparation.',
+  },
+  {
+    title: 'Rider Delivery',
+    description: 'Support rider assignment, delivery status updates, and proof.',
+  },
+  {
+    title: 'Admin Dashboard',
+    description: 'Manage orders, payments, riders, reservations, and reports.',
+  },
 ];
 
 export default function HomePage() {
   return (
     <main className="page">
-      <section className="hero">
-        <p className="eyebrow">Dindo’s Restaurant - Tinoc Branch</p>
-        <h1>DineDo</h1>
-        <p className="lead">
-          A Progressive Web Application for integrated ordering, table
-          reservation, and delivery management.
-        </p>
-        <div className="actions">
-          <a className="primary" href="#modules">View Modules</a>
-          <a className="secondary" href="#status">System Status</a>
+      <section className="app-hero">
+        <div className="app-hero-copy">
+          <p className="eyebrow">Dindo’s Restaurant - Tinoc Branch</p>
+          <h1>Order Dindo favorites faster.</h1>
+          <p className="lead">
+            Browse real menu photos, choose dine-in, take-out, delivery, or
+            reservation, and receive clear order status updates.
+          </p>
+
+          <div className="actions">
+            <a className="primary" href="#menu">Order Now</a>
+            <a className="secondary" href="#reservations">Reserve a Table</a>
+          </div>
         </div>
+
+        <div className="hero-promo-card">
+          <span className="promo-badge">Tinoc Branch</span>
+          <h2>Real food photos now live</h2>
+          <p>
+            View Dindo’s meals with updated client-provided menu prices.
+          </p>
+          <a className="promo-link" href="#menu">Browse Menu →</a>
+        </div>
+      </section>
+
+      <section className="service-strip" aria-label="Available services">
+        <a href="#menu">🍽️ Order Food</a>
+        <a href="#checkout">🛒 Checkout</a>
+        <a href="#reservations">📅 Reservation</a>
+        <a href="#orders">📦 Order Status</a>
       </section>
 
       <AuthPanel />
 
       <section id="modules" className="card">
-        <h2>Core Modules</h2>
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">System Modules</p>
+            <h2>Built for restaurant operations</h2>
+          </div>
+        </div>
+
         <div className="grid">
           {modules.map((module) => (
-            <article className="module" key={module}>
-              <h3>{module}</h3>
-              <p>Foundation ready for DineDo development.</p>
+            <article className="module" key={module.title}>
+              <h3>{module.title}</h3>
+              <p>{module.description}</p>
             </article>
           ))}
         </div>

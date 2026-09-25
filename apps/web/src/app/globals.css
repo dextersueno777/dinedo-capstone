@@ -1257,3 +1257,113 @@ h2 {
 .menu-card .menu-footer {
   padding: 1rem;
 }
+
+/* App-like customer home redesign */
+.app-hero {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.32), transparent 28rem),
+    linear-gradient(135deg, #7c2d12 0%, #ea580c 52%, #f97316 100%);
+  color: #ffffff;
+  box-shadow: 0 1.5rem 4rem rgba(124, 45, 18, 0.22);
+}
+
+.app-hero .eyebrow,
+.app-hero .lead {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.app-hero h1 {
+  max-width: 42rem;
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.5rem, 12vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.app-hero-copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-promo-card {
+  display: grid;
+  gap: 0.75rem;
+  align-content: end;
+  min-height: 16rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 1.5rem;
+  padding: 1rem;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.38)),
+    url('/menu/grilled-liempo.jpg') center / cover;
+  overflow: hidden;
+}
+
+.hero-promo-card h2,
+.hero-promo-card p {
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 0.25rem 1rem rgba(15, 23, 42, 0.55);
+}
+
+.promo-badge {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  color: #7c2d12;
+  background: #ffedd5;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.promo-link {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  color: #7c2d12;
+  background: #ffffff;
+  font-weight: 800;
+}
+
+.service-strip {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  gap: 0.65rem;
+  margin-top: 1rem;
+  overflow-x: auto;
+  padding: 0.75rem 0.25rem;
+  background: rgba(255, 247, 237, 0.88);
+  backdrop-filter: blur(16px);
+}
+
+.service-strip a {
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  color: #7c2d12;
+  background: #ffffff;
+  box-shadow: 0 0.75rem 2rem rgba(124, 45, 18, 0.08);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (min-width: 820px) {
+  .app-hero {
+    grid-template-columns: 1.25fr 0.75fr;
+    align-items: stretch;
+    padding: 2rem;
+  }
+
+  .hero-promo-card {
+    min-height: 24rem;
+  }
+}
