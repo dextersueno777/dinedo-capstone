@@ -18,22 +18,27 @@ import { AdminRefundPanel } from '@/components/admin-refund-panel';
 
 const modules = [
   {
+    icon: '🍽️',
     title: 'Customer Ordering',
     description: 'Browse real Dindo menu photos, add food to cart, and checkout.',
   },
   {
+    icon: '📅',
     title: 'Table Reservation',
     description: 'Reserve tables for dine-in customers within branch hours.',
   },
   {
+    icon: '👨‍🍳',
     title: 'Kitchen Queue',
     description: 'Let kitchen staff view approved orders and update preparation.',
   },
   {
+    icon: '🏍️',
     title: 'Rider Delivery',
     description: 'Support rider assignment, delivery status updates, and proof.',
   },
   {
+    icon: '🛡️',
     title: 'Admin Dashboard',
     description: 'Manage orders, payments, riders, reservations, and reports.',
   },
@@ -129,6 +134,9 @@ export default function HomePage() {
         <div className="grid">
           {modules.map((module) => (
             <article className="module" key={module.title}>
+              <span className="module-icon" aria-hidden="true">
+                {module.icon}
+              </span>
               <h3>{module.title}</h3>
               <p>{module.description}</p>
             </article>
