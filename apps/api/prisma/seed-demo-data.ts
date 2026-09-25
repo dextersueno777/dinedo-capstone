@@ -21,13 +21,23 @@ const demoUsers = [
 ] as const;
 
 const demoMenuItems = [
-  ['inasal', 'Chicken Inasal', 'chicken-inasal', 'Grilled chicken served with rice.', '120.00', true, 1],
-  ['special-sinigang', 'Special Sinigang', 'special-sinigang', 'Hot sour soup with vegetables.', '180.00', true, 2],
-  ['pancit', 'Pancit Canton', 'pancit-canton', 'Stir-fried noodles for sharing.', '150.00', true, 3],
-  ['rice-toppings', 'Pork Adobo Rice Topping', 'pork-adobo-rice-topping', 'Adobo served over rice.', '110.00', true, 4],
-  ['beverages', 'Iced Tea', 'iced-tea', 'Cold house iced tea.', '45.00', false, 5],
-  ['breakfast', 'Tapsilog', 'tapsilog', 'Beef tapa with garlic rice and egg.', '130.00', false, 6],
-  ['platters', 'Family Platter', 'family-platter', 'Shared platter for family meals.', '350.00', true, 7],
+  ['platters', 'Shanghai', 'shanghai', 'Crispy fried Shanghai rolls.', '1.00', true, 1, '/menu/shanghai.jpg'],
+  ['pancit', 'Batil Patong', 'batil-patong', 'Hearty noodle dish with toppings.', '1.00', true, 2, '/menu/batil-patong.jpg'],
+  ['inasal', 'Grilled Liempo', 'grilled-liempo', 'Grilled pork belly meal.', '1.00', true, 3, '/menu/grilled-liempo.jpg'],
+  ['pancit', 'Lomi', 'lomi', 'Thick noodle soup served hot.', '1.00', false, 4, '/menu/lomi.jpg'],
+  ['platters', 'Pork Sisig Platters', 'pork-sisig-platters', 'Sizzling pork sisig platter.', '1.00', true, 5, '/menu/pork-sisig-platters.jpg'],
+  ['pancit', 'Mix Pancit', 'mix-pancit', 'Mixed pancit for sharing.', '1.00', true, 6, '/menu/mix-pancit.jpg'],
+  ['pancit', 'Pancit Bila-o', 'pancit-bila-o', 'Pancit served in bila-o platter.', '1.00', true, 7, '/menu/pancit-bila-o.jpg'],
+  ['rice-toppings', 'Steamed Chicken', 'steamed-chicken', 'Steamed chicken rice meal.', '1.00', false, 8, '/menu/steamed-chicken.jpg'],
+  ['special-sinigang', 'Pork Sinigang', 'pork-sinigang', 'Pork sour soup with vegetables.', '1.00', true, 9, '/menu/pork-sinigang.jpg'],
+  ['special-sinigang', 'Sinigang na Tilapia', 'sinigang-na-tilapia', 'Tilapia sour soup with vegetables.', '1.00', false, 10, '/menu/sinigang-na-tilapia.jpg'],
+  ['special-sinigang', 'Salmon Belly Sinigang', 'salmon-belly-sinigang', 'Salmon belly sour soup.', '1.00', false, 11, '/menu/salmon-belly-sinigang.jpg'],
+  ['special-sinigang', 'Sinigang na Bangus', 'sinigang-na-bangus', 'Bangus sour soup with vegetables.', '1.00', false, 12, '/menu/sinigang-na-bangus.jpg'],
+  ['special-sinigang', 'Sinigang na Hipon', 'sinigang-na-hipon', 'Shrimp sour soup with vegetables.', '1.00', false, 13, '/menu/sinigang-na-hipon.jpg'],
+  ['rice-toppings', 'Fried Tilapia', 'fried-tilapia', 'Fried tilapia rice meal.', '1.00', false, 14, '/menu/fried-tilapia.jpg'],
+  ['rice-toppings', 'Pinuneg Rice', 'pinuneg-rice', 'Pinuneg served with rice.', '1.00', true, 15, '/menu/pinuneg-rice.jpg'],
+  ['inasal', 'Paa', 'paa', 'Chicken leg inasal meal.', '1.00', false, 16, '/menu/paa.jpg'],
+  ['rice-toppings', 'Dindo’s Rice', 'dindos-rice', 'Dindo’s special rice meal.', '1.00', true, 17, '/menu/dindos-rice.jpg'],
 ] as const;
 
 async function upsertUser(
@@ -158,6 +168,19 @@ async function main(): Promise<void> {
     },
   });
 
+  const activeMenuSlugs = demoMenuItems.map((item) => item[2]);
+
+  await prisma.menuItem.updateMany({
+    where: {
+      branchId: branch.id,
+      slug: { notIn: [...activeMenuSlugs] },
+    },
+    data: {
+      status: MenuItemStatus.HIDDEN,
+      deletedAt: new Date(),
+    },
+  });
+
   for (const [
     categorySlug,
     name,
@@ -166,6 +189,7 @@ async function main(): Promise<void> {
     price,
     isFeatured,
     sortOrder,
+    imageUrl,
   ] of demoMenuItems) {
     const category = await prisma.menuCategory.findUnique({
       where: {
@@ -180,7 +204,7 @@ async function main(): Promise<void> {
       throw new Error(`Missing menu category: ${categorySlug}`);
     }
 
-    await prisma.menuItem.upsert({
+    const menuItem = await prisma.menuItem.upsert({
       where: {
         branchId_slug: {
           branchId: branch.id,
@@ -207,6 +231,19 @@ async function main(): Promise<void> {
         status: MenuItemStatus.AVAILABLE,
         isFeatured,
         sortOrder,
+      },
+    });
+
+    await prisma.menuItemImage.deleteMany({
+      where: { menuItemId: menuItem.id },
+    });
+
+    await prisma.menuItemImage.create({
+      data: {
+        menuItemId: menuItem.id,
+        url: imageUrl,
+        altText: name,
+        sortOrder: 1,
       },
     });
   }
