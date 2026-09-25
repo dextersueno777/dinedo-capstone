@@ -121,6 +121,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="ordering-steps-card" aria-label="How ordering works">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Customer Flow</p>
+            <h2>How ordering works</h2>
+            <p className="section-subtitle">
+              A simple flow for dine-in, take-out, delivery, and reservations.
+            </p>
+          </div>
+        </div>
+
+        <div className="ordering-steps-grid">
+          <article>
+            <span>1</span>
+            <h3>Browse Menu</h3>
+            <p>Choose from Dindo’s updated menu with real food photos.</p>
+          </article>
+
+          <article>
+            <span>2</span>
+            <h3>Add to Cart</h3>
+            <p>Select items, review the cart, and prepare checkout details.</p>
+          </article>
+
+          <article>
+            <span>3</span>
+            <h3>Submit Order</h3>
+            <p>Choose dine-in, take-out, delivery, or reservation request.</p>
+          </article>
+
+          <article>
+            <span>4</span>
+            <h3>Get Updates</h3>
+            <p>Receive order status updates after staff review and preparation.</p>
+          </article>
+        </div>
+      </section>
+
       <AuthPanel />
 
       <section id="modules" className="card">
