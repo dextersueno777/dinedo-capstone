@@ -2271,3 +2271,143 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Polished notifications panel */
+.notification-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #fed7aa;
+  background:
+    radial-gradient(circle at top right, rgba(249, 115, 22, 0.1), transparent 18rem),
+    #ffffff;
+}
+
+.notification-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.notification-heading h2,
+.notification-heading p {
+  margin: 0;
+}
+
+.notification-heading h2 {
+  color: #7c2d12;
+}
+
+.notification-heading p {
+  margin-top: 0.45rem;
+  color: #4b5563;
+}
+
+.unread-pill {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
+.empty-notification-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 1px dashed #fdba74;
+  border-radius: 1.2rem;
+  background: #fff7ed;
+  text-align: center;
+}
+
+.empty-notification-state span {
+  font-size: 2.4rem;
+}
+
+.empty-notification-state h3,
+.empty-notification-state p {
+  margin: 0;
+}
+
+.empty-notification-state h3 {
+  color: #7c2d12;
+}
+
+.empty-notification-state p {
+  color: #4b5563;
+}
+
+.notification-controls {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #ffedd5;
+  border-radius: 1rem;
+  background: #fffaf5;
+}
+
+.notification-controls label {
+  display: grid;
+  gap: 0.35rem;
+  color: #7c2d12;
+  font-weight: 800;
+}
+
+.notification-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.notification-item {
+  border: 1px solid #ffedd5;
+  border-radius: 1.1rem;
+  padding: 1rem;
+  background: #ffffff;
+}
+
+.unread-notification-item {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.notification-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.notification-item-header h3,
+.notification-item-header p {
+  margin: 0;
+}
+
+.notification-item-header h3 {
+  color: #7c2d12;
+}
+
+.notification-item-header p {
+  margin-top: 0.25rem;
+  color: #6b7280;
+}
+
+.notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .notification-heading,
+  .notification-controls,
+  .notification-item-header {
+    flex-direction: column;
+  }
+
+  .notification-controls {
+    align-items: stretch;
+  }
+}

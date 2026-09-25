@@ -18,6 +18,10 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
 export function NotificationPanel() {
   const { user, token } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -133,26 +137,32 @@ export function NotificationPanel() {
   }, [token, statusFilter]);
 
   return (
-    <section id="notifications" className="card">
+    <section id="notifications" className="card notification-card">
       <div className="notification-heading">
         <div>
-          <p className="eyebrow">Customer Module</p>
+          <p className="eyebrow">Updates</p>
           <h2>Notifications</h2>
-          <p>View order, payment, reservation, and delivery updates.</p>
+          <p>Track order, payment, reservation, and delivery updates in one place.</p>
         </div>
 
-        <span className="status-pill">{unreadCount} unread</span>
+        <span className="status-pill unread-pill">{unreadCount} unread</span>
       </div>
 
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {!user ? <p>Please login to view notifications.</p> : null}
+      {!user ? (
+        <div className="empty-notification-state">
+          <span aria-hidden="true">🔔</span>
+          <h3>Sign in to view notifications</h3>
+          <p>Customer updates will appear here after login.</p>
+        </div>
+      ) : null}
 
       {user ? (
         <div className="notification-controls">
           <label>
-            Status Filter
+            Show
             <select
               value={statusFilter}
               onChange={(event) =>
@@ -178,29 +188,40 @@ export function NotificationPanel() {
       ) : null}
 
       <div className="notification-list">
-        {notifications.length === 0 ? <p>No notifications yet.</p> : null}
+        {notifications.length === 0 ? (
+          <div className="empty-notification-state">
+            <span aria-hidden="true">📭</span>
+            <h3>No notifications yet</h3>
+            <p>Order, payment, reservation, and delivery alerts will show here.</p>
+          </div>
+        ) : null}
 
         {notifications.map((notification) => (
-          <article className="notification-item" key={notification.id}>
+          <article
+            className={`notification-item ${
+              notification.status === 'UNREAD' ? 'unread-notification-item' : ''
+            }`}
+            key={notification.id}
+          >
             <div className="notification-item-header">
               <div>
                 <h3>{notification.title}</h3>
                 <p>{formatDate(notification.createdAt)}</p>
               </div>
 
-              <span className="status-pill">{notification.status}</span>
+              <span className="status-pill">{formatLabel(notification.status)}</span>
             </div>
 
             <p>{notification.message}</p>
 
             <p>
-              <strong>Type:</strong> {notification.type}
+              <strong>Type:</strong> {formatLabel(notification.type)}
             </p>
 
             {notification.order ? (
               <p>
                 <strong>Order:</strong> {notification.order.orderNumber} —{' '}
-                {notification.order.status}
+                {formatLabel(notification.order.status)}
               </p>
             ) : null}
 
