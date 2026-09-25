@@ -1666,3 +1666,69 @@ h2 {
     line-height: 1;
   }
 }
+
+/* Improved menu card details */
+.section-subtitle {
+  margin: 0.25rem 0 0;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.menu-card {
+  position: relative;
+}
+
+.card-badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 2;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: #f97316;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  box-shadow: 0 0.6rem 1.5rem rgba(124, 45, 18, 0.2);
+}
+
+.price-label {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.menu-footer strong {
+  color: #7c2d12;
+  font-size: 1.25rem;
+}
+
+.menu-footer {
+  align-items: end;
+}
+
+.add-cart-button {
+  min-width: 7rem;
+  border: 0;
+  cursor: pointer;
+}
+
+.add-cart-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (max-width: 720px) {
+  .menu-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .add-cart-button {
+    width: 100%;
+  }
+}

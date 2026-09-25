@@ -79,6 +79,25 @@ export function MenuBrowser() {
     });
   }, [items, selectedCategory, search]);
 
+  const menuCountText =
+    filteredItems.length === 1
+      ? '1 item available'
+      : `${filteredItems.length} items available`;
+
+  function hasFlexiblePricing(item: MenuItem) {
+    const description = item.description?.toLowerCase() ?? '';
+
+    return (
+      description.includes('₱') ||
+      description.includes('solo') ||
+      description.includes('unli') ||
+      description.includes('small:') ||
+      description.includes('medium:') ||
+      description.includes('large:') ||
+      description.includes('whole')
+    );
+  }
+
   async function handleAddToCart(item: MenuItem) {
     setCartMessage('');
     setError('');
@@ -109,8 +128,9 @@ export function MenuBrowser() {
     <section id="menu" className="card">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Customer Module</p>
-          <h2>Menu Browsing</h2>
+          <p className="eyebrow">Order Menu</p>
+          <h2>Choose your Dindo favorites</h2>
+          <p className="section-subtitle">{menuCountText}</p>
         </div>
 
         <input
@@ -176,7 +196,10 @@ export function MenuBrowser() {
                   <div>
                     <p>{item.category.name}</p>
                     <h4>{item.name}</h4>
-                    <strong>{formatPrice(item.price)}</strong>
+                    <strong>
+                      {hasFlexiblePricing(item) ? 'Starts at ' : ''}
+                      {formatPrice(item.price)}
+                    </strong>
                   </div>
 
                   <button
@@ -200,6 +223,8 @@ export function MenuBrowser() {
 
           return (
             <article className="menu-card" key={item.id}>
+              {item.isFeatured ? <span className="card-badge">Popular</span> : null}
+
               {menuImage ? (
                 <img
                   className="menu-card-image"
@@ -221,6 +246,9 @@ export function MenuBrowser() {
 
               <div className="menu-footer">
               <div>
+                <span className="price-label">
+                  {hasFlexiblePricing(item) ? 'Starts at' : 'Price'}
+                </span>
                 <strong>{formatPrice(item.price)}</strong>
                 <span className={item.status === 'SOLD_OUT' ? 'sold-out' : 'available'}>
                   {item.status === 'SOLD_OUT' ? 'Sold Out' : 'Available'}
