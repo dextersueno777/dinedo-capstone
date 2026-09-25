@@ -21,21 +21,23 @@ const demoUsers = [
 ] as const;
 
 const demoMenuItems = [
-  ['platters', 'Pork Sisig Platters', 'pork-sisig-platters', 'Pork sisig platter. Dine-in price range: ₱290–₱300.', '290.00', true, 1, '/menu/pork-sisig-platters.jpg'],
-  ['pancit', 'Lomi', 'lomi', 'Regular dine-in: ₱160–₱180. Overload dine-in: ₱180–₱200.', '160.00', true, 2, '/menu/lomi.jpg'],
-  ['inasal', 'Grilled Liempo', 'grilled-liempo', 'No rice: ₱160. Solo dine-in: ₱190–₱200. Unli rice: ₱220.', '160.00', true, 3, '/menu/grilled-liempo.jpg'],
-  ['pancit', 'Batil Patong', 'batil-patong', 'Regular dine-in: ₱160–₱180. Overload: ₱200.', '160.00', true, 4, '/menu/batil-patong.jpg'],
-  ['rice-toppings', 'Dindo’s Rice', 'dindos-rice', 'Dindo’s special rice meal. Dine-in price range: ₱210–₱220.', '210.00', true, 5, '/menu/dindos-rice.jpg'],
-  ['inasal', 'Paa', 'paa', 'Solo dine-in: ₱180–₱190. Unli rice: ₱210.', '180.00', true, 6, '/menu/paa.jpg'],
-  ['rice-toppings', 'Pinuneg Rice', 'pinuneg-rice', 'Pinuneg rice dine-in: ₱210–₱220. Pinuneg platters: ₱220–₱230.', '210.00', true, 7, '/menu/pinuneg-rice.jpg'],
-  ['special-sinigang', 'Sinigang na Hipon', 'sinigang-na-hipon', 'Shrimp sinigang. Dine-in price range: ₱350–₱370.', '350.00', true, 8, '/menu/sinigang-na-hipon.jpg'],
-  ['special-sinigang', 'Sinigang na Bangus', 'sinigang-na-bangus', 'Bangus sinigang. Dine-in price range: ₱300–₱320.', '300.00', false, 9, '/menu/sinigang-na-bangus.jpg'],
-  ['special-sinigang', 'Salmon Belly Sinigang', 'salmon-belly-sinigang', 'Salmon belly sinigang. Dine-in price range: ₱350–₱370.', '350.00', true, 10, '/menu/salmon-belly-sinigang.jpg'],
-  ['special-sinigang', 'Sinigang na Tilapia', 'sinigang-na-tilapia', 'Tilapia sinigang. Dine-in price range: ₱300–₱320.', '300.00', false, 11, '/menu/sinigang-na-tilapia.jpg'],
-  ['special-sinigang', 'Pork Sinigang', 'pork-sinigang', 'Pork sinigang. Dine-in price range: ₱300–₱320.', '300.00', true, 12, '/menu/pork-sinigang.jpg'],
-  ['rice-toppings', 'Steamed Chicken Rice', 'steamed-chicken', 'Steamed chicken rice: ₱250–₱260. Whole steamed chicken: ₱390.', '250.00', true, 13, '/menu/steamed-chicken.jpg'],
-  ['pancit', 'Pancit Bila-o', 'pancit-bila-o', 'Small: ₱600. Medium: ₱800. Large: ₱1000.', '600.00', true, 14, '/menu/pancit-bila-o.jpg'],
-  ['pancit', 'Mix Pancit', 'mix-pancit', 'Mixed pancit. Dine-in price range: ₱250–₱280.', '250.00', true, 15, '/menu/mix-pancit.jpg'],
+  ['platters', 'Shanghai', 'shanghai', 'Shanghai rolls. Per order: 7 pieces. Price: ₱110.', '110.00', true, 1, '/menu/shanghai.jpg'],
+  ['platters', 'Pork Sisig Platters', 'pork-sisig-platters', 'Pork sisig platter. Dine-in price range: ₱290–₱300.', '290.00', true, 2, '/menu/pork-sisig-platters.jpg'],
+  ['pancit', 'Lomi', 'lomi', 'Regular dine-in: ₱160–₱180. Overload dine-in: ₱180–₱200.', '160.00', true, 3, '/menu/lomi.jpg'],
+  ['inasal', 'Grilled Liempo', 'grilled-liempo', 'No rice: ₱160. Solo dine-in: ₱190–₱200. Unli rice: ₱220.', '160.00', true, 4, '/menu/grilled-liempo.jpg'],
+  ['pancit', 'Batil Patong', 'batil-patong', 'Regular dine-in: ₱160–₱180. Overload: ₱200.', '160.00', true, 5, '/menu/batil-patong.jpg'],
+  ['rice-toppings', 'Dindo’s Rice', 'dindos-rice', 'Dindo’s special rice meal. Dine-in price range: ₱210–₱220.', '210.00', true, 6, '/menu/dindos-rice.jpg'],
+  ['inasal', 'Paa', 'paa', 'Solo dine-in: ₱180–₱190. Unli rice: ₱210.', '180.00', true, 7, '/menu/paa.jpg'],
+  ['rice-toppings', 'Pinuneg Rice', 'pinuneg-rice', 'Pinuneg rice dine-in: ₱210–₱220. Pinuneg platters: ₱220–₱230.', '210.00', true, 8, '/menu/pinuneg-rice.jpg'],
+  ['special-sinigang', 'Sinigang na Hipon', 'sinigang-na-hipon', 'Shrimp sinigang. Dine-in price range: ₱350–₱370.', '350.00', true, 9, '/menu/sinigang-na-hipon.jpg'],
+  ['special-sinigang', 'Sinigang na Bangus', 'sinigang-na-bangus', 'Bangus sinigang. Dine-in price range: ₱300–₱320.', '300.00', false, 10, '/menu/sinigang-na-bangus.jpg'],
+  ['special-sinigang', 'Salmon Belly Sinigang', 'salmon-belly-sinigang', 'Salmon belly sinigang. Dine-in price range: ₱350–₱370.', '350.00', true, 11, '/menu/salmon-belly-sinigang.jpg'],
+  ['special-sinigang', 'Sinigang na Tilapia', 'sinigang-na-tilapia', 'Tilapia sinigang. Dine-in price range: ₱300–₱320.', '300.00', false, 12, '/menu/sinigang-na-tilapia.jpg'],
+  ['special-sinigang', 'Pork Sinigang', 'pork-sinigang', 'Pork sinigang. Dine-in price range: ₱300–₱320.', '300.00', true, 13, '/menu/pork-sinigang.jpg'],
+  ['rice-toppings', 'Steamed Chicken Rice', 'steamed-chicken', 'Steamed chicken rice: ₱250–₱260. Whole steamed chicken: ₱390.', '250.00', true, 14, '/menu/steamed-chicken.jpg'],
+  ['rice-toppings', 'Fried Tilapia', 'fried-tilapia', 'Fried tilapia. Dine-in price range: ₱280–₱290.', '280.00', true, 15, '/menu/fried-tilapia.jpg'],
+  ['pancit', 'Pancit Bila-o', 'pancit-bila-o', 'Small: ₱600. Medium: ₱800. Large: ₱1000.', '600.00', true, 16, '/menu/pancit-bila-o.jpg'],
+  ['pancit', 'Mix Pancit', 'mix-pancit', 'Mixed pancit. Dine-in price range: ₱250–₱280.', '250.00', true, 17, '/menu/mix-pancit.jpg'],
 ] as const;
 
 async function upsertUser(
