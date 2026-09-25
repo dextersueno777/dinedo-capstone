@@ -44,7 +44,14 @@ export default function HomePage() {
     <main className="page">
       <section className="app-hero">
         <div className="app-hero-copy">
-          <p className="eyebrow">Dindo’s Restaurant - Tinoc Branch</p>
+          <div className="brand-lockup">
+            <img src="/brand/dindos-logo.jpg" alt="Dindo's Restaurant logo" />
+            <div>
+              <p className="eyebrow">Dindo’s Restaurant - Tinoc Branch</p>
+              <strong>Official ordering PWA</strong>
+            </div>
+          </div>
+
           <h1>Order Dindo favorites faster.</h1>
           <p className="lead">
             Browse real menu photos, choose dine-in, take-out, delivery, or

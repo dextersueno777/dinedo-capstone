@@ -58,6 +58,11 @@ export function MenuBrowser() {
     };
   }, []);
 
+  const featuredItems = useMemo(
+    () => items.filter((item) => item.isFeatured).slice(0, 6),
+    [items],
+  );
+
   const filteredItems = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -143,6 +148,51 @@ export function MenuBrowser() {
       {message ? <p>{message}</p> : null}
       {cartMessage ? <p className="success-text">{cartMessage}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
+
+      {!message && !error && featuredItems.length > 0 ? (
+        <div className="featured-menu-block">
+          <div className="mini-section-heading">
+            <div>
+              <p className="eyebrow">Popular Picks</p>
+              <h3>Featured Favorites</h3>
+            </div>
+            <a href="#cart">View Cart</a>
+          </div>
+
+          <div className="featured-menu-row">
+            {featuredItems.map((item) => {
+              const menuImage = item.images?.[0]?.url;
+
+              return (
+                <article className="featured-menu-card" key={item.id}>
+                  {menuImage ? (
+                    <img
+                      src={menuImage}
+                      alt={item.images?.[0]?.altText ?? item.name}
+                      loading="lazy"
+                    />
+                  ) : null}
+
+                  <div>
+                    <p>{item.category.name}</p>
+                    <h4>{item.name}</h4>
+                    <strong>{formatPrice(item.price)}</strong>
+                  </div>
+
+                  <button
+                    className="primary"
+                    type="button"
+                    disabled={item.status !== 'AVAILABLE'}
+                    onClick={() => handleAddToCart(item)}
+                  >
+                    Add
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       <div className="menu-grid">
         {filteredItems.map((item) => {
