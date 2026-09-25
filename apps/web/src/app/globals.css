@@ -1812,3 +1812,73 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Polished account/login panel */
+.auth-card-polished {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #fed7aa;
+  background:
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.2), transparent 18rem),
+    #ffffff;
+}
+
+.auth-copy h2,
+.auth-copy p {
+  margin: 0;
+}
+
+.auth-copy h2 {
+  color: #7c2d12;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+}
+
+.auth-copy p {
+  margin-top: 0.5rem;
+  color: #4b5563;
+}
+
+.demo-account-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.demo-account-grid button {
+  display: grid;
+  place-items: center;
+  gap: 0.35rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  padding: 0.85rem 0.55rem;
+  background: #fff7ed;
+  color: #7c2d12;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.demo-account-grid button:hover {
+  background: #ffedd5;
+}
+
+.demo-account-grid span {
+  font-size: 1.45rem;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: #ffedd5;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+@media (max-width: 720px) {
+  .demo-account-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

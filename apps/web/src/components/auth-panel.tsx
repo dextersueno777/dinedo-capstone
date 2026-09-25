@@ -3,6 +3,37 @@
 import { FormEvent, useState } from 'react';
 import { useAuth } from './auth-provider';
 
+const demoAccounts = [
+  {
+    label: 'Customer',
+    icon: '🍽️',
+    email: 'customer.demo@dinedo.local',
+    password: 'Customer123!',
+  },
+  {
+    label: 'Admin',
+    icon: '🛡️',
+    email: 'admin@dinedo.local',
+    password: 'ChangeMe123!',
+  },
+  {
+    label: 'Kitchen',
+    icon: '👨‍🍳',
+    email: 'kitchen@dinedo.local',
+    password: 'ChangeMe123!',
+  },
+  {
+    label: 'Rider',
+    icon: '🏍️',
+    email: 'rider@dinedo.local',
+    password: 'ChangeMe123!',
+  },
+];
+
+function getRoleLabel(role: string) {
+  return role.replaceAll('_', ' ').toLowerCase();
+}
+
 export function AuthPanel() {
   const { user, isLoading, login, logout } = useAuth();
   const [email, setEmail] = useState('customer.demo@dinedo.local');
@@ -24,7 +55,7 @@ export function AuthPanel() {
         password,
       });
 
-      setMessage(`Logged in as ${loggedInUser.email}.`);
+      setMessage(`Signed in as ${loggedInUser.email}.`);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -38,20 +69,25 @@ export function AuthPanel() {
 
   if (isLoading) {
     return (
-      <section className="card">
-        <h2>Authentication</h2>
-        <p>Checking saved login...</p>
+      <section className="card auth-card auth-card-polished">
+        <div>
+          <p className="eyebrow">Account</p>
+          <h2>Checking saved login...</h2>
+          <p>Preparing your DineDo session.</p>
+        </div>
       </section>
     );
   }
 
   if (user) {
     return (
-      <section className="card auth-card">
+      <section className="card auth-card auth-card-polished">
         <div>
-          <h2>Logged In</h2>
+          <p className="eyebrow">Account</p>
+          <h2>Ready to use DineDo</h2>
           <p>
-            {user.email} is currently signed in as <strong>{user.role}</strong>.
+            <strong>{user.email}</strong> is signed in as{' '}
+            <span className="role-badge">{getRoleLabel(user.role)}</span>.
           </p>
         </div>
 
@@ -63,13 +99,32 @@ export function AuthPanel() {
   }
 
   return (
-    <section className="card auth-card">
-      <div>
-        <h2>Demo Login</h2>
+    <section className="card auth-card auth-card-polished">
+      <div className="auth-copy">
+        <p className="eyebrow">Account</p>
+        <h2>Sign in to order</h2>
         <p>
-          Use the seeded test account to verify frontend and backend
-          authentication.
+          Use the demo accounts to test customer ordering, admin review,
+          kitchen preparation, and rider delivery flows.
         </p>
+      </div>
+
+      <div className="demo-account-grid" aria-label="Demo account shortcuts">
+        {demoAccounts.map((account) => (
+          <button
+            key={account.email}
+            type="button"
+            onClick={() => {
+              setEmail(account.email);
+              setPassword(account.password);
+              setMessage('');
+              setError('');
+            }}
+          >
+            <span>{account.icon}</span>
+            {account.label}
+          </button>
+        ))}
       </div>
 
       <form className="auth-form" onSubmit={handleLogin}>
@@ -96,7 +151,7 @@ export function AuthPanel() {
         </label>
 
         <button className="primary full-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Logging in...' : 'Login'}
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
 
         {message ? <p className="success-text">{message}</p> : null}
