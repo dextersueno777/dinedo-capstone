@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import type { Order, PaymentMethod, ServiceType } from '@/lib/api-types';
+import type { Cart, Order, PaymentMethod, ServiceType } from '@/lib/api-types';
 import { checkout } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
 import { AddressSelector } from './address-selector';
@@ -12,6 +12,22 @@ function formatPrice(price: string | number) {
     style: 'currency',
     currency: 'PHP',
   }).format(Number(price));
+}
+
+function getCartTotal(cart: Cart | null) {
+  if (!cart) {
+    return 0;
+  }
+
+  return cart.items.reduce((total, item) => {
+    const basePrice = Number(item.menuItem.price);
+    const optionTotal = item.options.reduce(
+      (optionSum, option) => optionSum + Number(option.priceDelta) * option.quantity,
+      0,
+    );
+
+    return total + (basePrice + optionTotal) * item.quantity;
+  }, 0);
 }
 
 export function CheckoutPanel() {
@@ -29,6 +45,9 @@ export function CheckoutPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasItems = Boolean(cart && cart.items.length > 0);
+  const cartCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  const cartTotal = getCartTotal(cart);
 
   async function handleCheckout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,14 +101,29 @@ export function CheckoutPanel() {
   }
 
   return (
-    <section id="checkout" className="card checkout-card">
-      <div>
-        <p className="eyebrow">Customer Module</p>
-        <h2>Checkout</h2>
-        <p>
-          Submit your cart for staff review. Delivery checkout will be connected
-          after the customer address selector is added.
-        </p>
+    <section id="checkout" className="card checkout-card checkout-card-polished">
+      <div className="checkout-header">
+        <div>
+          <p className="eyebrow">Checkout</p>
+          <h2>Review and submit your order</h2>
+          <p>
+            Choose your service type, payment method, and notes before sending
+            the order to staff for review.
+          </p>
+        </div>
+
+        <div className="checkout-total-card">
+          <span>Estimated Total</span>
+          <strong>{formatPrice(cartTotal)}</strong>
+          <small>{cartCount === 1 ? '1 item in cart' : `${cartCount} items in cart`}</small>
+        </div>
+      </div>
+
+      <div className="checkout-steps">
+        <span>🛒 Cart</span>
+        <span>🍽️ Service</span>
+        <span>💳 Payment</span>
+        <span>📦 Staff Review</span>
       </div>
 
       <form className="checkout-form" onSubmit={handleCheckout}>
