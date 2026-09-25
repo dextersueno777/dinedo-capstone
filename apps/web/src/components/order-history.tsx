@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Order } from '@/lib/api-types';
+import type { Order, OrderStatus } from '@/lib/api-types';
 import { cancelOrder, getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
 
@@ -17,6 +17,33 @@ function formatDate(date: string) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(date));
+}
+
+const customerStatusSteps: OrderStatus[] = [
+  'PENDING',
+  'APPROVED',
+  'COOKING',
+  'READY_FOR_PICKUP',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+];
+
+function getStepClass(order: Order, step: OrderStatus) {
+  const statusHistory = order.statusHistory.map((history) => history.toStatus);
+
+  if (order.status === step) {
+    return 'status-step active-status-step';
+  }
+
+  if (statusHistory.includes(step)) {
+    return 'status-step completed-status-step';
+  }
+
+  return 'status-step';
+}
+
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
 }
 
 export function OrderHistory() {
@@ -127,19 +154,23 @@ export function OrderHistory() {
 
   if (!user) {
     return (
-      <section id="orders" className="card">
-        <h2>Order History</h2>
-        <p>Please login as a customer to view your orders.</p>
+      <section id="orders" className="card order-history-card order-history-empty">
+        <p className="eyebrow">Order Status</p>
+        <h2>Sign in to track orders</h2>
+        <p>Please login as a customer to view order updates, delivery fees, and history.</p>
       </section>
     );
   }
 
   return (
-    <section id="orders" className="card">
+    <section id="orders" className="card order-history-card">
       <div className="order-history-heading">
         <div>
-          <p className="eyebrow">Customer Module</p>
-          <h2>Order History</h2>
+          <p className="eyebrow">Order Status</p>
+          <h2>Track your orders</h2>
+          <p className="section-subtitle">
+            View staff updates, payment status, delivery fee requests, and order timeline.
+          </p>
         </div>
 
         <button className="secondary refresh-button" type="button" onClick={loadOrders}>
@@ -152,7 +183,14 @@ export function OrderHistory() {
       {error ? <p className="error-text">{error}</p> : null}
 
       {!isLoading && orders.length === 0 ? (
-        <p>No orders yet.</p>
+        <div className="empty-order-state">
+          <span aria-hidden="true">📦</span>
+          <h3>No orders yet</h3>
+          <p>Submitted orders will appear here with their latest status updates.</p>
+          <a className="primary cart-link-button" href="#menu">
+            Browse Menu
+          </a>
+        </div>
       ) : null}
 
       <div className="order-list">
@@ -164,18 +202,26 @@ export function OrderHistory() {
                 <p>{formatDate(order.createdAt)}</p>
               </div>
 
-              <span className="status-pill">{order.status}</span>
+              <span className="status-pill">{formatLabel(order.status)}</span>
+            </div>
+
+            <div className="customer-status-flow" aria-label="Customer order status flow">
+              {customerStatusSteps.map((step) => (
+                <span className={getStepClass(order, step)} key={step}>
+                  {formatLabel(step)}
+                </span>
+              ))}
             </div>
 
             <div className="order-summary-grid">
               <p>
-                <strong>Service:</strong> {order.serviceType}
+                <strong>Service:</strong> {formatLabel(order.serviceType)}
               </p>
               <p>
-                <strong>Payment:</strong> {order.paymentMethod}
+                <strong>Payment:</strong> {formatLabel(order.paymentMethod)}
               </p>
               <p>
-                <strong>Payment State:</strong> {order.paymentState}
+                <strong>Payment State:</strong> {formatLabel(order.paymentState)}
               </p>
               <p>
                 <strong>Total:</strong> {formatPrice(order.totalAmount)}
@@ -198,7 +244,7 @@ export function OrderHistory() {
             {order.serviceType === 'DELIVERY' ? (
               <div className="fee-review-box">
                 <p>
-                  <strong>Delivery Fee Status:</strong> {order.deliveryFeeStatus}
+                  <strong>Delivery Fee Status:</strong> {formatLabel(order.deliveryFeeStatus)}
                 </p>
 
                 {Number(order.additionalDeliveryFeeAmount) > 0 ? (
@@ -246,9 +292,10 @@ export function OrderHistory() {
             </div>
 
             <div className="timeline">
+              <h4>Status Timeline</h4>
               {order.statusHistory.map((history) => (
                 <p key={history.id}>
-                  <strong>{history.toStatus}</strong>
+                  <strong>{formatLabel(history.toStatus)}</strong>
                   {history.notes ? ` — ${history.notes}` : ''}
                 </p>
               ))}
