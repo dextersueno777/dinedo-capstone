@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>DineDo Repair</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #fff7ed;
+        color: #111827;
+        display: grid;
+        min-height: 100vh;
+        place-items: center;
+        padding: 24px;
+      }
+      main {
+        width: min(100%, 520px);
+        background: #fff;
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+      }
+      h1 {
+        margin: 0 0 10px;
+        color: #dc2626;
+      }
+      p {
+        line-height: 1.6;
+      }
+      button,
+      a {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        border: 0;
+        border-radius: 999px;
+        padding: 14px 18px;
+        margin-top: 12px;
+        background: #dc2626;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      a.secondary {
+        background: #111827;
+      }
+      small {
+        display: block;
+        margin-top: 16px;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>DineDo Repair</h1>
+      <p>
+        This page clears old installed-app/PWA cache and reconnects your browser
+        to the latest Vercel version.
+      </p>
+
+      <button type="button" onclick="repairAndOpenCustomer()">Repair and Open Customer App</button>
+      <a class="secondary" href="/customer?reset=1&fresh=1">Open Customer App Directly</a>
+
+      <small id="status">Ready to repair cache.</small>
+    </main>
+
+    <script>
+      async function repairAndOpenCustomer() {
+        var status = document.getElementById('status');
+        status.textContent = 'Clearing old DineDo cache...';
+
+        try {
+          if ('serviceWorker' in navigator) {
+            var registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(function (registration) {
+              return registration.unregister();
+            }));
+          }
+
+          if ('caches' in window) {
+            var cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(function (cacheName) {
+              return caches.delete(cacheName);
+            }));
+          }
+
+          try {
+            localStorage.clear();
+          } catch (error) {}
+
+          try {
+            sessionStorage.clear();
+          } catch (error) {}
+
+          status.textContent = 'Repair complete. Opening DineDo...';
+        } catch (error) {
+          status.textContent = 'Repair attempted. Opening DineDo...';
+        }
+
+        window.location.replace('/customer?reset=1&fresh=' + Date.now());
+      }
+
+      repairAndOpenCustomer();
+    </script>
+  </body>
+</html>
