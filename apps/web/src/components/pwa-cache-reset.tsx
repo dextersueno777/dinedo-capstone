@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-const CACHE_RESET_KEY = 'dinedo-pwa-cache-reset-2026-09-30-v1';
+const CACHE_RESET_KEY = 'dinedo-pwa-cache-reset-2026-09-30-emergency-v2';
 
 export function PwaCacheReset() {
   useEffect(() => {
