@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { MenuCategory, MenuItem } from '@/lib/api-types';
+import type { MenuCategory, MenuItem, MenuOptionGroup } from '@/lib/api-types';
 import { getMenuCategories, getMenuItems } from '@/lib/menu-api';
 import { useAuth } from './auth-provider';
 import { useCart } from './cart-provider';
@@ -19,6 +19,8 @@ export function MenuBrowser() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
+  const [specialNotes, setSpecialNotes] = useState('');
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('Loading menu...');
   const [cartMessage, setCartMessage] = useState('');
@@ -121,6 +123,76 @@ export function MenuBrowser() {
 
   const selectedItemImage = selectedItem?.images?.[0]?.url;
 
+
+  function resetItemSelection() {
+    setSelectedItem(null);
+    setSelectedQuantity(1);
+    setSelectedOptionIds([]);
+    setSpecialNotes('');
+  }
+
+  function openItemDetail(item: MenuItem) {
+    setSelectedItem(item);
+    setSelectedQuantity(1);
+    setSelectedOptionIds([]);
+    setSpecialNotes('');
+  }
+
+  function getSelectedOptionsTotal(item: MenuItem) {
+    return (item.optionGroups ?? [])
+      .flatMap((group) => group.options)
+      .filter((option) => selectedOptionIds.includes(option.id))
+      .reduce((total, option) => total + Number(option.priceDelta), 0);
+  }
+
+  function getOptionPriceLabel(priceDelta: string | number) {
+    const amount = Number(priceDelta);
+    if (amount > 0) return `+${formatPrice(amount)}`;
+    if (amount < 0) return `-${formatPrice(Math.abs(amount))}`;
+    return 'Included';
+  }
+
+  function toggleOption(group: MenuOptionGroup, optionId: string) {
+    setSelectedOptionIds((current) => {
+      const groupOptionIds = group.options.map((option) => option.id);
+      const isSelected = current.includes(optionId);
+
+      if (group.type === 'SINGLE') {
+        return [...current.filter((id) => !groupOptionIds.includes(id)), optionId];
+      }
+
+      if (isSelected) {
+        return current.filter((id) => id !== optionId);
+      }
+
+      const selectedInGroup = current.filter((id) => groupOptionIds.includes(id));
+      if (selectedInGroup.length >= group.maxSelect) return current;
+
+      return [...current, optionId];
+    });
+  }
+
+  function getOptionSelectionError(item: MenuItem, optionIds: string[]) {
+    for (const group of item.optionGroups ?? []) {
+      const groupOptionIds = group.options.map((option) => option.id);
+      const selectedCount = optionIds.filter((id) => groupOptionIds.includes(id)).length;
+
+      if (group.isRequired && selectedCount === 0) {
+        return `Please open this item and select ${group.name}.`;
+      }
+
+      if (selectedCount < group.minSelect) {
+        return `Please select at least ${group.minSelect} option(s) for ${group.name}.`;
+      }
+
+      if (selectedCount > group.maxSelect) {
+        return `Please select only ${group.maxSelect} option(s) for ${group.name}.`;
+      }
+    }
+
+    return '';
+  }
+
   async function handleAddToCart(item: MenuItem, quantity = 1) {
     setCartMessage('');
     setError('');
@@ -135,15 +207,23 @@ export function MenuBrowser() {
       return;
     }
 
+    const optionIds = selectedItem?.id === item.id ? selectedOptionIds : [];
+    const notes = selectedItem?.id === item.id ? specialNotes : '';
+    const optionError = getOptionSelectionError(item, optionIds);
+
+    if (optionError) {
+      setError(optionError);
+      return;
+    }
+
     try {
-      await addMenuItem(item.id, quantity);
+      await addMenuItem(item.id, quantity, optionIds, notes);
       setCartMessage(
         quantity > 1
           ? `${quantity}× ${item.name} added to cart.`
           : `${item.name} added to cart.`,
       );
-      setSelectedItem(null);
-      setSelectedQuantity(1);
+      resetItemSelection();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -218,15 +298,11 @@ export function MenuBrowser() {
                   key={item.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => {
-                    setSelectedItem(item);
-                    setSelectedQuantity(1);
-                  }}
+                  onClick={() => openItemDetail(item)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
-                      setSelectedItem(item);
-                      setSelectedQuantity(1);
+                      openItemDetail(item);
                     }
                   }}
                 >
@@ -275,15 +351,11 @@ export function MenuBrowser() {
               key={item.id}
               role="button"
               tabIndex={0}
-              onClick={() => {
-                setSelectedItem(item);
-                setSelectedQuantity(1);
-              }}
+              onClick={() => openItemDetail(item)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  setSelectedItem(item);
-                  setSelectedQuantity(1);
+                  openItemDetail(item);
                 }
               }}
             >
@@ -341,10 +413,7 @@ export function MenuBrowser() {
         <div
           className="menu-modal-backdrop"
           role="presentation"
-          onClick={() => {
-            setSelectedItem(null);
-            setSelectedQuantity(1);
-          }}
+          onClick={() => resetItemSelection()}
         >
           <div
             className="menu-detail-modal"
@@ -357,10 +426,7 @@ export function MenuBrowser() {
               className="menu-modal-close"
               type="button"
               aria-label="Close menu details"
-              onClick={() => {
-                setSelectedItem(null);
-                setSelectedQuantity(1);
-              }}
+              onClick={() => resetItemSelection()}
             >
               ×
             </button>
@@ -388,6 +454,14 @@ export function MenuBrowser() {
                     {hasFlexiblePricing(selectedItem) ? 'Starts at' : 'Price'}
                   </span>
                   <strong>{formatPrice(selectedItem.price)}</strong>
+                  {getSelectedOptionsTotal(selectedItem) > 0 ? (
+                    <small>
+                      Unit with options:{' '}
+                      {formatPrice(
+                        Number(selectedItem.price) + getSelectedOptionsTotal(selectedItem),
+                      )}
+                    </small>
+                  ) : null}
                 </div>
 
                 <span
@@ -398,6 +472,48 @@ export function MenuBrowser() {
                   {selectedItem.status === 'SOLD_OUT' ? 'Sold Out' : 'Available'}
                 </span>
               </div>
+
+              {(selectedItem.optionGroups ?? []).length > 0 ? (
+                <div className="menu-option-groups">
+                  {(selectedItem.optionGroups ?? []).map((group) => (
+                    <fieldset className="menu-option-group" key={group.id}>
+                      <legend>
+                        {group.name}
+                        {group.isRequired ? <span>Required</span> : null}
+                      </legend>
+
+                      <p>
+                        {group.type === 'SINGLE'
+                          ? 'Choose one option.'
+                          : `Choose up to ${group.maxSelect} option(s).`}
+                      </p>
+
+                      {group.options.map((option) => (
+                        <label className="menu-option-row" key={option.id}>
+                          <input
+                            type={group.type === 'SINGLE' ? 'radio' : 'checkbox'}
+                            name={group.id}
+                            checked={selectedOptionIds.includes(option.id)}
+                            onChange={() => toggleOption(group, option.id)}
+                          />
+                          <span>{option.name}</span>
+                          <strong>{getOptionPriceLabel(option.priceDelta)}</strong>
+                        </label>
+                      ))}
+                    </fieldset>
+                  ))}
+                </div>
+              ) : null}
+
+              <label className="menu-special-notes">
+                Special instructions
+                <textarea
+                  value={specialNotes}
+                  maxLength={300}
+                  placeholder="Example: less sauce, separate soup, no onions..."
+                  onChange={(event) => setSpecialNotes(event.target.value)}
+                />
+              </label>
 
               <div className="quantity-control">
                 <button

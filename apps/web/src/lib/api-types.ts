@@ -79,7 +79,7 @@ export type MenuItem = {
     slug: string;
   };
   images: MenuItemImage[];
-  optionGroups: MenuOptionGroup[];
+  optionGroups?: MenuOptionGroup[];
 };
 
 

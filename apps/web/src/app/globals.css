@@ -3633,3 +3633,106 @@ h2 {
     width: min(96vw, 410px);
   }
 }
+
+/* Food customization / modifier UI */
+.menu-option-groups {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.9rem;
+}
+
+.menu-option-group {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  background: #fff7ed;
+}
+
+.menu-option-group legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.35rem;
+  color: #7c2d12;
+  font-weight: 900;
+}
+
+.menu-option-group legend span {
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.menu-option-group p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.menu-option-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #ffedd5;
+  border-radius: 0.9rem;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.menu-option-row:hover {
+  border-color: #fb923c;
+  background: #fffaf5;
+}
+
+.menu-option-row input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #f97316;
+}
+
+.menu-option-row span {
+  color: #111827;
+  font-weight: 800;
+}
+
+.menu-option-row strong {
+  color: #ea580c;
+  font-size: 0.9rem;
+}
+
+.menu-special-notes {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+  color: #7c2d12;
+  font-weight: 900;
+}
+
+.menu-special-notes textarea {
+  min-height: 82px;
+  resize: vertical;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  font: inherit;
+}
+
+.menu-special-notes textarea:focus {
+  outline: 3px solid rgba(249, 115, 22, 0.18);
+  border-color: #f97316;
+}
+
+.menu-detail-price-row small {
+  display: block;
+  margin-top: 0.25rem;
+  color: #ea580c;
+  font-weight: 900;
+}
