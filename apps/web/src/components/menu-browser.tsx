@@ -63,6 +63,16 @@ export function MenuBrowser() {
     [items],
   );
 
+  const visibleCategories = useMemo(() => {
+    const categorySlugsWithItems = new Set(
+      items.map((item) => item.category.slug),
+    );
+
+    return categories.filter((category) =>
+      categorySlugsWithItems.has(category.slug),
+    );
+  }, [categories, items]);
+
   const filteredItems = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -78,6 +88,15 @@ export function MenuBrowser() {
       return matchesCategory && matchesSearch;
     });
   }, [items, selectedCategory, search]);
+
+  useEffect(() => {
+    if (
+      selectedCategory &&
+      !visibleCategories.some((category) => category.slug === selectedCategory)
+    ) {
+      setSelectedCategory('');
+    }
+  }, [selectedCategory, visibleCategories]);
 
   const menuCountText =
     filteredItems.length === 1
@@ -151,7 +170,7 @@ export function MenuBrowser() {
           All
         </button>
 
-        {categories.map((category) => (
+        {visibleCategories.map((category) => (
           <button
             className={
               selectedCategory === category.slug ? 'chip active-chip' : 'chip'
