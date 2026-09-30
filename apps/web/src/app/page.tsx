@@ -18,29 +18,34 @@ import { AdminRefundPanel } from '@/components/admin-refund-panel';
 
 const modules = [
   {
+    href: '/customer',
     icon: '🍽️',
-    title: 'Customer Ordering',
-    description: 'Browse real Dindo menu photos, add food to cart, and checkout.',
+    title: 'Customer App',
+    description: 'Order food, reserve tables, upload GCash proof, and track status.',
   },
   {
-    icon: '📅',
-    title: 'Table Reservation',
-    description: 'Reserve tables for dine-in customers within branch hours.',
-  },
-  {
-    icon: '👨‍🍳',
-    title: 'Kitchen Queue',
-    description: 'Let kitchen staff view approved orders and update preparation.',
-  },
-  {
-    icon: '🏍️',
-    title: 'Rider Delivery',
-    description: 'Support rider assignment, delivery status updates, and proof.',
-  },
-  {
+    href: '/admin',
     icon: '🛡️',
     title: 'Admin Dashboard',
-    description: 'Manage orders, payments, riders, reservations, and reports.',
+    description: 'Manage orders, payments, reservations, inventory, refunds, and reports.',
+  },
+  {
+    href: '/kitchen',
+    icon: '👨‍🍳',
+    title: 'Kitchen Staff',
+    description: 'View approved orders and update cooking or ready status.',
+  },
+  {
+    href: '/rider',
+    icon: '🏍️',
+    title: 'Rider App',
+    description: 'Handle delivery assignments, COD collection, and proof of delivery.',
+  },
+  {
+    href: '/super-admin',
+    icon: '👑',
+    title: 'Super Admin',
+    description: 'Owner-level monitoring partition for high-level restaurant oversight.',
   },
 ];
 
@@ -215,13 +220,13 @@ export default function HomePage() {
 
         <div className="grid">
           {modules.map((module) => (
-            <article className="module" key={module.title}>
+            <a className="module module-link" href={module.href} key={module.title}>
               <span className="module-icon" aria-hidden="true">
                 {module.icon}
               </span>
               <h3>{module.title}</h3>
               <p>{module.description}</p>
-            </article>
+            </a>
           ))}
         </div>
       </section>
