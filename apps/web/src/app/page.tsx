@@ -44,6 +44,29 @@ const modules = [
   },
 ];
 
+const restaurantPhotos: Array<{ src: string; alt: string; label: string }> = [
+  {
+    src: '/restaurant/storefront-night.jpg',
+    alt: "Dindo's Restaurant storefront at night",
+    label: 'Storefront',
+  },
+  {
+    src: '/restaurant/dining-flower-wall-wide.jpg',
+    alt: "Dindo's Restaurant dining area with flower wall",
+    label: 'Dining Area',
+  },
+  {
+    src: '/restaurant/counter-display-area.jpg',
+    alt: "Dindo's Restaurant counter and display area",
+    label: 'Counter Area',
+  },
+  {
+    src: '/restaurant/mountain-sign-view.jpg',
+    alt: "Dindo's Restaurant sign with Tinoc mountain view",
+    label: 'Tinoc View',
+  },
+];
+
 export default function HomePage() {
   return (
     <main id="top" className="page">
@@ -118,6 +141,27 @@ export default function HomePage() {
           <span>🏍️ 1 km base delivery area</span>
           <span>💳 COD / GCash proof</span>
           <span>📦 Status updates</span>
+        </div>
+      </section>
+
+      <section className="restaurant-photo-showcase" aria-label="Restaurant photos">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Dindo’s Place</p>
+            <h2>Real restaurant photos</h2>
+            <p className="section-subtitle">
+              A preview of the Tinoc branch dining area, counter, storefront, and location view.
+            </p>
+          </div>
+        </div>
+
+        <div className="restaurant-photo-grid">
+          {restaurantPhotos.map((photo) => (
+            <article className="restaurant-photo-card" key={photo.src}>
+              <img src={photo.src} alt={photo.alt} />
+              <span>{photo.label}</span>
+            </article>
+          ))}
         </div>
       </section>
 
