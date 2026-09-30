@@ -3054,3 +3054,35 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Fix menu category pills layout */
+.category-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  overflow-x: visible;
+  padding-bottom: 0.25rem;
+}
+
+.category-row .chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.category-row::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .category-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  .category-row .chip {
+    scroll-snap-align: start;
+  }
+}
