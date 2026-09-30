@@ -15,6 +15,7 @@ import {
   updateRiderDeliveryStatus,
 } from '@/lib/rider-delivery-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 const progressStatuses: DeliveryStatus[] = [
   'OUT_FOR_DELIVERY',
@@ -32,15 +33,12 @@ function money(value: string | number) {
   }).format(Number(value));
 }
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null | undefined) {
   if (!value) {
-    return 'Not yet';
+    return 'N/A';
   }
 
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return formatDateTimePH(value);
 }
 
 function showSnapshot(value: unknown) {

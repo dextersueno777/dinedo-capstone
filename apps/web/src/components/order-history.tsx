@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { Order, OrderStatus } from '@/lib/api-types';
 import { cancelOrder, getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 function formatPrice(price: string | number) {
   return new Intl.NumberFormat('en-PH', {
@@ -12,11 +13,8 @@ function formatPrice(price: string | number) {
   }).format(Number(price));
 }
 
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(date));
+function formatDate(value: string) {
+  return formatDateTimePH(value);
 }
 
 const customerStatusSteps: OrderStatus[] = [

@@ -10,6 +10,7 @@ import {
 } from '@/lib/admin-order-api';
 import { getAdminRiders } from '@/lib/admin-rider-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 const orderStatuses: OrderStatus[] = [
   'PENDING',
@@ -35,10 +36,7 @@ function money(value: string | number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return formatDateTimePH(value);
 }
 
 function formatLabel(value: string) {

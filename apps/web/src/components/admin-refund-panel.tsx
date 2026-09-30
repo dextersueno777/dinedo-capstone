@@ -7,6 +7,7 @@ import {
   updateAdminRefundStatus,
 } from '@/lib/admin-refund-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 const filterStatuses: Array<RefundStatus | 'ALL'> = [
   'PENDING',
@@ -31,12 +32,12 @@ function money(value: string | number) {
   }).format(Number(value));
 }
 
-function formatDate(value: string | null) {
-  if (!value) return 'Not yet';
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+function formatDate(value: string | null | undefined) {
+  if (!value) {
+    return 'N/A';
+  }
+
+  return formatDateTimePH(value);
 }
 
 export function AdminRefundPanel() {

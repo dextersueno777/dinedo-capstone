@@ -17,6 +17,7 @@ import {
   updateAdminInventoryItem,
 } from '@/lib/admin-inventory-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 const inventoryStatuses: Array<InventoryItemStatus | 'ALL'> = [
   'ACTIVE',
@@ -383,7 +384,7 @@ export function AdminInventoryPanel() {
                     <p><strong>Current Stock:</strong> {quantity(item.currentQuantity)}</p>
                     <p><strong>Reorder Level:</strong> {quantity(item.reorderLevel)}</p>
                     <p><strong>Stock Alert:</strong> {isLowStock ? 'Low stock' : 'Enough stock'}</p>
-                    <p><strong>Updated:</strong> {new Date(item.updatedAt).toLocaleString('en-PH')}</p>
+                    <p><strong>Updated:</strong> {formatDateTimePH(item.updatedAt)}</p>
                   </div>
 
                   {item.notes ? (

@@ -12,6 +12,7 @@ import {
   updateAdminReservationStatus,
 } from '@/lib/admin-reservation-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 const filterStatuses: Array<ReservationStatus | 'ALL'> = [
   'PENDING',
@@ -36,12 +37,11 @@ function money(value: string | number | null | undefined) {
 }
 
 function formatDate(value: string | null | undefined) {
-  if (!value) return 'Not yet';
+  if (!value) {
+    return 'N/A';
+  }
 
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return formatDateTimePH(value);
 }
 
 function parseTableIds(value: string) {

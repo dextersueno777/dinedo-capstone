@@ -7,6 +7,7 @@ import {
   updateKitchenOrderStatus,
 } from '@/lib/kitchen-order-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 const kitchenStatuses: OrderStatus[] = [
   'COOKING',
@@ -22,10 +23,7 @@ function money(value: string | number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return formatDateTimePH(value);
 }
 
 function formatLabel(value: string) {

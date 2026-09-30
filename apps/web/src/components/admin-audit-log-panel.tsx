@@ -5,9 +5,10 @@ import type { FormEvent } from 'react';
 import type { AdminAuditLog } from '@/lib/api-types';
 import { getAdminAuditLogs } from '@/lib/admin-audit-log-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleString('en-PH');
+  return formatDateTimePH(value);
 }
 
 function formatMetadata(value: unknown) {

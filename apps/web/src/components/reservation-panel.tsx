@@ -8,12 +8,10 @@ import {
   getMyReservations,
 } from '@/lib/reservation-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH, getManilaDatetimeLocalValue, manilaDatetimeLocalToIso } from '@/lib/ph-time';
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return formatDateTimePH(value);
 }
 
 function formatLabel(value: string) {
@@ -21,12 +19,7 @@ function formatLabel(value: string) {
 }
 
 function getDefaultReservedFor() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  date.setHours(12, 0, 0, 0);
-
-  const timezoneOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+  return getManilaDatetimeLocalValue(1, 12, 0);
 }
 
 export function ReservationPanel() {
@@ -34,8 +27,8 @@ export function ReservationPanel() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reservedFor, setReservedFor] = useState(getDefaultReservedFor());
   const [guestCount, setGuestCount] = useState('2');
-  const [customerName, setCustomerName] = useState('Demo Customer');
-  const [customerPhone, setCustomerPhone] = useState('09123456789');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [totalEstimate, setTotalEstimate] = useState('');
   const [cancelReason, setCancelReason] = useState('Customer requested cancellation.');
@@ -78,7 +71,7 @@ export function ReservationPanel() {
     try {
       const reservation = await createReservation(token, {
         branchCode: 'TINOC',
-        reservedFor: new Date(reservedFor).toISOString(),
+        reservedFor: manilaDatetimeLocalToIso(reservedFor),
         guestCount: Number(guestCount),
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),

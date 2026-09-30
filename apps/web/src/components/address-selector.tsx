@@ -52,7 +52,7 @@ export function AddressSelector({
     }
   }
 
-  async function handleCreateDemoAddress() {
+  async function handleCreateTinocAddress() {
     if (!token) {
       setError('Please login before creating an address.');
       return;
@@ -65,7 +65,7 @@ export function AddressSelector({
     try {
       const address = await createAddress(token, {
         label: 'Home',
-        recipient: 'Demo Customer',
+        recipient: 'Customer',
         phoneNumber: '09123456789',
         line1: 'Tinoc local delivery address',
         barangay: 'Poblacion',
@@ -75,7 +75,7 @@ export function AddressSelector({
         isDefault: true,
       });
 
-      setMessage('Demo delivery address created.');
+      setMessage('Delivery address created.');
       onSelectAddress(address.id);
       await loadAddresses();
     } catch (caughtError) {
@@ -136,10 +136,10 @@ export function AddressSelector({
           <button
             className="secondary full-button"
             type="button"
-            onClick={handleCreateDemoAddress}
+            onClick={handleCreateTinocAddress}
             disabled={isCreating}
           >
-            {isCreating ? 'Creating...' : 'Create Demo Address'}
+            {isCreating ? 'Creating...' : 'Add Tinoc Delivery Address'}
           </button>
         </div>
       ) : null}

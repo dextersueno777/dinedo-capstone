@@ -85,7 +85,7 @@ export function AuthPanel() {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : 'Demo login failed. Please try again.',
+          : 'Quick login failed. Please try again.',
       );
     } finally {
       setIsSubmitting(false);
@@ -129,12 +129,12 @@ export function AuthPanel() {
         <p className="eyebrow">Account</p>
         <h2>Sign in to DineDo</h2>
         <p>
-          Use the demo accounts to test customer ordering, admin review,
-          kitchen preparation, and rider delivery flows.
+          Choose the correct account type to access ordering, admin review,
+          kitchen preparation, or rider delivery workflows.
         </p>
       </div>
 
-      <div className="demo-account-grid" aria-label="Demo account shortcuts">
+      <div className="demo-account-grid" aria-label="Account shortcuts">
         {demoAccounts.map((account) => (
           <button
             key={account.email}

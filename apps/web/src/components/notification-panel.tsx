@@ -10,12 +10,10 @@ import {
   markNotificationAsRead,
 } from '@/lib/notification-api';
 import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en-PH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return formatDateTimePH(value);
 }
 
 function formatLabel(value: string) {
