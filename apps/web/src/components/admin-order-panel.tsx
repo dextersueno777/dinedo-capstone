@@ -41,6 +41,10 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
 export function AdminOrderPanel() {
   const { user, token } = useAuth();
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -223,24 +227,38 @@ export function AdminOrderPanel() {
   }, [token, user?.role]);
 
   return (
-    <section id="admin-orders" className="card">
+    <section id="admin-orders" className="card admin-order-panel">
       <div className="admin-order-heading">
         <div>
-          <p className="eyebrow">Admin Module</p>
-          <h2>Admin Order Management</h2>
-          <p>Review customer orders, update status, and set extra delivery fees.</p>
+          <p className="eyebrow">Admin Operations</p>
+          <h2>Order Management</h2>
+          <p>Review orders, update preparation status, set delivery fees, and assign riders.</p>
         </div>
 
-        <button className="secondary" type="button" onClick={() => { loadOrders(); loadRiders(); }}>
-          Refresh
-        </button>
+        <div className="admin-order-actions">
+          <span>{orders.length} order(s)</span>
+          <button className="secondary" type="button" onClick={() => { loadOrders(); loadRiders(); }}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-order-tips">
+        <span>📋 Review order</span>
+        <span>👨‍🍳 Update kitchen status</span>
+        <span>🏍️ Assign rider</span>
+        <span>💸 Set extra fee</span>
       </div>
 
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
       {user?.role !== 'ADMIN' ? (
-        <p>Login as an admin to manage orders.</p>
+        <div className="empty-admin-order-state">
+          <span aria-hidden="true">🛡️</span>
+          <h3>Admin login required</h3>
+          <p>Login as an admin to review orders, delivery fees, and rider assignment.</p>
+        </div>
       ) : null}
 
       {user?.role === 'ADMIN' ? (
@@ -276,26 +294,30 @@ export function AdminOrderPanel() {
 
       <div className="admin-order-list">
         {orders.length === 0 && user?.role === 'ADMIN' ? (
-          <p>No orders found.</p>
+          <div className="empty-admin-order-state">
+            <span aria-hidden="true">📭</span>
+            <h3>No orders found</h3>
+            <p>Customer orders will appear here after checkout submission.</p>
+          </div>
         ) : null}
 
         {orders.map((order) => (
-          <article className="admin-order-card" key={order.id}>
+          <article className="admin-order-card admin-order-card-polished" key={order.id}>
             <div className="admin-order-card-header">
               <div>
                 <h3>{order.orderNumber}</h3>
                 <p>{formatDate(order.createdAt)}</p>
               </div>
 
-              <span className="status-pill">{order.status}</span>
+              <span className="status-pill">{formatLabel(order.status)}</span>
             </div>
 
             <div className="admin-order-summary-grid">
               <p><strong>Customer:</strong> {order.customer.email}</p>
-              <p><strong>Service:</strong> {order.serviceType}</p>
-              <p><strong>Payment:</strong> {order.paymentMethod}</p>
-              <p><strong>Payment State:</strong> {order.paymentState}</p>
-              <p><strong>Delivery Fee:</strong> {order.deliveryFeeStatus}</p>
+              <p><strong>Service:</strong> {formatLabel(order.serviceType)}</p>
+              <p><strong>Payment:</strong> {formatLabel(order.paymentMethod)}</p>
+              <p><strong>Payment State:</strong> {formatLabel(order.paymentState)}</p>
+              <p><strong>Delivery Fee:</strong> {formatLabel(order.deliveryFeeStatus)}</p>
               <p><strong>Total:</strong> {money(order.totalAmount)}</p>
             </div>
 
@@ -327,7 +349,7 @@ export function AdminOrderPanel() {
               >
                 {orderStatuses.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {formatLabel(status)}
                   </option>
                 ))}
               </select>
@@ -445,7 +467,7 @@ export function AdminOrderPanel() {
 
               {order.statusHistory.map((history) => (
                 <p key={history.id}>
-                  <strong>{history.toStatus}</strong>
+                  <strong>{formatLabel(history.toStatus)}</strong>
                   {history.notes ? ` — ${history.notes}` : ''}
                 </p>
               ))}
