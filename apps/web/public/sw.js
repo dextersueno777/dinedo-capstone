@@ -1,25 +1,27 @@
-const CACHE_NAME = 'dinedo-pwa-v1';
-const OFFLINE_URL = '/offline.html';
-
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(['/', OFFLINE_URL]))
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    (async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+
+      const clientsList = await clients.matchAll({
+        includeUncontrolled: true,
+        type: 'window',
+      });
+
+      for (const client of clientsList) {
+        client.navigate(client.url);
+      }
+
+      await self.registration.unregister();
+    })(),
+  );
 });
 
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  event.respondWith(
-    fetch(event.request).catch(() =>
-      caches.match(event.request).then((response) => response || caches.match(OFFLINE_URL))
-    )
-  );
+self.addEventListener('fetch', () => {
+  return;
 });
