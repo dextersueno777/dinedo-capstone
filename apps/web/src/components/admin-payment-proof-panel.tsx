@@ -41,6 +41,10 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
 export function AdminPaymentProofPanel() {
   const { user, token } = useAuth();
   const [proofs, setProofs] = useState<AdminPaymentProof[]>([]);
@@ -130,29 +134,43 @@ export function AdminPaymentProofPanel() {
   }
 
   return (
-    <section id="admin-payment-proofs" className="card">
+    <section id="admin-payment-proofs" className="card admin-payment-proof-panel">
       <div className="admin-payment-proof-heading">
         <div>
-          <p className="eyebrow">Admin Module</p>
-          <h2>Payment Proof Review</h2>
-          <p>Review uploaded GCash receipts and approve or reject manual payments.</p>
+          <p className="eyebrow">Admin Payment Review</p>
+          <h2>Manual GCash Verification</h2>
+          <p>Review submitted GCash receipt details before approving payment.</p>
         </div>
 
-        <button className="secondary" type="button" onClick={loadProofs}>
-          Refresh
-        </button>
+        <div className="admin-payment-proof-actions">
+          <span>{proofs.length} proof(s)</span>
+          <button className="secondary" type="button" onClick={loadProofs}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-payment-proof-tips">
+        <span>📸 Open receipt</span>
+        <span>🔢 Check reference</span>
+        <span>💰 Match amount</span>
+        <span>✅ Approve or reject</span>
       </div>
 
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
       {user?.role !== 'ADMIN' ? (
-        <p>Login as an admin to review payment proofs.</p>
+        <div className="empty-admin-payment-proof-state">
+          <span aria-hidden="true">🛡️</span>
+          <h3>Admin login required</h3>
+          <p>Login as an admin to review submitted GCash payment proofs.</p>
+        </div>
       ) : null}
 
       {user?.role === 'ADMIN' ? (
-        <label className="admin-payment-proof-filter">
-          Filter Status
+        <label className="admin-payment-proof-filter admin-payment-proof-filter-polished">
+          Show Proofs
           <select
             value={filterStatus}
             onChange={(event) =>
@@ -160,8 +178,8 @@ export function AdminPaymentProofPanel() {
             }
           >
             {filterStatuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
+              <option key={formatLabel(status)} value={formatLabel(status)}>
+                {formatLabel(status)}
               </option>
             ))}
           </select>
@@ -170,35 +188,40 @@ export function AdminPaymentProofPanel() {
 
       <div className="admin-payment-proof-list">
         {proofs.length === 0 && user?.role === 'ADMIN' ? (
-          <p>No payment proofs found.</p>
+          <div className="empty-admin-payment-proof-state">
+            <span aria-hidden="true">📭</span>
+            <h3>No payment proofs found</h3>
+            <p>Submitted GCash receipts will appear here for review.</p>
+          </div>
         ) : null}
 
         {proofs.map((proof) => (
-          <article className="admin-payment-proof-card" key={proof.id}>
+          <article className="admin-payment-proof-card admin-payment-proof-card-polished" key={proof.id}>
             <div className="admin-payment-proof-card-header">
               <div>
                 <h3>{proof.order.orderNumber}</h3>
                 <p>Submitted: {formatDate(proof.submittedAt)}</p>
               </div>
 
-              <span className="status-pill">{proof.status}</span>
+              <span className="status-pill">{formatLabel(proof.status)}</span>
             </div>
 
             <div className="admin-payment-proof-summary-grid">
               <p><strong>Uploaded By:</strong> {proof.uploadedBy.email}</p>
               <p><strong>Amount:</strong> {money(proof.amount)}</p>
               <p><strong>Order Total:</strong> {money(proof.order.totalAmount)}</p>
-              <p><strong>GCash Ref:</strong> {proof.gcashReferenceNumber}</p>
-              <p><strong>Payer:</strong> {proof.payerName}</p>
+              <p><strong>GCash Ref:</strong> {proof.gcashReferenceNumber ?? 'N/A'}</p>
+              <p><strong>Payer:</strong> {proof.payerName ?? 'N/A'}</p>
               <p><strong>Last 4:</strong> {proof.payerAccountLast4 ?? 'N/A'}</p>
-              <p><strong>Order Status:</strong> {proof.order.status}</p>
-              <p><strong>Payment State:</strong> {proof.order.paymentState}</p>
+              <p><strong>Order Status:</strong> {formatLabel(proof.order.status)}</p>
+              <p><strong>Payment State:</strong> {formatLabel(proof.order.paymentState)}</p>
             </div>
 
             <div className="admin-payment-proof-image">
-              <p><strong>Proof Image URL:</strong></p>
-              <a href={proof.proofImageUrl} target="_blank">
-                {proof.proofImageUrl}
+              <p><strong>Receipt Preview:</strong></p>
+              <img src={proof.proofImageUrl} alt="Submitted GCash receipt proof" />
+              <a href={proof.proofImageUrl} target="_blank" rel="noreferrer">
+                Open receipt in new tab
               </a>
             </div>
 
@@ -215,8 +238,8 @@ export function AdminPaymentProofPanel() {
                   }
                 >
                   {reviewStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
+                    <option key={formatLabel(status)} value={formatLabel(status)}>
+                      {formatLabel(status)}
                     </option>
                   ))}
                 </select>
