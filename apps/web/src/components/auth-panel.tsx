@@ -67,6 +67,31 @@ export function AuthPanel() {
     }
   }
 
+  async function handleDemoLogin(account: (typeof demoAccounts)[number]) {
+    setEmail(account.email);
+    setPassword(account.password);
+    setMessage('');
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const loggedInUser = await login({
+        email: account.email,
+        password: account.password,
+      });
+
+      setMessage(`Signed in as ${loggedInUser.email}.`);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Demo login failed. Please try again.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <section className="card auth-card auth-card-polished">
@@ -102,7 +127,7 @@ export function AuthPanel() {
     <section className="card auth-card auth-card-polished">
       <div className="auth-copy">
         <p className="eyebrow">Account</p>
-        <h2>Sign in to order</h2>
+        <h2>Sign in to DineDo</h2>
         <p>
           Use the demo accounts to test customer ordering, admin review,
           kitchen preparation, and rider delivery flows.
@@ -114,15 +139,11 @@ export function AuthPanel() {
           <button
             key={account.email}
             type="button"
-            onClick={() => {
-              setEmail(account.email);
-              setPassword(account.password);
-              setMessage('');
-              setError('');
-            }}
+            disabled={isSubmitting}
+            onClick={() => handleDemoLogin(account)}
           >
             <span>{account.icon}</span>
-            {account.label}
+            {isSubmitting ? 'Signing in...' : `${account.label} Login`}
           </button>
         ))}
       </div>
