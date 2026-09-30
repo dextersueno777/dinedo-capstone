@@ -16,6 +16,10 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
 function getDefaultReservedFor() {
   const date = new Date();
   date.setDate(date.getDate() + 1);
@@ -130,21 +134,43 @@ export function ReservationPanel() {
   }, [token, user?.id]);
 
   return (
-    <section id="reservations" className="card">
-      <p className="eyebrow">Customer Module</p>
-      <h2>Table Reservation</h2>
-      <p>
-        Create a table reservation for the Tinoc branch. Reservations must be
-        within the branch operating hours.
-      </p>
+    <section id="reservations" className="card reservation-card">
+      <div className="reservation-heading">
+        <div>
+          <p className="eyebrow">Reservations</p>
+          <h2>Reserve a table</h2>
+          <p>
+            Book a dine-in table for the Tinoc branch within operating hours.
+          </p>
+        </div>
+
+        <div className="reservation-info-card">
+          <span>Branch Hours</span>
+          <strong>8:00 AM - 6:00 PM</strong>
+          <small>Tinoc Branch</small>
+        </div>
+      </div>
+
+      <div className="reservation-tips">
+        <span>📅 Pick date and time</span>
+        <span>👥 Add guest count</span>
+        <span>📝 Add table notes</span>
+        <span>✅ Wait for admin review</span>
+      </div>
 
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {!user ? <p>Please login as a customer first.</p> : null}
+      {!user ? (
+        <div className="empty-reservation-state">
+          <span aria-hidden="true">📅</span>
+          <h3>Sign in to reserve a table</h3>
+          <p>Customer login is required before creating a reservation.</p>
+        </div>
+      ) : null}
 
       {user ? (
-        <form className="reservation-form" onSubmit={handleCreateReservation}>
+        <form className="reservation-form reservation-form-polished" onSubmit={handleCreateReservation}>
           <label>
             Reservation Date and Time
             <input
@@ -222,10 +248,19 @@ export function ReservationPanel() {
         </label>
       ) : null}
 
-      <div className="reservation-list">
-        <h3>My Reservations</h3>
+      <div className="reservation-list reservation-list-polished">
+        <div className="reservation-list-heading">
+          <h3>My Reservations</h3>
+          <p>Track submitted table reservation requests and their status.</p>
+        </div>
 
-        {reservations.length === 0 ? <p>No reservations yet.</p> : null}
+        {reservations.length === 0 ? (
+          <div className="empty-reservation-state">
+            <span aria-hidden="true">🍽️</span>
+            <h3>No reservations yet</h3>
+            <p>Your table reservations will appear here after submission.</p>
+          </div>
+        ) : null}
 
         {reservations.map((reservation) => (
           <article className="reservation-item" key={reservation.id}>
@@ -235,7 +270,7 @@ export function ReservationPanel() {
                 <p>{formatDateTime(reservation.reservedFor)}</p>
               </div>
 
-              <span className="status-pill">{reservation.status}</span>
+              <span className="status-pill">{formatLabel(reservation.status)}</span>
             </div>
 
             <p>
