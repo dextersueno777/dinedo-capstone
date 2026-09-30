@@ -17,6 +17,8 @@ export function MenuBrowser() {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('Loading menu...');
   const [cartMessage, setCartMessage] = useState('');
@@ -117,7 +119,9 @@ export function MenuBrowser() {
     );
   }
 
-  async function handleAddToCart(item: MenuItem) {
+  const selectedItemImage = selectedItem?.images?.[0]?.url;
+
+  async function handleAddToCart(item: MenuItem, quantity = 1) {
     setCartMessage('');
     setError('');
 
@@ -132,8 +136,14 @@ export function MenuBrowser() {
     }
 
     try {
-      await addMenuItem(item.id, 1);
-      setCartMessage(`${item.name} added to cart.`);
+      await addMenuItem(item.id, quantity);
+      setCartMessage(
+        quantity > 1
+          ? `${quantity}× ${item.name} added to cart.`
+          : `${item.name} added to cart.`,
+      );
+      setSelectedItem(null);
+      setSelectedQuantity(1);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -203,7 +213,23 @@ export function MenuBrowser() {
               const menuImage = item.images?.[0]?.url;
 
               return (
-                <article className="featured-menu-card" key={item.id}>
+                <article
+                  className="featured-menu-card menu-clickable-card"
+                  key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setSelectedItem(item);
+                    setSelectedQuantity(1);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedItem(item);
+                      setSelectedQuantity(1);
+                    }
+                  }}
+                >
                   {menuImage ? (
                     <img
                       src={menuImage}
@@ -225,7 +251,10 @@ export function MenuBrowser() {
                     className="primary"
                     type="button"
                     disabled={item.status !== 'AVAILABLE'}
-                    onClick={() => handleAddToCart(item)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleAddToCart(item);
+                    }}
                   >
                     Add
                   </button>
@@ -241,7 +270,23 @@ export function MenuBrowser() {
           const menuImage = item.images?.[0]?.url;
 
           return (
-            <article className="menu-card" key={item.id}>
+            <article
+              className="menu-card menu-clickable-card"
+              key={item.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                setSelectedItem(item);
+                setSelectedQuantity(1);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setSelectedItem(item);
+                  setSelectedQuantity(1);
+                }
+              }}
+            >
               {item.isFeatured ? <span className="card-badge">Popular</span> : null}
 
               {menuImage ? (
@@ -290,6 +335,101 @@ export function MenuBrowser() {
 
       {!message && !error && filteredItems.length === 0 ? (
         <p>No menu items found.</p>
+      ) : null}
+
+      {selectedItem ? (
+        <div
+          className="menu-modal-backdrop"
+          role="presentation"
+          onClick={() => {
+            setSelectedItem(null);
+            setSelectedQuantity(1);
+          }}
+        >
+          <div
+            className="menu-detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="menu-detail-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="menu-modal-close"
+              type="button"
+              aria-label="Close menu details"
+              onClick={() => {
+                setSelectedItem(null);
+                setSelectedQuantity(1);
+              }}
+            >
+              ×
+            </button>
+
+            {selectedItemImage ? (
+              <img
+                className="menu-detail-image"
+                src={selectedItemImage}
+                alt={selectedItem.images?.[0]?.altText ?? selectedItem.name}
+              />
+            ) : (
+              <div className="menu-detail-image menu-card-image-placeholder">
+                No Image
+              </div>
+            )}
+
+            <div className="menu-detail-content">
+              <p className="menu-category">{selectedItem.category.name}</p>
+              <h3 id="menu-detail-title">{selectedItem.name}</h3>
+              <p>{selectedItem.description ?? 'No description available.'}</p>
+
+              <div className="menu-detail-price-row">
+                <div>
+                  <span className="price-label">
+                    {hasFlexiblePricing(selectedItem) ? 'Starts at' : 'Price'}
+                  </span>
+                  <strong>{formatPrice(selectedItem.price)}</strong>
+                </div>
+
+                <span
+                  className={
+                    selectedItem.status === 'SOLD_OUT' ? 'sold-out' : 'available'
+                  }
+                >
+                  {selectedItem.status === 'SOLD_OUT' ? 'Sold Out' : 'Available'}
+                </span>
+              </div>
+
+              <div className="quantity-control">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedQuantity((quantity) => Math.max(1, quantity - 1))
+                  }
+                >
+                  −
+                </button>
+                <strong>{selectedQuantity}</strong>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedQuantity((quantity) => Math.min(20, quantity + 1))
+                  }
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                className="primary full-button"
+                type="button"
+                disabled={selectedItem.status !== 'AVAILABLE'}
+                onClick={() => handleAddToCart(selectedItem, selectedQuantity)}
+              >
+                Add {selectedQuantity} to Cart
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </section>
   );
