@@ -3,41 +3,14 @@
 import { FormEvent, useState } from 'react';
 import { useAuth } from './auth-provider';
 
-const demoAccounts = [
-  {
-    label: 'Customer',
-    icon: '🍽️',
-    email: 'customer.demo@dinedo.local',
-    password: 'Customer123!',
-  },
-  {
-    label: 'Admin',
-    icon: '🛡️',
-    email: 'admin@dinedo.local',
-    password: 'ChangeMe123!',
-  },
-  {
-    label: 'Kitchen',
-    icon: '👨‍🍳',
-    email: 'kitchen@dinedo.local',
-    password: 'ChangeMe123!',
-  },
-  {
-    label: 'Rider',
-    icon: '🏍️',
-    email: 'rider@dinedo.local',
-    password: 'ChangeMe123!',
-  },
-];
-
 function getRoleLabel(role: string) {
   return role.replaceAll('_', ' ').toLowerCase();
 }
 
 export function AuthPanel() {
   const { user, isLoading, login, logout } = useAuth();
-  const [email, setEmail] = useState('customer.demo@dinedo.local');
-  const [password, setPassword] = useState('Customer123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,31 +34,6 @@ export function AuthPanel() {
         caughtError instanceof Error
           ? caughtError.message
           : 'Login failed. Please try again.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleDemoLogin(account: (typeof demoAccounts)[number]) {
-    setEmail(account.email);
-    setPassword(account.password);
-    setMessage('');
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      const loggedInUser = await login({
-        email: account.email,
-        password: account.password,
-      });
-
-      setMessage(`Signed in as ${loggedInUser.email}.`);
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : 'Quick login failed. Please try again.',
       );
     } finally {
       setIsSubmitting(false);
@@ -129,23 +77,9 @@ export function AuthPanel() {
         <p className="eyebrow">Account</p>
         <h2>Sign in to DineDo</h2>
         <p>
-          Choose the correct account type to access ordering, admin review,
-          kitchen preparation, or rider delivery workflows.
+          Sign in using your assigned DineDo account to access ordering,
+          admin review, kitchen preparation, or rider delivery workflows.
         </p>
-      </div>
-
-      <div className="demo-account-grid" aria-label="Account shortcuts">
-        {demoAccounts.map((account) => (
-          <button
-            key={account.email}
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleDemoLogin(account)}
-          >
-            <span>{account.icon}</span>
-            {isSubmitting ? 'Signing in...' : `${account.label} Login`}
-          </button>
-        ))}
       </div>
 
       <form className="auth-form" onSubmit={handleLogin}>
