@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { PwaCacheReset } from '@/components/pwa-cache-reset';
 import { PwaServiceWorker } from '@/components/pwa-service-worker';
 import { AuthProvider } from '@/components/auth-provider';
 import { CartProvider } from '@/components/cart-provider';
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <PwaCacheReset />
         <PwaServiceWorker />
         <AuthProvider><CartProvider>{children}</CartProvider></AuthProvider>
       </body>
