@@ -1,3 +1,4 @@
+import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { AdminDashboardPanel } from '@/components/admin-dashboard-panel';
 import { AdminOrderPanel } from '@/components/admin-order-panel';
@@ -37,13 +38,15 @@ export default function AdminPage() {
       </section>
 
       <AuthPanel />
-      <AdminDashboardPanel />
-      <AdminOrderPanel />
-      <AdminPaymentProofPanel />
-      <AdminReservationPanel />
-      <AdminInventoryPanel />
-      <AdminRefundPanel />
-      <AdminAuditLogPanel />
+      <RoleGate allowedRoles={['ADMIN']} portalName="Admin Dashboard">
+        <AdminDashboardPanel />
+        <AdminOrderPanel />
+        <AdminPaymentProofPanel />
+        <AdminReservationPanel />
+        <AdminInventoryPanel />
+        <AdminRefundPanel />
+        <AdminAuditLogPanel />
+      </RoleGate>
     </main>
   );
 }

@@ -3425,3 +3425,46 @@ h2 {
     text-align: center;
   }
 }
+
+/* Role-based portal protection */
+.role-gate-card {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid #fed7aa;
+  background:
+    radial-gradient(circle at top, rgba(249, 115, 22, 0.12), transparent 16rem),
+    #ffffff;
+}
+
+.role-gate-card span {
+  font-size: 3rem;
+}
+
+.role-gate-card h2,
+.role-gate-card p {
+  margin: 0;
+}
+
+.role-gate-card h2 {
+  color: #7c2d12;
+}
+
+.role-gate-card p {
+  max-width: 620px;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.role-gate-denied {
+  border-color: #fecaca;
+  background:
+    radial-gradient(circle at top, rgba(239, 68, 68, 0.1), transparent 16rem),
+    #ffffff;
+}
+
+.role-gate-denied h2 {
+  color: #991b1b;
+}

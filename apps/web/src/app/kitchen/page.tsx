@@ -1,3 +1,4 @@
+import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { KitchenOrderPanel } from '@/components/kitchen-order-panel';
 
@@ -28,7 +29,9 @@ export default function KitchenPage() {
       </section>
 
       <AuthPanel />
-      <KitchenOrderPanel />
+      <RoleGate allowedRoles={['KITCHEN']} portalName="Kitchen Staff Portal">
+        <KitchenOrderPanel />
+      </RoleGate>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { RiderDeliveryPanel } from '@/components/rider-delivery-panel';
 
@@ -28,7 +29,9 @@ export default function RiderPage() {
       </section>
 
       <AuthPanel />
-      <RiderDeliveryPanel />
+      <RoleGate allowedRoles={['RIDER']} portalName="Rider Portal">
+        <RiderDeliveryPanel />
+      </RoleGate>
     </main>
   );
 }

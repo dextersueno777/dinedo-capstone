@@ -1,3 +1,4 @@
+import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { MenuBrowser } from '@/components/menu-browser';
 import { CartPanel } from '@/components/cart-panel';
@@ -37,13 +38,15 @@ export default function CustomerPage() {
       </section>
 
       <AuthPanel />
-      <MenuBrowser />
-      <CartPanel />
-      <CheckoutPanel />
-      <PaymentProofPanel />
-      <ReservationPanel />
-      <NotificationPanel />
-      <OrderHistory />
+      <RoleGate allowedRoles={['CUSTOMER']} portalName="Customer App">
+        <MenuBrowser />
+        <CartPanel />
+        <CheckoutPanel />
+        <PaymentProofPanel />
+        <ReservationPanel />
+        <NotificationPanel />
+        <OrderHistory />
+      </RoleGate>
     </main>
   );
 }
