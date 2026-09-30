@@ -2646,3 +2646,180 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Polished payment proof panel */
+.payment-proof-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #bfdbfe;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 18rem),
+    #ffffff;
+}
+
+.payment-proof-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.payment-proof-heading h2,
+.payment-proof-heading p {
+  margin: 0;
+}
+
+.payment-proof-heading h2 {
+  color: #1e3a8a;
+}
+
+.payment-proof-heading p {
+  margin-top: 0.45rem;
+  color: #4b5563;
+}
+
+.payment-proof-info-card {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 13rem;
+  padding: 1rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 1.2rem;
+  background: #eff6ff;
+}
+
+.payment-proof-info-card span,
+.payment-proof-info-card small {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.payment-proof-info-card strong {
+  color: #1e3a8a;
+}
+
+.payment-proof-tips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.payment-proof-tips span {
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  text-align: center;
+  font-weight: 900;
+}
+
+.gcash-qr-card {
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid #bfdbfe;
+  border-radius: 1.2rem;
+  padding: 1rem;
+  background: #eff6ff;
+}
+
+.gcash-qr-image {
+  width: 100%;
+  max-width: 13rem;
+  border-radius: 1rem;
+  border: 1px solid #bfdbfe;
+  background: #ffffff;
+}
+
+.gcash-qr-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-size: 2rem;
+  font-weight: 900;
+  border: 1px dashed #60a5fa;
+}
+
+.gcash-qr-card h3,
+.gcash-qr-card p {
+  margin: 0;
+}
+
+.gcash-qr-card h3 {
+  color: #1e3a8a;
+}
+
+.gcash-qr-card p {
+  margin-top: 0.35rem;
+  color: #374151;
+}
+
+.gcash-qr-card small {
+  display: block;
+  margin-top: 0.5rem;
+  color: #6b7280;
+}
+
+.empty-payment-proof-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 1px dashed #93c5fd;
+  border-radius: 1.2rem;
+  background: #eff6ff;
+  text-align: center;
+}
+
+.empty-payment-proof-state span {
+  font-size: 2.4rem;
+}
+
+.empty-payment-proof-state h3,
+.empty-payment-proof-state p {
+  margin: 0;
+}
+
+.empty-payment-proof-state h3 {
+  color: #1e3a8a;
+}
+
+.empty-payment-proof-state p {
+  color: #4b5563;
+}
+
+.payment-proof-form-polished {
+  border: 1px solid #dbeafe;
+  border-radius: 1.2rem;
+  padding: 1rem;
+  background: #f8fbff;
+}
+
+@media (max-width: 820px) {
+  .payment-proof-heading {
+    flex-direction: column;
+  }
+
+  .payment-proof-info-card {
+    width: 100%;
+  }
+
+  .payment-proof-tips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gcash-qr-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .payment-proof-tips {
+    grid-template-columns: 1fr;
+  }
+}

@@ -112,22 +112,71 @@ export function PaymentProofPanel() {
   }, [token, user?.id]);
 
   return (
-    <section id="payment-proof" className="card">
-      <p className="eyebrow">Customer Module</p>
-      <h2>GCash Payment Proof</h2>
-      <p>Submit a receipt link for manual GCash orders.</p>
+    <section id="payment-proof" className="card payment-proof-card">
+      <div className="payment-proof-heading">
+        <div>
+          <p className="eyebrow">Manual Payment</p>
+          <h2>GCash Payment Proof</h2>
+          <p>
+            Submit your receipt details for manual admin verification.
+          </p>
+        </div>
+
+        <div className="payment-proof-info-card">
+          <span>Payment Type</span>
+          <strong>Manual GCash</strong>
+          <small>Admin will review the receipt</small>
+        </div>
+      </div>
+
+      <div className="payment-proof-tips">
+        <span>💳 Pay using GCash</span>
+        <span>📸 Copy receipt image link</span>
+        <span>🔢 Add reference number</span>
+        <span>✅ Wait for approval</span>
+      </div>
+
+      <div className="gcash-qr-card">
+        <img
+          className="gcash-qr-image"
+          src="/payment/gcash-qr.jpg"
+          alt="Official Dindo's Restaurant Tinoc Branch GCash QR code"
+        />
+
+        <div>
+          <h3>Official GCash QR</h3>
+          <p>
+            Scan the official Dindo’s Restaurant Tinoc Branch GCash QR before
+            submitting your receipt details.
+          </p>
+          <small>
+            Use this only for manual GCash payment, then submit your receipt link
+            and reference number for admin verification.
+          </small>
+        </div>
+      </div>
 
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {!user ? <p>Please login as a customer first.</p> : null}
+      {!user ? (
+        <div className="empty-payment-proof-state">
+          <span aria-hidden="true">💳</span>
+          <h3>Sign in to submit proof</h3>
+          <p>Customer login is required before submitting GCash receipt details.</p>
+        </div>
+      ) : null}
 
       {user && eligibleOrders.length === 0 ? (
-        <p>No manual GCash orders are waiting for payment proof.</p>
+        <div className="empty-payment-proof-state">
+          <span aria-hidden="true">📭</span>
+          <h3>No GCash proof needed</h3>
+          <p>No manual GCash orders are currently waiting for payment proof.</p>
+        </div>
       ) : null}
 
       {eligibleOrders.length > 0 ? (
-        <form className="payment-proof-form" onSubmit={handleSubmit}>
+        <form className="payment-proof-form payment-proof-form-polished" onSubmit={handleSubmit}>
           <label>
             Manual GCash Order
             <select
@@ -190,7 +239,7 @@ export function PaymentProofPanel() {
             />
           </label>
 
-          <button type="submit" disabled={isBusy}>
+          <button className="primary full-button" type="submit" disabled={isBusy}>
             {isBusy ? 'Submitting...' : 'Submit Payment Proof'}
           </button>
         </form>
