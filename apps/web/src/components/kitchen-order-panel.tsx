@@ -28,6 +28,10 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
 export function KitchenOrderPanel() {
   const { user, token } = useAuth();
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
@@ -102,47 +106,65 @@ export function KitchenOrderPanel() {
   }, [token, user?.role]);
 
   return (
-    <section id="kitchen-orders" className="card">
+    <section id="kitchen-orders" className="card kitchen-order-panel">
       <div className="kitchen-order-heading">
         <div>
-          <p className="eyebrow">Kitchen Module</p>
+          <p className="eyebrow">Kitchen Operations</p>
           <h2>Kitchen Order Queue</h2>
-          <p>View approved orders and update preparation status.</p>
+          <p>View approved orders, check item details, and update preparation status.</p>
         </div>
 
-        <button className="secondary" type="button" onClick={loadOrders}>
-          Refresh
-        </button>
+        <div className="kitchen-order-actions">
+          <span>{orders.length} order(s)</span>
+          <button className="secondary" type="button" onClick={loadOrders}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="kitchen-order-tips">
+        <span>📋 Read order</span>
+        <span>👨‍🍳 Start cooking</span>
+        <span>🥡 Ready for pickup</span>
+        <span>🍽️ Ready to serve</span>
       </div>
 
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
       {user?.role !== 'KITCHEN' ? (
-        <p>Login as a kitchen staff account to view the kitchen queue.</p>
+        <div className="empty-kitchen-order-state">
+          <span aria-hidden="true">👨‍🍳</span>
+          <h3>Kitchen login required</h3>
+          <p>Login as kitchen staff to view approved orders and update preparation.</p>
+        </div>
       ) : null}
 
       <div className="kitchen-order-list">
         {orders.length === 0 && user?.role === 'KITCHEN' ? (
-          <p>No kitchen orders in the queue.</p>
+          <div className="empty-kitchen-order-state">
+            <span aria-hidden="true">📭</span>
+            <h3>No kitchen orders</h3>
+            <p>Approved customer orders will appear here for preparation.</p>
+          </div>
         ) : null}
 
         {orders.map((order) => (
-          <article className="kitchen-order-card" key={order.id}>
+          <article className="kitchen-order-card kitchen-order-card-polished" key={order.id}>
             <div className="kitchen-order-card-header">
               <div>
                 <h3>{order.orderNumber}</h3>
                 <p>{formatDate(order.createdAt)}</p>
               </div>
 
-              <span className="status-pill">{order.status}</span>
+              <span className="status-pill">{formatLabel(order.status)}</span>
             </div>
 
             <div className="kitchen-order-summary-grid">
               <p><strong>Customer:</strong> {order.customer.email}</p>
-              <p><strong>Service:</strong> {order.serviceType}</p>
-              <p><strong>Payment:</strong> {order.paymentMethod}</p>
-              <p><strong>Payment State:</strong> {order.paymentState}</p>
+              <p><strong>Service:</strong> {formatLabel(order.serviceType)}</p>
+              <p><strong>Payment:</strong> {formatLabel(order.paymentMethod)}</p>
+              <p><strong>Payment State:</strong> {formatLabel(order.paymentState)}</p>
               <p><strong>Total:</strong> {money(order.totalAmount)}</p>
               <p><strong>Branch:</strong> {order.branch.name}</p>
             </div>
@@ -175,7 +197,7 @@ export function KitchenOrderPanel() {
               >
                 {kitchenStatuses.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {formatLabel(status)}
                   </option>
                 ))}
               </select>
@@ -208,7 +230,7 @@ export function KitchenOrderPanel() {
               <h4>Status History</h4>
               {order.statusHistory.map((history) => (
                 <p key={history.id}>
-                  <strong>{history.toStatus}</strong>
+                  <strong>{formatLabel(history.toStatus)}</strong>
                   {history.notes ? ` — ${history.notes}` : ''}
                 </p>
               ))}
