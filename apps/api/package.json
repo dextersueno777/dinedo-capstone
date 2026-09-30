@@ -18,7 +18,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "deploy:start": "prisma migrate deploy && node start-production.js",
     "db:generate": "prisma generate",
-    "db:seed:demo": "ts-node prisma/seed-demo-data.ts"
+    "db:seed:demo": "ts-node prisma/seed-demo-data.ts",
+    "db:seed:menu-options": "ts-node prisma/seed-menu-options.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.3",
