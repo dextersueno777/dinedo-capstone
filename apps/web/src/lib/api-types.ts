@@ -44,6 +44,26 @@ export type MenuItemImage = {
   sortOrder: number;
 };
 
+export type MenuOptionGroupType = 'SINGLE' | 'MULTIPLE';
+
+export type MenuOption = {
+  id: string;
+  name: string;
+  priceDelta: string | number;
+  sortOrder: number;
+};
+
+export type MenuOptionGroup = {
+  id: string;
+  name: string;
+  type: MenuOptionGroupType;
+  isRequired: boolean;
+  minSelect: number;
+  maxSelect: number;
+  sortOrder: number;
+  options: MenuOption[];
+};
+
 export type MenuItem = {
   id: string;
   name: string;
@@ -59,6 +79,7 @@ export type MenuItem = {
     slug: string;
   };
   images: MenuItemImage[];
+  optionGroups: MenuOptionGroup[];
 };
 
 

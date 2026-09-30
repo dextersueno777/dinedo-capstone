@@ -94,7 +94,7 @@ export function AuthPanel() {
 
   if (isLoading) {
     return (
-      <section className="card auth-card auth-card-polished">
+      <section id="account" className="card auth-card auth-card-polished">
         <div>
           <p className="eyebrow">Account</p>
           <h2>Checking saved login...</h2>
@@ -106,7 +106,7 @@ export function AuthPanel() {
 
   if (user) {
     return (
-      <section className="card auth-card auth-card-polished">
+      <section id="account" className="card auth-card auth-card-polished">
         <div>
           <p className="eyebrow">Account</p>
           <h2>Ready to use DineDo</h2>
@@ -124,7 +124,7 @@ export function AuthPanel() {
   }
 
   return (
-    <section className="card auth-card auth-card-polished">
+    <section id="account" className="card auth-card auth-card-polished">
       <div className="auth-copy">
         <p className="eyebrow">Account</p>
         <h2>Sign in to DineDo</h2>

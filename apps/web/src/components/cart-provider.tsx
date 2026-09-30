@@ -22,7 +22,12 @@ type CartContextValue = {
   isLoading: boolean;
   error: string;
   refreshCart: () => Promise<void>;
-  addMenuItem: (menuItemId: string, quantity?: number) => Promise<void>;
+  addMenuItem: (
+    menuItemId: string,
+    quantity?: number,
+    optionIds?: string[],
+    specialNotes?: string,
+  ) => Promise<void>;
   updateItem: (cartItemId: string, quantity: number) => Promise<void>;
   removeItem: (cartItemId: string) => Promise<void>;
   clearMyCart: () => Promise<void>;
@@ -63,7 +68,12 @@ export function CartProvider({
     }
   }
 
-  async function addMenuItem(menuItemId: string, quantity = 1) {
+  async function addMenuItem(
+    menuItemId: string,
+    quantity = 1,
+    optionIds: string[] = [],
+    specialNotes = '',
+  ) {
     if (!token) {
       throw new Error('Please login before adding items to cart.');
     }
@@ -72,6 +82,8 @@ export function CartProvider({
       branchCode: 'TINOC',
       menuItemId,
       quantity,
+      optionIds: optionIds.length > 0 ? optionIds : undefined,
+      specialNotes: specialNotes.trim() || undefined,
     });
 
     setCart(updatedCart);

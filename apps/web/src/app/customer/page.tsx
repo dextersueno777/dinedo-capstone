@@ -1,3 +1,4 @@
+import { CustomerAppDrawer } from '@/components/customer-app-drawer';
 import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { MenuBrowser } from '@/components/menu-browser';
@@ -12,6 +13,8 @@ export default function CustomerPage() {
   return (
     <main className="page portal-page">
       <header className="portal-header customer-portal-header">
+        <CustomerAppDrawer />
+
         <a className="topbar-brand" href="/" aria-label="Go to DineDo home">
           <img src="/brand/dindos-logo.jpg" alt="Dindo's Restaurant logo" />
           <span>

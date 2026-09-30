@@ -84,6 +84,38 @@ export class MenusService {
             sortOrder: 'asc',
           },
         },
+        optionGroups: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            isRequired: true,
+            minSelect: true,
+            maxSelect: true,
+            sortOrder: true,
+            options: {
+              where: {
+                isAvailable: true,
+                deletedAt: null,
+              },
+              select: {
+                id: true,
+                name: true,
+                priceDelta: true,
+                sortOrder: true,
+              },
+              orderBy: {
+                sortOrder: 'asc',
+              },
+            },
+          },
+          orderBy: {
+            sortOrder: 'asc',
+          },
+        },
       },
       orderBy: [
         { category: { sortOrder: 'asc' } },
