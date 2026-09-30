@@ -2,18 +2,20 @@
 
 import { useEffect } from 'react';
 
-const CACHE_RESET_KEY = 'dinedo-pwa-cache-reset-2026-09-30-disable-sw-v3';
+const RELOAD_GUARD_KEY = 'dinedo-pwa-cache-cleanup-reloaded-v4';
 
 export function PwaCacheReset() {
   useEffect(() => {
-    async function resetOldPwaCache() {
+    async function cleanOldPwaCache() {
       try {
-        if (window.localStorage.getItem(CACHE_RESET_KEY) === 'done') {
-          return;
-        }
+        let foundOldCache = false;
 
         if ('serviceWorker' in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations();
+
+          if (registrations.length > 0) {
+            foundOldCache = true;
+          }
 
           await Promise.all(
             registrations.map((registration) => registration.unregister()),
@@ -23,17 +25,26 @@ export function PwaCacheReset() {
         if ('caches' in window) {
           const cacheNames = await caches.keys();
 
+          if (cacheNames.length > 0) {
+            foundOldCache = true;
+          }
+
           await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
         }
 
-        window.localStorage.setItem(CACHE_RESET_KEY, 'done');
-        window.location.reload();
+        const url = new URL(window.location.href);
+        const forceReset = url.searchParams.has('reset') || url.searchParams.has('bust');
+
+        if ((foundOldCache || forceReset) && sessionStorage.getItem(RELOAD_GUARD_KEY) !== 'done') {
+          sessionStorage.setItem(RELOAD_GUARD_KEY, 'done');
+          window.location.reload();
+        }
       } catch {
-        window.localStorage.setItem(CACHE_RESET_KEY, 'done');
+        sessionStorage.setItem(RELOAD_GUARD_KEY, 'done');
       }
     }
 
-    resetOldPwaCache();
+    cleanOldPwaCache();
   }, []);
 
   return null;
