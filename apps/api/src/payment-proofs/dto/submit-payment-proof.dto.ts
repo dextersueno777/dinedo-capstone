@@ -2,8 +2,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Length,
+  Matches,
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -14,8 +14,10 @@ export class SubmitPaymentProofDto {
   @Min(0)
   amount!: number;
 
-  @IsUrl({
-    require_tld: false,
+  @IsString()
+  @Length(1, 8_000_000)
+  @Matches(/^(https?:\/\/|data:image\/(png|jpeg|jpg|webp);base64,)/i, {
+    message: 'Receipt proof must be an image URL or uploaded image data.',
   })
   proofImageUrl!: string;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import type { Order } from '@/lib/api-types';
 import { getMyOrders } from '@/lib/orders-api';
 import { submitPaymentProof } from '@/lib/payment-proof-api';
@@ -13,12 +13,31 @@ function money(value: string | number) {
   }).format(Number(value));
 }
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error('Unable to read receipt image.'));
+    };
+
+    reader.onerror = () => reject(new Error('Unable to read receipt image.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function PaymentProofPanel() {
   const { user, token } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderId, setOrderId] = useState('');
   const [amount, setAmount] = useState('');
   const [proofImageUrl, setProofImageUrl] = useState('');
+  const [receiptFileName, setReceiptFileName] = useState('');
   const [gcashReferenceNumber, setGcashReferenceNumber] = useState('');
   const [payerName, setPayerName] = useState('');
   const [payerAccountLast4, setPayerAccountLast4] = useState('');
@@ -69,11 +88,47 @@ export function PaymentProofPanel() {
     }
   }
 
+  async function handleReceiptFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a receipt image file.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError('Receipt image must be 4 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setProofImageUrl(dataUrl);
+      setReceiptFileName(file.name);
+      setError('');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to read receipt image.',
+      );
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!token || !orderId) {
       setError('Please login and select a manual GCash order.');
+      return;
+    }
+
+    if (!proofImageUrl.trim()) {
+      setError('Please upload or provide a GCash receipt image.');
       return;
     }
 
@@ -92,6 +147,7 @@ export function PaymentProofPanel() {
 
       setMessage(`Payment proof submitted. Status: ${proof.status}`);
       setProofImageUrl('');
+      setReceiptFileName('');
       setGcashReferenceNumber('');
       setPayerName('');
       setPayerAccountLast4('');
@@ -204,15 +260,36 @@ export function PaymentProofPanel() {
           </label>
 
           <label>
+            Upload Receipt Image
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              onChange={handleReceiptFileChange}
+            />
+            {receiptFileName ? (
+              <small className="form-helper">Selected: {receiptFileName}</small>
+            ) : null}
+          </label>
+
+          <label>
             Receipt Image URL
             <input
               type="url"
-              value={proofImageUrl}
-              onChange={(event) => setProofImageUrl(event.target.value)}
-              placeholder="https://example.com/gcash-receipt.jpg"
-              required
+              value={proofImageUrl.startsWith('data:image/') ? '' : proofImageUrl}
+              onChange={(event) => {
+                setProofImageUrl(event.target.value);
+                setReceiptFileName('');
+              }}
+              placeholder="Optional fallback: https://example.com/gcash-receipt.jpg"
             />
           </label>
+
+          {proofImageUrl ? (
+            <div className="receipt-preview">
+              <p>Receipt Preview</p>
+              <img src={proofImageUrl} alt="Selected GCash receipt preview" />
+            </div>
+          ) : null}
 
           <label>
             Reference Number

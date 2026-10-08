@@ -3849,3 +3849,33 @@ h2 {
 .rider-order-items {
   margin: 1rem 0;
 }
+
+/* Receipt upload preview */
+.form-helper {
+  display: block;
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+}
+
+.receipt-preview {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.receipt-preview p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.receipt-preview img {
+  width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+}

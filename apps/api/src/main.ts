@@ -3,12 +3,16 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.use(json({ limit: '10mb' }));
+  expressApp.use(urlencoded({ extended: true, limit: '10mb' }));
+
   expressApp.get('/healthz', (_req: unknown, res: { status: (code: number) => { send: (body: string) => void } }) => {
     res.status(200).send('ok');
   });
