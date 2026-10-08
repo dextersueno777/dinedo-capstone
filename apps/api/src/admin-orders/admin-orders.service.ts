@@ -357,6 +357,7 @@ export class AdminOrdersService {
         id: true,
         serviceType: true,
         subtotalAmount: true,
+        deliveryFeeAmount: true,
       },
     });
 
@@ -371,7 +372,10 @@ export class AdminOrdersService {
     }
 
     const additionalFee = dto.additionalDeliveryFeeAmount;
-    const totalAmount = Number(existingOrder.subtotalAmount) + additionalFee;
+    const totalAmount =
+      Number(existingOrder.subtotalAmount) +
+      Number(existingOrder.deliveryFeeAmount) +
+      additionalFee;
 
     await this.prisma.order.update({
       where: {
