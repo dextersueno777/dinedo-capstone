@@ -126,6 +126,58 @@ export function CheckoutPanel() {
         <span>📦 Staff Review</span>
       </div>
 
+      {cart && cart.items.length > 0 ? (
+        <div className="checkout-review-list">
+          <div className="checkout-review-heading">
+            <h3>Order items</h3>
+            <span>{cartCount === 1 ? '1 item' : `${cartCount} items`}</span>
+          </div>
+
+          {cart.items.map((item) => {
+            const optionTotal = item.options.reduce(
+              (sum, option) => sum + Number(option.priceDelta) * option.quantity,
+              0,
+            );
+            const unitTotal = Number(item.menuItem.price) + optionTotal;
+
+            return (
+              <article className="checkout-review-item" key={item.id}>
+                <div>
+                  <h4>{item.menuItem.name}</h4>
+                  <p>
+                    {formatPrice(unitTotal)} × {item.quantity}
+                  </p>
+
+                  {item.options.length > 0 ? (
+                    <ul className="cart-option-list">
+                      {item.options.map((option) => (
+                        <li key={option.id}>
+                          <span>
+                            {option.menuOption.optionGroup.name}:{' '}
+                            {option.menuOption.name}
+                          </span>
+                          {Number(option.priceDelta) > 0 ? (
+                            <strong>+{formatPrice(option.priceDelta)}</strong>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  {item.specialNotes ? (
+                    <p className="cart-special-notes">
+                      Note: {item.specialNotes}
+                    </p>
+                  ) : null}
+                </div>
+
+                <strong>{formatPrice(unitTotal * item.quantity)}</strong>
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
+
       <form className="checkout-form" onSubmit={handleCheckout}>
         <label>
           Service Type

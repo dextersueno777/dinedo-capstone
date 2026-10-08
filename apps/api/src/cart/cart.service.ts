@@ -207,6 +207,19 @@ export class CartService {
                 id: true,
                 quantity: true,
                 priceDelta: true,
+                menuOption: {
+                  select: {
+                    id: true,
+                    name: true,
+                    optionGroup: {
+                      select: {
+                        id: true,
+                        name: true,
+                        type: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },

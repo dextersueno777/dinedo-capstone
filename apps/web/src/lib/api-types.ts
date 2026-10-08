@@ -87,6 +87,15 @@ export type CartItemOption = {
   id: string;
   quantity: number;
   priceDelta: string | number;
+  menuOption: {
+    id: string;
+    name: string;
+    optionGroup: {
+      id: string;
+      name: string;
+      type: MenuOptionGroupType;
+    };
+  };
 };
 
 export type CartItem = {

@@ -3736,3 +3736,101 @@ h2 {
   color: #ea580c;
   font-weight: 900;
 }
+
+/* Cart modifier display */
+.cart-option-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-option-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  color: #7c2d12;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.cart-option-list strong {
+  color: #ea580c;
+}
+
+.cart-special-notes {
+  margin-top: 0.55rem;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Checkout order review with modifiers */
+.checkout-review-list {
+  display: grid;
+  gap: 0.9rem;
+  margin: 1rem 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 1.25rem;
+  background: #fff7ed;
+}
+
+.checkout-review-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.checkout-review-heading h3 {
+  margin: 0;
+  color: #7c2d12;
+}
+
+.checkout-review-heading span {
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  background: #ffffff;
+  color: #ea580c;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.checkout-review-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 0.9rem;
+  border: 1px solid #ffedd5;
+  border-radius: 1rem;
+  background: #ffffff;
+}
+
+.checkout-review-item h4 {
+  margin: 0 0 0.25rem;
+  color: #111827;
+}
+
+.checkout-review-item p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.checkout-review-item > strong {
+  color: #dc2626;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .checkout-review-item {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-review-item > strong {
+    justify-self: start;
+  }
+}

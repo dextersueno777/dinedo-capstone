@@ -91,7 +91,25 @@ export function CartPanel() {
               <p>
                 {formatPrice(item.menuItem.price)} × {item.quantity}
               </p>
-              {item.specialNotes ? <p>{item.specialNotes}</p> : null}
+
+              {item.options.length > 0 ? (
+                <ul className="cart-option-list">
+                  {item.options.map((option) => (
+                    <li key={option.id}>
+                      <span>
+                        {option.menuOption.optionGroup.name}: {option.menuOption.name}
+                      </span>
+                      {Number(option.priceDelta) > 0 ? (
+                        <strong>+{formatPrice(option.priceDelta)}</strong>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {item.specialNotes ? (
+                <p className="cart-special-notes">Note: {item.specialNotes}</p>
+              ) : null}
             </div>
 
             <div className="cart-actions">
