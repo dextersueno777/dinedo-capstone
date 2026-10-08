@@ -193,7 +193,7 @@ export function AdminOrderPanel() {
     const riderId = riderIdByOrderId[orderId]?.trim();
 
     if (!riderId) {
-      setError('Enter a rider user ID before assigning.');
+      setError('Select a rider before assigning.');
       return;
     }
 
@@ -447,6 +447,9 @@ export function AdminOrderPanel() {
                           : rider.email}
                         {rider.riderProfile?.vehicleType
                           ? ` - ${rider.riderProfile.vehicleType}`
+                          : ''}
+                        {rider.riderProfile?.availabilityStatus
+                          ? ` (${formatLabel(rider.riderProfile.availabilityStatus)})`
                           : ''}
                       </option>
                     ))}
