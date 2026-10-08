@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import type {
   DeliveryStatus,
   ProofOfDeliveryType,
@@ -62,6 +62,24 @@ function canCaptureProof(status: DeliveryStatus) {
   return ['OUT_FOR_DELIVERY', 'ARRIVED'].includes(status);
 }
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error('Unable to read proof image.'));
+    };
+
+    reader.onerror = () => reject(new Error('Unable to read proof image.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function RiderDeliveryPanel() {
   const { user, token } = useAuth();
   const [deliveries, setDeliveries] = useState<RiderDelivery[]>([]);
@@ -72,6 +90,7 @@ export function RiderDeliveryPanel() {
   const [issueDescriptionById, setIssueDescriptionById] = useState<Record<string, string>>({});
   const [proofTypeById, setProofTypeById] = useState<Record<string, ProofOfDeliveryType>>({});
   const [proofUrlById, setProofUrlById] = useState<Record<string, string>>({});
+  const [proofFileNameById, setProofFileNameById] = useState<Record<string, string>>({});
   const [proofNotesById, setProofNotesById] = useState<Record<string, string>>({});
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -195,12 +214,59 @@ export function RiderDeliveryPanel() {
     );
   }
 
+  async function handleProofFileChange(
+    deliveryId: string,
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file for proof of delivery.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError('Proof image must be 4 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToDataUrl(file);
+
+      setProofUrlById((current) => ({
+        ...current,
+        [deliveryId]: dataUrl,
+      }));
+
+      setProofFileNameById((current) => ({
+        ...current,
+        [deliveryId]: file.name,
+      }));
+
+      setError('');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to read proof image.',
+      );
+    }
+  }
+
   function handleProof(deliveryId: string) {
     if (!token) return;
 
     const proofType = proofTypeById[deliveryId] ?? 'PHOTO';
-    const proofUrl =
-      proofUrlById[deliveryId]?.trim() || 'http://localhost/proof.jpg';
+    const proofUrl = proofUrlById[deliveryId]?.trim();
+
+    if (!proofUrl) {
+      setError('Please upload or provide a proof image before completing delivery.');
+      return;
+    }
 
     runAction(
       () =>
@@ -422,18 +488,54 @@ export function RiderDeliveryPanel() {
               </label>
 
               <label className="rider-delivery-field">
-                Proof URL
+                Upload Proof Image
                 <input
-                  value={proofUrlById[delivery.id] ?? ''}
-                  onChange={(event) =>
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  onChange={(event) => handleProofFileChange(delivery.id, event)}
+                />
+                {proofFileNameById[delivery.id] ? (
+                  <span className="form-helper">
+                    Selected: {proofFileNameById[delivery.id]}
+                  </span>
+                ) : (
+                  <span className="form-helper">
+                    Upload a delivery photo or signature image.
+                  </span>
+                )}
+              </label>
+
+              <label className="rider-delivery-field">
+                Proof Image URL Optional
+                <input
+                  value={
+                    proofUrlById[delivery.id]?.startsWith('data:image/')
+                      ? ''
+                      : proofUrlById[delivery.id] ?? ''
+                  }
+                  onChange={(event) => {
                     setProofUrlById((current) => ({
                       ...current,
                       [delivery.id]: event.target.value,
-                    }))
-                  }
-                  placeholder="http://localhost/proof.jpg"
+                    }));
+                    setProofFileNameById((current) => ({
+                      ...current,
+                      [delivery.id]: '',
+                    }));
+                  }}
+                  placeholder="Optional: https://example.com/proof.jpg"
                 />
               </label>
+
+              {proofUrlById[delivery.id] ? (
+                <div className="receipt-preview">
+                  <p>Proof preview</p>
+                  <img
+                    src={proofUrlById[delivery.id]}
+                    alt="Selected proof of delivery preview"
+                  />
+                </div>
+              ) : null}
 
               <label className="rider-delivery-field">
                 Proof Notes

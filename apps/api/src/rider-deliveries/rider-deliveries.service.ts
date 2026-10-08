@@ -211,12 +211,22 @@ export class RiderDeliveriesService {
       throw new BadRequestException('Admin bypass is not allowed from rider account.');
     }
 
-    if (dto.type === ProofOfDeliveryType.PHOTO && !dto.imageUrl) {
-      throw new BadRequestException('Photo proof requires imageUrl.');
+    const imageUrl = dto.imageUrl?.trim();
+    const signatureUrl = dto.signatureUrl?.trim();
+
+    if (dto.type === ProofOfDeliveryType.PHOTO && !this.isProofImage(imageUrl)) {
+      throw new BadRequestException(
+        'Photo proof must be an image URL or uploaded image data.',
+      );
     }
 
-    if (dto.type === ProofOfDeliveryType.SIGNATURE && !dto.signatureUrl) {
-      throw new BadRequestException('Signature proof requires signatureUrl.');
+    if (
+      dto.type === ProofOfDeliveryType.SIGNATURE &&
+      !this.isProofImage(signatureUrl)
+    ) {
+      throw new BadRequestException(
+        'Signature proof must be an image URL or uploaded image data.',
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -225,8 +235,9 @@ export class RiderDeliveriesService {
           deliveryId,
           capturedById: riderId,
           type: dto.type,
-          imageUrl: dto.imageUrl,
-          signatureUrl: dto.signatureUrl,
+          imageUrl: dto.type === ProofOfDeliveryType.PHOTO ? imageUrl : undefined,
+          signatureUrl:
+            dto.type === ProofOfDeliveryType.SIGNATURE ? signatureUrl : undefined,
           notes: dto.notes?.trim(),
         },
       });
@@ -321,6 +332,17 @@ export class RiderDeliveriesService {
     }
 
     return delivery;
+  }
+
+  private isProofImage(value: string | undefined) {
+    if (!value) {
+      return false;
+    }
+
+    return (
+      /^https?:\/\//i.test(value) ||
+      /^data:image\/(png|jpe?g|webp);base64,/i.test(value)
+    );
   }
 
   private deliverySelect(): Prisma.DeliverySelect {

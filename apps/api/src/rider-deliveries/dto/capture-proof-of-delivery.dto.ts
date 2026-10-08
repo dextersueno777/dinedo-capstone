@@ -2,7 +2,6 @@ import {
   IsEnum,
   IsOptional,
   IsString,
-  IsUrl,
   Length,
 } from 'class-validator';
 import { ProofOfDeliveryType } from '@prisma/client';
@@ -12,14 +11,16 @@ export class CaptureProofOfDeliveryDto {
   type!: ProofOfDeliveryType;
 
   @IsOptional()
-  @IsUrl({
-    require_tld: false,
+  @IsString()
+  @Length(1, 8_000_000, {
+    message: 'Photo proof must be an image URL or uploaded image data.',
   })
   imageUrl?: string;
 
   @IsOptional()
-  @IsUrl({
-    require_tld: false,
+  @IsString()
+  @Length(1, 8_000_000, {
+    message: 'Signature proof must be an image URL or uploaded image data.',
   })
   signatureUrl?: string;
 
