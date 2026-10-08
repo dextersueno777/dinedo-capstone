@@ -176,7 +176,7 @@ export function AdminPaymentProofPanel() {
             }
           >
             {filterStatuses.map((status) => (
-              <option key={formatLabel(status)} value={formatLabel(status)}>
+              <option key={status} value={status}>
                 {formatLabel(status)}
               </option>
             ))}
@@ -236,7 +236,7 @@ export function AdminPaymentProofPanel() {
                   }
                 >
                   {reviewStatuses.map((status) => (
-                    <option key={formatLabel(status)} value={formatLabel(status)}>
+                    <option key={status} value={status}>
                       {formatLabel(status)}
                     </option>
                   ))}
