@@ -50,6 +50,8 @@ export function PaymentProofPanel() {
       orders.filter(
         (order) =>
           order.paymentMethod === 'GCASH_MANUAL' &&
+          order.status !== 'CANCELLED' &&
+          order.status !== 'REJECTED' &&
           order.paymentState !== 'APPROVED' &&
           order.paymentState !== 'PAID',
       ),
@@ -71,6 +73,8 @@ export function PaymentProofPanel() {
       const first = loaded.find(
         (order) =>
           order.paymentMethod === 'GCASH_MANUAL' &&
+          order.status !== 'CANCELLED' &&
+          order.status !== 'REJECTED' &&
           order.paymentState !== 'APPROVED' &&
           order.paymentState !== 'PAID',
       );

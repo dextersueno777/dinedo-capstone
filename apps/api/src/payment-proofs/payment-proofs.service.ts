@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  OrderStatus,
   PaymentMethod,
   PaymentProofStatus,
   PaymentState,
@@ -29,6 +30,7 @@ export class PaymentProofsService {
       },
       select: {
         id: true,
+        status: true,
         paymentMethod: true,
         paymentState: true,
       },
@@ -41,6 +43,15 @@ export class PaymentProofsService {
     if (order.paymentMethod !== PaymentMethod.GCASH_MANUAL) {
       throw new BadRequestException(
         'Payment proof is only allowed for manual GCash orders.',
+      );
+    }
+
+    if (
+      order.status === OrderStatus.CANCELLED ||
+      order.status === OrderStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        'Payment proof cannot be submitted for cancelled or rejected orders.',
       );
     }
 
