@@ -3834,3 +3834,18 @@ h2 {
     justify-self: start;
   }
 }
+
+/* Order item modifier display */
+.order-item-detail {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.45rem 0;
+}
+
+.order-item-detail > p {
+  margin: 0;
+}
+
+.rider-order-items {
+  margin: 1rem 0;
+}

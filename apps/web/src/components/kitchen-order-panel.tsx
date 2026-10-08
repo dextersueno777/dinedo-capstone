@@ -8,6 +8,7 @@ import {
 } from '@/lib/kitchen-order-api';
 import { useAuth } from './auth-provider';
 import { formatDateTimePH } from '@/lib/ph-time';
+import { OrderItemOptionList } from './order-item-option-list';
 
 const kitchenStatuses: OrderStatus[] = [
   'COOKING',
@@ -175,10 +176,12 @@ export function KitchenOrderPanel() {
               <h4>Order Items</h4>
 
               {order.items.map((item) => (
-                <p key={item.id}>
-                  {item.quantity}× {item.itemName} — {money(item.lineTotal)}
-                  {item.specialNotes ? ` — ${item.specialNotes}` : ''}
-                </p>
+                <article className="order-item-detail" key={item.id}>
+                  <p>
+                    {item.quantity}× {item.itemName} — {money(item.lineTotal)}
+                  </p>
+                  <OrderItemOptionList item={item} />
+                </article>
               ))}
             </div>
 

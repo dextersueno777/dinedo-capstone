@@ -197,6 +197,14 @@ export type OrderAddress = {
   landmark: string | null;
 };
 
+export type OrderItemOption = {
+  id: string;
+  optionGroupName: string;
+  optionName: string;
+  priceDelta: string | number;
+  quantity: number;
+};
+
 export type OrderItem = {
   id: string;
   itemName: string;
@@ -204,6 +212,7 @@ export type OrderItem = {
   quantity: number;
   lineTotal: string | number;
   specialNotes: string | null;
+  options: OrderItemOption[];
 };
 
 export type OrderStatusHistory = {
@@ -605,6 +614,7 @@ export type RiderDelivery = {
     paymentMethod: PaymentMethod;
     paymentState: PaymentState;
     totalAmount: string | number;
+    items: OrderItem[];
   };
 };
 

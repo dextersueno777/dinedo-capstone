@@ -108,8 +108,22 @@ export class OrdersService {
               unitPrice: cartItem.menuItem.price,
               quantity: cartItem.quantity,
               lineTotal:
-                Number(cartItem.menuItem.price) * cartItem.quantity,
+                (Number(cartItem.menuItem.price) +
+                  cartItem.options.reduce(
+                    (sum, option) => sum + Number(option.priceDelta) * option.quantity,
+                    0,
+                  )) *
+                cartItem.quantity,
               specialNotes: cartItem.specialNotes,
+              options: {
+                create: cartItem.options.map((option) => ({
+                  menuOptionId: option.menuOptionId,
+                  optionGroupName: option.menuOption.optionGroup.name,
+                  optionName: option.menuOption.name,
+                  priceDelta: option.priceDelta,
+                  quantity: option.quantity,
+                })),
+              },
             })),
           },
           statusHistory: {
@@ -476,9 +490,17 @@ export class OrdersService {
     menuItem: {
       price: { toString(): string };
     };
+    options: Array<{
+      priceDelta: { toString(): string };
+      quantity: number;
+    }>;
   }>) {
     return items.reduce((sum, item) => {
-      return sum + Number(item.menuItem.price) * item.quantity;
+      const optionsTotal = item.options.reduce((optionSum, option) => {
+        return optionSum + Number(option.priceDelta) * option.quantity;
+      }, 0);
+
+      return sum + (Number(item.menuItem.price) + optionsTotal) * item.quantity;
     }, 0);
   }
 
@@ -530,6 +552,18 @@ export class OrdersService {
           quantity: true,
           lineTotal: true,
           specialNotes: true,
+          options: {
+            select: {
+              id: true,
+              optionGroupName: true,
+              optionName: true,
+              priceDelta: true,
+              quantity: true,
+            },
+            orderBy: {
+              id: 'asc',
+            },
+          },
         },
       },
       statusHistory: {

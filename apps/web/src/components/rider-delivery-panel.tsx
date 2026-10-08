@@ -16,6 +16,7 @@ import {
 } from '@/lib/rider-delivery-api';
 import { useAuth } from './auth-provider';
 import { formatDateTimePH } from '@/lib/ph-time';
+import { OrderItemOptionList } from './order-item-option-list';
 
 const progressStatuses: DeliveryStatus[] = [
   'OUT_FOR_DELIVERY',
@@ -258,6 +259,20 @@ export function RiderDeliveryPanel() {
               <p><strong>COD to Collect:</strong> {money(delivery.codAmountToCollect)}</p>
               <p><strong>Delivery Fee:</strong> {money(delivery.deliveryFeeAmount)}</p>
             </div>
+
+            {delivery.order.items.length > 0 ? (
+              <div className="order-items rider-order-items">
+                <h4>Order Items</h4>
+                {delivery.order.items.map((item) => (
+                  <article className="order-item-detail" key={item.id}>
+                    <p>
+                      {item.quantity}× {item.itemName} — {money(item.lineTotal)}
+                    </p>
+                    <OrderItemOptionList item={item} />
+                  </article>
+                ))}
+              </div>
+            ) : null}
 
             <div className="rider-delivery-address">
               <p><strong>Navigation Address:</strong></p>

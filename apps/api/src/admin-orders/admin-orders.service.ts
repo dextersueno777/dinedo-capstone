@@ -444,6 +444,18 @@ export class AdminOrdersService {
           quantity: true,
           lineTotal: true,
           specialNotes: true,
+          options: {
+            select: {
+              id: true,
+              optionGroupName: true,
+              optionName: true,
+              priceDelta: true,
+              quantity: true,
+            },
+            orderBy: {
+              id: 'asc',
+            },
+          },
         },
       },
       statusHistory: {

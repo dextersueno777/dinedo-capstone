@@ -5,6 +5,7 @@ import type { Order, OrderStatus } from '@/lib/api-types';
 import { cancelOrder, getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
 import { formatDateTimePH } from '@/lib/ph-time';
+import { OrderItemOptionList } from './order-item-option-list';
 
 function formatPrice(price: string | number) {
   return new Intl.NumberFormat('en-PH', {
@@ -283,9 +284,12 @@ export function OrderHistory() {
 
             <div className="order-items">
               {order.items.map((item) => (
-                <p key={item.id}>
-                  {item.quantity}× {item.itemName} — {formatPrice(item.lineTotal)}
-                </p>
+                <article className="order-item-detail" key={item.id}>
+                  <p>
+                    {item.quantity}× {item.itemName} — {formatPrice(item.lineTotal)}
+                  </p>
+                  <OrderItemOptionList item={item} />
+                </article>
               ))}
             </div>
 
