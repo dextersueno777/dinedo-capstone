@@ -275,10 +275,11 @@ export class OrdersService {
         data: {
           deliveryFeeStatus: nextFeeStatus,
           status: nextOrderStatus,
-          totalAmount:
-            Number(order.subtotalAmount) +
-            Number(order.deliveryFeeAmount) +
-            Number(order.additionalDeliveryFeeAmount),
+          totalAmount: dto.accept
+            ? Number(order.subtotalAmount) +
+              Number(order.deliveryFeeAmount) +
+              Number(order.additionalDeliveryFeeAmount)
+            : Number(order.subtotalAmount) + Number(order.deliveryFeeAmount),
           cancelledAt: dto.accept ? undefined : new Date(),
           cancellationReason: dto.accept
             ? undefined
