@@ -465,6 +465,54 @@ export class AdminOrdersService {
           },
         },
       },
+      delivery: {
+        select: {
+          id: true,
+          status: true,
+          assignedAt: true,
+          acceptedAt: true,
+          outForDeliveryAt: true,
+          arrivedAt: true,
+          deliveredAt: true,
+          failedAt: true,
+          issueSummary: true,
+          rider: {
+            select: {
+              id: true,
+              email: true,
+              profile: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  phoneNumber: true,
+                },
+              },
+            },
+          },
+          proofs: {
+            where: {
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+              type: true,
+              imageUrl: true,
+              signatureUrl: true,
+              notes: true,
+              capturedAt: true,
+              capturedBy: {
+                select: {
+                  id: true,
+                  email: true,
+                },
+              },
+            },
+            orderBy: {
+              capturedAt: 'desc',
+            },
+          },
+        },
+      },
       statusHistory: {
         select: {
           id: true,

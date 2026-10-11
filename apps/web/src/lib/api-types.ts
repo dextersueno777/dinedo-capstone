@@ -479,6 +479,41 @@ export type AdminDashboardSummary = {
 };
 
 
+export type AdminOrderDeliveryProof = {
+  id: string;
+  type: ProofOfDeliveryType;
+  imageUrl: string | null;
+  signatureUrl: string | null;
+  notes: string | null;
+  capturedAt: string;
+  capturedBy: {
+    id: string;
+    email: string;
+  };
+};
+
+export type AdminOrderDelivery = {
+  id: string;
+  status: DeliveryStatus;
+  assignedAt: string | null;
+  acceptedAt: string | null;
+  outForDeliveryAt: string | null;
+  arrivedAt: string | null;
+  deliveredAt: string | null;
+  failedAt: string | null;
+  issueSummary: string | null;
+  rider: {
+    id: string;
+    email: string;
+    profile: {
+      firstName: string;
+      lastName: string;
+      phoneNumber: string | null;
+    } | null;
+  } | null;
+  proofs: AdminOrderDeliveryProof[];
+};
+
 export type AdminOrder = {
   id: string;
   orderNumber: string;
@@ -511,6 +546,7 @@ export type AdminOrder = {
   };
   address: OrderAddress | null;
   items: OrderItem[];
+  delivery: AdminOrderDelivery | null;
   statusHistory: OrderStatusHistory[];
 };
 
