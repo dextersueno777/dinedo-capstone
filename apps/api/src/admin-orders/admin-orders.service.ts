@@ -373,7 +373,9 @@ export class AdminOrdersService {
 
     const additionalFee = dto.additionalDeliveryFeeAmount;
     const totalAmount =
-      Number(existingOrder.subtotalAmount) + Number(existingOrder.deliveryFeeAmount);
+      Number(existingOrder.subtotalAmount) +
+      Number(existingOrder.deliveryFeeAmount) +
+      additionalFee;
 
     await this.prisma.order.update({
       where: {
@@ -382,7 +384,10 @@ export class AdminOrdersService {
       data: {
         additionalDeliveryFeeAmount: additionalFee,
         totalAmount,
-        deliveryFeeStatus: DeliveryFeeStatus.PENDING_CUSTOMER_ACCEPTANCE,
+        deliveryFeeStatus:
+          additionalFee > 0
+            ? DeliveryFeeStatus.PENDING_CUSTOMER_ACCEPTANCE
+            : DeliveryFeeStatus.NOT_REQUIRED,
         adminNotes: dto.adminNotes?.trim(),
       },
     });
