@@ -6,6 +6,8 @@ import {
 import {
   DeliveryStatus,
   OrderStatus,
+  PaymentMethod,
+  PaymentState,
   Prisma,
   ProofOfDeliveryType,
 } from '@prisma/client';
@@ -252,6 +254,10 @@ export class RiderDeliveriesService {
         },
         data: {
           status: OrderStatus.DELIVERED,
+          paymentState:
+            delivery.order.paymentMethod === PaymentMethod.COD
+              ? PaymentState.PAID
+              : undefined,
         },
       });
 
@@ -316,6 +322,7 @@ export class RiderDeliveriesService {
         order: {
           select: {
             status: true,
+            paymentMethod: true,
           },
         },
       },
