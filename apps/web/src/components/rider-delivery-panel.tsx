@@ -22,7 +22,6 @@ import { buildGoogleMapsSearchUrl, formatAddressForMap } from '@/lib/map-links';
 const progressStatuses: DeliveryStatus[] = [
   'OUT_FOR_DELIVERY',
   'ARRIVED',
-  'DELIVERED',
   'FAILED',
 ];
 
@@ -118,7 +117,7 @@ export function RiderDeliveryPanel() {
         } else if (delivery.status === 'OUT_FOR_DELIVERY') {
           nextStatus[delivery.id] = 'ARRIVED';
         } else if (delivery.status === 'ARRIVED') {
-          nextStatus[delivery.id] = 'DELIVERED';
+          nextStatus[delivery.id] = 'FAILED';
         } else {
           nextStatus[delivery.id] = 'OUT_FOR_DELIVERY';
         }

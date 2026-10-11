@@ -100,13 +100,12 @@ export class RiderDeliveriesService {
     const allowedStatuses: DeliveryStatus[] = [
       DeliveryStatus.OUT_FOR_DELIVERY,
       DeliveryStatus.ARRIVED,
-      DeliveryStatus.DELIVERED,
       DeliveryStatus.FAILED,
     ];
 
     if (!allowedStatuses.includes(dto.status)) {
       throw new BadRequestException(
-        'Rider can only set OUT_FOR_DELIVERY, ARRIVED, DELIVERED, or FAILED.',
+        'Rider can only set OUT_FOR_DELIVERY, ARRIVED, or FAILED. Use proof of delivery to complete delivery.',
       );
     }
 
@@ -134,11 +133,6 @@ export class RiderDeliveriesService {
     if (dto.status === DeliveryStatus.ARRIVED) {
       deliveryTimestampData.arrivedAt = new Date();
       nextOrderStatus = OrderStatus.ARRIVED;
-    }
-
-    if (dto.status === DeliveryStatus.DELIVERED) {
-      deliveryTimestampData.deliveredAt = new Date();
-      nextOrderStatus = OrderStatus.DELIVERED;
     }
 
     if (dto.status === DeliveryStatus.FAILED) {
