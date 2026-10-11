@@ -28,6 +28,7 @@ export class OrdersService {
     const branch = await this.findActiveBranch(dto.branchCode);
 
     this.validateTiming(dto);
+    this.validateStoreHours();
 
     this.validateOrderingTime(branch, dto);
 
@@ -407,6 +408,32 @@ export class OrdersService {
     }
 
     return branch;
+  }
+
+  private validateStoreHours(now = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-PH', {
+      timeZone: 'Asia/Manila',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(now);
+
+    const hourValue = Number(
+      parts.find((part) => part.type === 'hour')?.value ?? 0,
+    );
+    const minute = Number(
+      parts.find((part) => part.type === 'minute')?.value ?? 0,
+    );
+    const hour = hourValue === 24 ? 0 : hourValue;
+    const currentMinutes = hour * 60 + minute;
+    const openMinutes = 8 * 60;
+    const closeMinutes = 18 * 60;
+
+    if (currentMinutes < openMinutes || currentMinutes >= closeMinutes) {
+      throw new BadRequestException(
+        'Store is closed. Orders can only be placed from 8:00 AM to 6:00 PM Philippine Time.',
+      );
+    }
   }
 
   private validateTiming(dto: CheckoutDto) {

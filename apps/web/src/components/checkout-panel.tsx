@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import type { Cart, Order, PaymentMethod, ServiceType } from '@/lib/api-types';
 import { checkout } from '@/lib/orders-api';
 import { useAuth } from './auth-provider';
@@ -30,6 +30,27 @@ function getCartTotal(cart: Cart | null) {
   }, 0);
 }
 
+function getStoreHoursStatus(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-PH', {
+    timeZone: 'Asia/Manila',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(now);
+
+  const hourValue = Number(parts.find((part) => part.type === 'hour')?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
+  const hour = hourValue === 24 ? 0 : hourValue;
+  const currentMinutes = hour * 60 + minute;
+  const openMinutes = 8 * 60;
+  const closeMinutes = 18 * 60;
+
+  return {
+    isOpen: currentMinutes >= openMinutes && currentMinutes < closeMinutes,
+    timeLabel: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+  };
+}
+
 export function CheckoutPanel() {
   const { user, token } = useAuth();
   const { cart, refreshCart } = useCart();
@@ -43,11 +64,19 @@ export function CheckoutPanel() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [storeHoursNow, setStoreHoursNow] = useState(() => new Date());
 
   const hasItems = Boolean(cart && cart.items.length > 0);
   const cartCount =
     cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
   const cartTotal = getCartTotal(cart);
+  const storeHours = getStoreHoursStatus(storeHoursNow);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setStoreHoursNow(new Date()), 60_000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function handleCheckout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,6 +92,11 @@ export function CheckoutPanel() {
 
     if (!hasItems) {
       setError('Your cart is empty.');
+      return;
+    }
+
+    if (!getStoreHoursStatus().isOpen) {
+      setError('Store is closed. Orders can only be placed from 8:00 AM to 6:00 PM Philippine Time.');
       return;
     }
 
@@ -177,6 +211,14 @@ export function CheckoutPanel() {
           })}
         </div>
       ) : null}
+
+      <div className={storeHours.isOpen ? 'success-text' : 'error-text'}>
+        <strong>Store Hours:</strong> 8:00 AM to 6:00 PM Philippine Time.
+        Current PH time: {storeHours.timeLabel}.{' '}
+        {storeHours.isOpen
+          ? 'The store is open for checkout.'
+          : 'The store is closed. Checkout is disabled.'}
+      </div>
 
       <form className="checkout-form" onSubmit={handleCheckout}>
         <label>
