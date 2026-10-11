@@ -614,6 +614,17 @@ export type RiderDelivery = {
     paymentMethod: PaymentMethod;
     paymentState: PaymentState;
     totalAmount: string | number;
+    customerNotes: string | null;
+    address: {
+      id: string;
+      recipient: string;
+      phoneNumber: string | null;
+      line1: string;
+      barangay: string;
+      municipality: string;
+      province: string;
+      landmark: string | null;
+    } | null;
     items: OrderItem[];
   };
 };

@@ -17,6 +17,7 @@ import {
 import { useAuth } from './auth-provider';
 import { formatDateTimePH } from '@/lib/ph-time';
 import { OrderItemOptionList } from './order-item-option-list';
+import { buildGoogleMapsSearchUrl, formatAddressForMap } from '@/lib/map-links';
 
 const progressStatuses: DeliveryStatus[] = [
   'OUT_FOR_DELIVERY',
@@ -341,12 +342,35 @@ export function RiderDeliveryPanel() {
             ) : null}
 
             <div className="rider-delivery-address">
-              <p><strong>Navigation Address:</strong></p>
-              <p>{showSnapshot(delivery.navigationAddress)}</p>
+              <p><strong>Delivery Address:</strong></p>
+              {delivery.order.address ? (
+                <>
+                  <p>{formatAddressForMap(delivery.order.address)}</p>
+                  {delivery.order.address.landmark ? (
+                    <p><strong>Landmark:</strong> {delivery.order.address.landmark}</p>
+                  ) : null}
+                  <p>
+                    <strong>Recipient:</strong> {delivery.order.address.recipient}
+                    {delivery.order.address.phoneNumber
+                      ? ` • ${delivery.order.address.phoneNumber}`
+                      : ''}
+                  </p>
+                  <a
+                    className="secondary full-button"
+                    href={buildGoogleMapsSearchUrl(delivery.order.address)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open in Google Maps
+                  </a>
+                </>
+              ) : (
+                <p>{showSnapshot(delivery.navigationAddress)}</p>
+              )}
             </div>
 
             <div className="rider-delivery-address">
-              <p><strong>Customer Contact:</strong></p>
+              <p><strong>Customer Contact Snapshot:</strong></p>
               <p>{showSnapshot(delivery.customerContactSnapshot)}</p>
             </div>
 
