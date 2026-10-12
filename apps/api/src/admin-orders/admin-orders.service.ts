@@ -146,6 +146,15 @@ export class AdminOrdersService {
               'Auto-created after admin cancelled paid GCash order.',
           },
         });
+
+        await tx.order.update({
+          where: {
+            id: orderId,
+          },
+          data: {
+            paymentState: PaymentState.REFUND_PENDING,
+          },
+        });
       }
 
       if (dto.status === OrderStatus.CANCELLED && dto.issueCustomerStrike) {
