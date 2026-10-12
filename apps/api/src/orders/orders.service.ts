@@ -373,7 +373,7 @@ export class OrdersService {
 
     if (orderMinutes < openMinutes || orderMinutes >= closeMinutes) {
       throw new BadRequestException(
-        `Orders can only be placed within branch hours ${openTime}-${closeTime}.`,
+        `Orders can only be placed within branch hours ${openTime}–${closeTime}.`,
       );
     }
   }
@@ -419,6 +419,20 @@ export class OrdersService {
       throw new BadRequestException(
         'Scheduled date is only allowed for advance orders.',
       );
+    }
+
+    if (dto.timingType === OrderTimingType.ADVANCE && dto.scheduledFor) {
+      const scheduledFor = new Date(dto.scheduledFor);
+
+      if (Number.isNaN(scheduledFor.getTime())) {
+        throw new BadRequestException('Scheduled date and time is invalid.');
+      }
+
+      if (scheduledFor.getTime() <= Date.now()) {
+        throw new BadRequestException(
+          'Scheduled date and time must be in the future.',
+        );
+      }
     }
   }
 
