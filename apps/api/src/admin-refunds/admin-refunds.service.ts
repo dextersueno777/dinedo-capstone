@@ -39,10 +39,18 @@ export class AdminRefundsService {
       );
     }
 
+    const refundProofImageUrl = dto.refundProofImageUrl?.trim();
+
+    if (refundProofImageUrl && !this.isProofImage(refundProofImageUrl)) {
+      throw new BadRequestException(
+        'Refund proof must be an image URL or uploaded image data.',
+      );
+    }
+
     if (
       dto.status === RefundStatus.COMPLETED &&
       !dto.gcashReferenceNumber?.trim() &&
-      !dto.refundProofImageUrl?.trim()
+      !refundProofImageUrl
     ) {
       throw new BadRequestException(
         'GCash reference number or refund proof image is required.',
@@ -77,7 +85,7 @@ export class AdminRefundsService {
           completedAt: dto.status === RefundStatus.COMPLETED ? now : null,
           adminNotes: dto.adminNotes?.trim(),
           gcashReferenceNumber: dto.gcashReferenceNumber?.trim(),
-          refundProofImageUrl: dto.refundProofImageUrl?.trim(),
+          refundProofImageUrl,
         },
       });
 
@@ -100,6 +108,13 @@ export class AdminRefundsService {
         select: this.refundSelect(),
       });
     });
+  }
+
+  private isProofImage(value: string) {
+    return (
+      /^https?:\/\//i.test(value) ||
+      /^data:image\/(png|jpe?g|webp);base64,/i.test(value)
+    );
   }
 
   private refundSelect(): Prisma.RefundSelect {

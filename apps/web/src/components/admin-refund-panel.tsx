@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import type { AdminRefund, RefundStatus } from '@/lib/api-types';
 import {
   getAdminRefunds,
@@ -40,6 +40,24 @@ function formatDate(value: string | null | undefined) {
   return formatDateTimePH(value);
 }
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error('Unable to read refund proof image.'));
+    };
+
+    reader.onerror = () => reject(new Error('Unable to read refund proof image.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function AdminRefundPanel() {
   const { user, token } = useAuth();
   const [refunds, setRefunds] = useState<AdminRefund[]>([]);
@@ -49,6 +67,7 @@ export function AdminRefundPanel() {
   const [notesById, setNotesById] = useState<Record<string, string>>({});
   const [refById, setRefById] = useState<Record<string, string>>({});
   const [proofById, setProofById] = useState<Record<string, string>>({});
+  const [proofFileNameById, setProofFileNameById] = useState<Record<string, string>>({});
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isBusy, setIsBusy] = useState(false);
@@ -122,6 +141,49 @@ export function AdminRefundPanel() {
       );
     } finally {
       setIsBusy(false);
+    }
+  }
+
+  async function handleRefundProofFileChange(
+    refundId: string,
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file for refund proof.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError('Refund proof image must be 4 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToDataUrl(file);
+
+      setProofById((current) => ({
+        ...current,
+        [refundId]: dataUrl,
+      }));
+
+      setProofFileNameById((current) => ({
+        ...current,
+        [refundId]: file.name,
+      }));
+
+      setError('');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to read refund proof image.',
+      );
     }
   }
 
@@ -242,18 +304,54 @@ export function AdminRefundPanel() {
               </label>
 
               <label className="admin-payment-proof-field">
-                Refund Proof Image URL
+                Upload Refund Proof Image
                 <input
-                  value={proofById[refund.id] ?? ''}
-                  onChange={(event) =>
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  onChange={(event) => handleRefundProofFileChange(refund.id, event)}
+                />
+                {proofFileNameById[refund.id] ? (
+                  <span className="form-helper">
+                    Selected: {proofFileNameById[refund.id]}
+                  </span>
+                ) : (
+                  <span className="form-helper">
+                    Upload the GCash refund screenshot.
+                  </span>
+                )}
+              </label>
+
+              <label className="admin-payment-proof-field">
+                Refund Proof Image URL Optional
+                <input
+                  value={
+                    proofById[refund.id]?.startsWith('data:image/')
+                      ? ''
+                      : proofById[refund.id] ?? ''
+                  }
+                  onChange={(event) => {
                     setProofById((current) => ({
                       ...current,
                       [refund.id]: event.target.value,
-                    }))
-                  }
-                  placeholder="Optional screenshot/proof URL."
+                    }));
+                    setProofFileNameById((current) => ({
+                      ...current,
+                      [refund.id]: '',
+                    }));
+                  }}
+                  placeholder="Optional: https://example.com/refund-proof.jpg"
                 />
               </label>
+
+              {proofById[refund.id] ? (
+                <div className="receipt-preview">
+                  <p>Refund proof preview</p>
+                  <img
+                    src={proofById[refund.id]}
+                    alt="Selected refund proof preview"
+                  />
+                </div>
+              ) : null}
 
               <button
                 className="secondary full-button"

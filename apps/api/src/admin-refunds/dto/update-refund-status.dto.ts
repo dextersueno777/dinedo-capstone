@@ -17,6 +17,8 @@ export class UpdateRefundStatusDto {
 
   @IsOptional()
   @IsString()
-  @Length(1, 500)
+  @Length(1, 8_000_000, {
+    message: 'Refund proof must be an image URL or uploaded image data.',
+  })
   refundProofImageUrl?: string;
 }
