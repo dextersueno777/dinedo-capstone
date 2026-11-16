@@ -4,24 +4,13 @@ import { useState } from 'react';
 import { useAuth } from './auth-provider';
 
 const mainLinks = [
-  { href: '/', label: 'Home', icon: '🏠' },
-  { href: '#menu', label: 'Menu', icon: '📋', active: true },
+  { href: '#customer-home', label: 'Home', icon: '🏠' },
+  { href: '#menu', label: 'Menu', icon: '🍽️' },
   { href: '#cart', label: 'Cart', icon: '🛒' },
-  { href: '#checkout', label: 'Checkout', icon: '💳' },
-  { href: '#orders', label: 'Orders', icon: '📦' },
-  { href: '#reservations', label: 'Reservations', icon: '🍽️' },
+  { href: '#orders', label: 'My Orders', icon: '📦' },
+  { href: '#reservations', label: 'Reservations', icon: '📅' },
   { href: '#notifications', label: 'Notifications', icon: '🔔' },
-];
-
-const supportLinks = [
-  { href: '#account', label: 'Help Center', icon: '❔' },
-  { href: '#payment-proof', label: 'Payment Guide', icon: '💸' },
-];
-
-const legalLinks = [
-  { href: '/', label: 'Terms & Conditions', icon: '📄' },
-  { href: '/', label: 'Privacy Notice', icon: '🛡️' },
-  { href: '/', label: 'About DineDo', icon: 'ℹ️' },
+  { href: '#account', label: 'Account', icon: '👤' },
 ];
 
 export function CustomerAppDrawer() {
@@ -52,10 +41,20 @@ export function CustomerAppDrawer() {
         />
       ) : null}
 
-      <aside className={isOpen ? 'app-drawer open' : 'app-drawer'} aria-hidden={!isOpen}>
+      <aside
+        className={isOpen ? 'app-drawer open' : 'app-drawer'}
+        aria-hidden={!isOpen}
+      >
         <div className="app-drawer-header">
-          <a className="app-drawer-brand" href="/" onClick={closeDrawer}>
-            <img src="/brand/dindos-logo.jpg" alt="Dindo's Restaurant logo" />
+          <a
+            className="app-drawer-brand"
+            href="#customer-home"
+            onClick={closeDrawer}
+          >
+            <img
+              src="/brand/dindos-logo.jpg"
+              alt="Dindo's Restaurant logo"
+            />
             <span>DineDo</span>
           </a>
 
@@ -69,30 +68,17 @@ export function CustomerAppDrawer() {
           </button>
         </div>
 
-        <nav className="app-drawer-nav" aria-label="Customer app navigation">
+        <nav
+          className="app-drawer-nav"
+          aria-label="Customer app navigation"
+        >
           {mainLinks.map((link) => (
             <a
-              className={link.active ? 'drawer-link drawer-link-active' : 'drawer-link'}
+              className="drawer-link"
               href={link.href}
               key={link.label}
               onClick={closeDrawer}
             >
-              <span aria-hidden="true">{link.icon}</span>
-              {link.label}
-            </a>
-          ))}
-
-          <p className="drawer-section-label">Support</p>
-          {supportLinks.map((link) => (
-            <a className="drawer-link" href={link.href} key={link.label} onClick={closeDrawer}>
-              <span aria-hidden="true">{link.icon}</span>
-              {link.label}
-            </a>
-          ))}
-
-          <p className="drawer-section-label">Legal</p>
-          {legalLinks.map((link) => (
-            <a className="drawer-link" href={link.href} key={link.label} onClick={closeDrawer}>
               <span aria-hidden="true">{link.icon}</span>
               {link.label}
             </a>
@@ -112,7 +98,11 @@ export function CustomerAppDrawer() {
               Logout
             </button>
           ) : (
-            <a className="drawer-login-button" href="#account" onClick={closeDrawer}>
+            <a
+              className="drawer-login-button"
+              href="#account"
+              onClick={closeDrawer}
+            >
               Register / Log in
             </a>
           )}

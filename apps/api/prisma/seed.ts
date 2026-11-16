@@ -22,12 +22,16 @@ async function main(): Promise<void> {
     update: {
       name: 'Dindo’s Restaurant - Tinoc Branch',
       address: 'Tinoc, Ifugao, Philippines',
+      latitude: '16.6777375',
+      longitude: '120.9360469',
       status: 'ACTIVE'
     },
     create: {
       name: 'Dindo’s Restaurant - Tinoc Branch',
       code: 'TINOC',
       address: 'Tinoc, Ifugao, Philippines',
+      latitude: '16.6777375',
+      longitude: '120.9360469',
       status: 'ACTIVE'
     }
   });
@@ -38,20 +42,58 @@ async function main(): Promise<void> {
     },
     update: {
       timezone: 'Asia/Manila',
-      orderingOpenTime: '08:00',
-      orderingCloseTime: '18:00',
+      orderingOpenTime: '07:00',
+      orderingCloseTime: '22:00',
       normalDeliveryKm: '1.00',
       reservationsEnabled: true
     },
     create: {
       branchId: tinocBranch.id,
       timezone: 'Asia/Manila',
-      orderingOpenTime: '08:00',
-      orderingCloseTime: '18:00',
+      orderingOpenTime: '07:00',
+      orderingCloseTime: '22:00',
       normalDeliveryKm: '1.00',
       reservationsEnabled: true
     }
   });
+
+  // Retire the original development-only administrator without deleting
+  // historical records that may reference the account.
+  const legacyDemoAdminEmail = 'admin@dinedo.local';
+
+  if (adminEmail.toLowerCase() !== legacyDemoAdminEmail) {
+    const legacyDemoAdmin = await prisma.user.findUnique({
+      where: {
+        email: legacyDemoAdminEmail
+      },
+      select: {
+        id: true
+      }
+    });
+
+    if (legacyDemoAdmin) {
+      await prisma.$transaction([
+        prisma.refreshSession.updateMany({
+          where: {
+            userId: legacyDemoAdmin.id,
+            revokedAt: null
+          },
+          data: {
+            revokedAt: new Date()
+          }
+        }),
+        prisma.user.update({
+          where: {
+            id: legacyDemoAdmin.id
+          },
+          data: {
+            status: UserStatus.DISABLED,
+            deletedAt: new Date()
+          }
+        })
+      ]);
+    }
+  }
 
   const passwordHash = await argon2.hash(adminPassword, {
     type: argon2.argon2id
@@ -64,16 +106,33 @@ async function main(): Promise<void> {
     update: {
       branchId: tinocBranch.id,
       passwordHash,
-      role: UserRole.ADMIN,
+      role: UserRole.SUPERADMIN,
       status: UserStatus.ACTIVE,
+      workerId: '000000',
+      emailVerifiedAt: new Date(),
+      staffApprovedAt: new Date(),
       deletedAt: null
     },
     create: {
       branchId: tinocBranch.id,
       email: adminEmail.toLowerCase(),
       passwordHash,
-      role: UserRole.ADMIN,
-      status: UserStatus.ACTIVE
+      role: UserRole.SUPERADMIN,
+      status: UserStatus.ACTIVE,
+      workerId: '000000',
+      emailVerifiedAt: new Date(),
+      staffApprovedAt: new Date()
+    }
+  });
+
+  await prisma.staffWorkerSequence.upsert({
+    where: {
+      id: 1
+    },
+    update: {},
+    create: {
+      id: 1,
+      nextValue: 2
     }
   });
 

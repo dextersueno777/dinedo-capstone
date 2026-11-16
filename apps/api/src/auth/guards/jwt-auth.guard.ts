@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../types/auth-user.type';
 import { JwtPayload } from '../types/jwt-payload.type';
@@ -56,12 +56,40 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Account is not active.');
     }
 
+    let effectiveRole = user.role;
+
+    const enabled =
+      this.configService.get<string>('DEMO_MODE_ENABLED') === 'true';
+
+    const demoEmail = (
+      this.configService.get<string>('DEMO_ACCOUNT_EMAIL') ?? ''
+    ).trim().toLowerCase();
+
+    if (
+      enabled &&
+      user.workerId === 'DEMO' &&
+      user.email.toLowerCase() === demoEmail
+    ) {
+      const allowedRoles: UserRole[] = [
+        UserRole.CUSTOMER,
+        UserRole.KITCHEN,
+        UserRole.RIDER,
+        UserRole.ADMIN,
+      ];
+
+      if (allowedRoles.includes(payload.role)) {
+        effectiveRole = payload.role;
+      }
+    }
+
     request.user = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: effectiveRole,
       status: user.status,
+      workerId: user.workerId,
       branchId: user.branchId,
+      emailVerifiedAt: user.emailVerifiedAt,
       firstName: user.profile?.firstName ?? null,
       lastName: user.profile?.lastName ?? null,
     };

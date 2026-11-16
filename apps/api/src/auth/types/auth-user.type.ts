@@ -5,7 +5,9 @@ export type AuthUser = {
   email: string;
   role: UserRole;
   status: UserStatus;
+  workerId: string | null;
   branchId: string | null;
+  emailVerifiedAt: Date | null;
   firstName: string | null;
   lastName: string | null;
 };

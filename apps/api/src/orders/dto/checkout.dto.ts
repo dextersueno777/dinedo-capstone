@@ -1,13 +1,10 @@
 import {
   IsEnum,
   IsISO8601,
-  IsNumber,
   IsOptional,
   IsString,
   Length,
-  Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { OrderTimingType, PaymentMethod, ServiceType } from '@prisma/client';
 
 export class CheckoutDto {
@@ -34,10 +31,9 @@ export class CheckoutDto {
   paymentMethod!: PaymentMethod;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  deliveryDistanceKm?: number;
+  @IsString()
+  @Length(1, 80)
+  reservationId?: string;
 
   @IsOptional()
   @IsString()

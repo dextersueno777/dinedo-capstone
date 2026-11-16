@@ -12,7 +12,7 @@ import { AdminReportsService } from './admin-reports.service';
 
 @Controller('admin/reports')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 export class AdminReportsController {
   constructor(private readonly adminReportsService: AdminReportsService) {}
 

@@ -35,6 +35,20 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('This account role cannot access this resource.');
     }
 
+    if (request.user.role === UserRole.SUPERADMIN) {
+      const configuredOwnerEmail =
+        process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+
+      if (
+        !configuredOwnerEmail ||
+        request.user.email.trim().toLowerCase() !== configuredOwnerEmail
+      ) {
+        throw new ForbiddenException(
+          'This account is not the authorized DineDo owner account.',
+        );
+      }
+    }
+
     return true;
   }
 }

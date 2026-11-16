@@ -24,7 +24,9 @@ export class ReservationsService {
     }
 
     if (reservedFor <= new Date()) {
-      throw new BadRequestException('Reservation date must be in the future.');
+      throw new BadRequestException(
+        'Reservation date must be in the future.',
+      );
     }
 
     const branch = await this.prisma.branch.findFirst({
@@ -74,9 +76,10 @@ export class ReservationsService {
         guestCount: dto.guestCount,
         customerName: dto.customerName.trim(),
         customerPhone: dto.customerPhone.trim(),
+        bookingType: dto.bookingType.trim(),
         notes: dto.notes?.trim(),
-        downPaymentAmount: dto.downPaymentAmount ?? 0,
-        totalEstimate: dto.totalEstimate ?? 0,
+        downPaymentAmount: 0,
+        totalEstimate: 0,
       },
       select: this.reservationSelect(),
     });
@@ -134,6 +137,7 @@ export class ReservationsService {
     }
 
     if (
+      reservation.status === ReservationStatus.REJECTED ||
       reservation.status === ReservationStatus.CANCELLED ||
       reservation.status === ReservationStatus.COMPLETED ||
       reservation.status === ReservationStatus.NO_SHOW
@@ -219,12 +223,17 @@ export class ReservationsService {
     return {
       id: true,
       reservationNumber: true,
+      linkedOrderId: true,
       status: true,
       reservedFor: true,
       guestCount: true,
       customerName: true,
       customerPhone: true,
+      bookingType: true,
       notes: true,
+      depositRequired: true,
+      depositDecisionById: true,
+      depositDecisionAt: true,
       downPaymentAmount: true,
       totalEstimate: true,
       adminNotes: true,

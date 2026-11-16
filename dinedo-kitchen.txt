@@ -1,0 +1,276 @@
+===== KITCHEN PANEL =====
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { KitchenOrder, OrderStatus } from '@/lib/api-types';
+import {
+  getKitchenOrders,
+  updateKitchenOrderStatus,
+} from '@/lib/kitchen-order-api';
+import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
+import { OrderItemOptionList } from './order-item-option-list';
+
+const kitchenStatuses: OrderStatus[] = [
+  'COOKING',
+  'READY_FOR_PICKUP',
+  'READY_TO_SERVE',
+];
+
+function money(value: string | number) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(Number(value));
+}
+
+function formatDate(value: string) {
+  return formatDateTimePH(value);
+}
+
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
+export function KitchenOrderPanel() {
+  const { user, token } = useAuth();
+  const [orders, setOrders] = useState<KitchenOrder[]>([]);
+  const [statusByOrderId, setStatusByOrderId] = useState<Record<string, OrderStatus>>({});
+  const [notesByOrderId, setNotesByOrderId] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isBusy, setIsBusy] = useState(false);
+
+  async function loadOrders() {
+    if (!token || user?.role !== 'KITCHEN') {
+      setOrders([]);
+      return;
+    }
+
+    setError('');
+
+    try {
+      const loadedOrders = await getKitchenOrders(token);
+      setOrders(loadedOrders);
+
+      const nextStatus: Record<string, OrderStatus> = {};
+      const nextNotes: Record<string, string> = {};
+
+      for (const order of loadedOrders) {
+        nextStatus[order.id] =
+          order.status === 'APPROVED' ? 'COOKING' : order.status;
+        nextNotes[order.id] = '';
+      }
+
+      setStatusByOrderId(nextStatus);
+      setNotesByOrderId(nextNotes);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to load kitchen orders.',
+      );
+    }
+  }
+
+  async function handleUpdateStatus(orderId: string) {
+    if (!token) {
+      return;
+    }
+
+    setIsBusy(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const updated = await updateKitchenOrderStatus(token, orderId, {
+        status: statusByOrderId[orderId],
+        notes: notesByOrderId[orderId]?.trim() || undefined,
+      });
+
+      setMessage(`Kitchen order updated: ${updated.orderNumber}`);
+      await loadOrders();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to update kitchen order.',
+      );
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    loadOrders();
+  }, [token, user?.role]);
+
+  return (
+    <section id="kitchen-orders" className="card kitchen-order-panel">
+      <div className="kitchen-order-heading">
+        <div>
+          <p className="eyebrow">Kitchen Operations</p>
+          <h2>Kitchen Order Queue</h2>
+          <p>View approved orders, check item details, and update preparation status.</p>
+        </div>
+
+        <div className="kitchen-order-actions">
+          <span>{orders.length} order(s)</span>
+          <button className="secondary" type="button" onClick={loadOrders}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="kitchen-order-tips">
+        <span>📋 Read order</span>
+        <span>👨‍🍳 Start cooking</span>
+        <span>🥡 Ready for pickup</span>
+        <span>🍽️ Ready to serve</span>
+      </div>
+
+      {message ? <p className="success-text">{message}</p> : null}
+      {error ? <p className="error-text">{error}</p> : null}
+
+      {user?.role !== 'KITCHEN' ? (
+        <div className="empty-kitchen-order-state">
+          <span aria-hidden="true">👨‍🍳</span>
+          <h3>Kitchen login required</h3>
+          <p>Login as kitchen staff to view approved orders and update preparation.</p>
+        </div>
+      ) : null}
+
+      <div className="kitchen-order-list">
+        {orders.length === 0 && user?.role === 'KITCHEN' ? (
+          <div className="empty-kitchen-order-state">
+            <span aria-hidden="true">📭</span>
+            <h3>No kitchen orders</h3>
+            <p>Approved customer orders will appear here for preparation.</p>
+          </div>
+        ) : null}
+
+        {orders.map((order) => (
+          <article className="kitchen-order-card kitchen-order-card-polished" key={order.id}>
+            <div className="kitchen-order-card-header">
+              <div>
+                <h3>{order.orderNumber}</h3>
+                <p>{formatDate(order.createdAt)}</p>
+              </div>
+
+              <span className="status-pill">{formatLabel(order.status)}</span>
+            </div>
+
+            <div className="kitchen-order-summary-grid">
+              <p><strong>Customer:</strong> {order.customer.email}</p>
+              <p><strong>Service:</strong> {formatLabel(order.serviceType)}</p>
+              <p><strong>Payment:</strong> {formatLabel(order.paymentMethod)}</p>
+              <p><strong>Payment State:</strong> {formatLabel(order.paymentState)}</p>
+              <p><strong>Total:</strong> {money(order.totalAmount)}</p>
+              <p><strong>Branch:</strong> {order.branch.name}</p>
+            </div>
+
+            {order.customerNotes ? (
+              <p><strong>Customer Notes:</strong> {order.customerNotes}</p>
+            ) : null}
+
+            <div className="kitchen-order-items">
+              <h4>Order Items</h4>
+
+              {order.items.map((item) => (
+                <article className="order-item-detail" key={item.id}>
+                  <p>
+                    {item.quantity}× {item.itemName} — {money(item.lineTotal)}
+                  </p>
+                  <OrderItemOptionList item={item} />
+                </article>
+              ))}
+            </div>
+
+            <label className="kitchen-order-field">
+              Preparation Status
+              <select
+                value={statusByOrderId[order.id] ?? 'COOKING'}
+                onChange={(event) =>
+                  setStatusByOrderId((current) => ({
+                    ...current,
+                    [order.id]: event.target.value as OrderStatus,
+                  }))
+                }
+              >
+                {kitchenStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {formatLabel(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="kitchen-order-field">
+              Kitchen Notes
+              <input
+                value={notesByOrderId[order.id] ?? ''}
+                onChange={(event) =>
+                  setNotesByOrderId((current) => ({
+                    ...current,
+                    [order.id]: event.target.value,
+                  }))
+                }
+                placeholder="Example: Started cooking."
+              />
+            </label>
+
+            <button
+              className="secondary full-button"
+              type="button"
+              disabled={isBusy}
+              onClick={() => handleUpdateStatus(order.id)}
+            >
+              Update Preparation Status
+            </button>
+
+            <div className="kitchen-order-history">
+              <h4>Status History</h4>
+              {order.statusHistory.map((history) => (
+                <p key={history.id}>
+                  <strong>{formatLabel(history.toStatus)}</strong>
+                  {history.notes ? ` — ${history.notes}` : ''}
+                </p>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+===== KITCHEN API =====
+import { apiClient } from './api-client';
+import type {
+  KitchenOrder,
+  UpdateKitchenOrderStatusPayload,
+} from './api-types';
+
+export function getKitchenOrders(token: string) {
+  return apiClient<KitchenOrder[]>('/kitchen/orders', {
+    token,
+  });
+}
+
+export function getKitchenOrderById(token: string, orderId: string) {
+  return apiClient<KitchenOrder>(`/kitchen/orders/${orderId}`, {
+    token,
+  });
+}
+
+export function updateKitchenOrderStatus(
+  token: string,
+  orderId: string,
+  payload: UpdateKitchenOrderStatusPayload,
+) {
+  return apiClient<KitchenOrder>(`/kitchen/orders/${orderId}/status`, {
+    method: 'PATCH',
+    token,
+    body: payload,
+  });
+}

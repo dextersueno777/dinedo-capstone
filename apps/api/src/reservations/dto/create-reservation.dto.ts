@@ -1,7 +1,6 @@
 import {
   IsISO8601,
   IsInt,
-  IsNumber,
   IsOptional,
   IsString,
   Length,
@@ -32,20 +31,13 @@ export class CreateReservationDto {
   @Length(7, 30)
   customerPhone!: string;
 
+  @IsString()
+  @Length(1, 120)
+  bookingType!: string;
+
   @IsOptional()
   @IsString()
   @Length(1, 500)
   notes?: string;
 
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  downPaymentAmount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  totalEstimate?: number;
 }

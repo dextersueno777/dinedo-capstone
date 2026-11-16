@@ -9,7 +9,7 @@ import { AdminRidersService } from './admin-riders.service';
 @ApiTags('Admin Riders')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 @Controller('admin/riders')
 export class AdminRidersController {
   constructor(private readonly adminRidersService: AdminRidersService) {}

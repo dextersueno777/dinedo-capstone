@@ -8,6 +8,7 @@ type RoleGateProps = {
   allowedRoles: UserRole[];
   portalName: string;
   children: ReactNode;
+  unauthenticatedFallback?: ReactNode;
 };
 
 function formatRole(role: UserRole) {
@@ -22,6 +23,7 @@ export function RoleGate({
   allowedRoles,
   portalName,
   children,
+  unauthenticatedFallback,
 }: Readonly<RoleGateProps>) {
   const { user, isLoading } = useAuth();
 
@@ -33,6 +35,10 @@ export function RoleGate({
         <p>Preparing your DineDo session.</p>
       </section>
     );
+  }
+
+  if (!user && unauthenticatedFallback) {
+    return <>{unauthenticatedFallback}</>;
   }
 
   if (!user) {

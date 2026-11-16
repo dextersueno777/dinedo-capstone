@@ -1,0 +1,349 @@
+===== CHECKOUT SUCCESS =====
+51-
+52-    return total + (basePrice + optionTotal) * item.quantity;
+53-  }, 0);
+54-}
+55-
+56-export function CheckoutPanel() {
+57-  const { user, token } = useAuth();
+58-  const { cart, refreshCart } = useCart();
+59-  const [serviceType, setServiceType] = useState<ServiceType>('TAKE_OUT');
+60-  const [timingType, setTimingType] =
+61-    useState<OrderTimingType>('IMMEDIATE');
+62-  const [scheduledFor, setScheduledFor] = useState(() =>
+63-    getManilaDatetimeLocalValue(1, 12, 0),
+64-  );
+65-  const [paymentMethod, setPaymentMethod] =
+66-    useState<PaymentMethod>('PAY_AT_COUNTER');
+67-  const [customerNotes, setCustomerNotes] = useState('');
+68-  const [selectedAddressId, setSelectedAddressId] = useState('');
+69-  const [reservations, setReservations] = useState<Reservation[]>([]);
+70-  const [selectedReservationId, setSelectedReservationId] = useState('');
+71:  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
+72-  const [message, setMessage] = useState('');
+73-  const [error, setError] = useState('');
+74-  const [isSubmitting, setIsSubmitting] = useState(false);
+75-  const [storeHoursNow, setStoreHoursNow] = useState(() => new Date());
+76-  const [branch, setBranch] = useState<Branch | null>(null);
+77-
+78-  const hasItems = Boolean(cart && cart.items.length > 0);
+79-  const cartCount =
+80-    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+81-  const cartTotal = getCartTotal(cart);
+82-  const orderingOpenTime = branch?.settings?.orderingOpenTime ?? '07:00';
+83-  const orderingCloseTime = branch?.settings?.orderingCloseTime ?? '22:00';
+84-  const branchTimeZone = branch?.settings?.timezone ?? 'Asia/Manila';
+85-  const storeHours = getBranchHoursStatus(
+86-    storeHoursNow,
+87-    orderingOpenTime,
+88-    orderingCloseTime,
+89-    branchTimeZone,
+90-  );
+91-
+92-  const availableReservations = reservations.filter(
+93-    (reservation) =>
+94-      !reservation.linkedOrderId &&
+95-      (reservation.status === 'PENDING' || reservation.status === 'APPROVED') &&
+96-      new Date(reservation.reservedFor).getTime() > Date.now(),
+97-  );
+98-
+99-  const linkedReservation =
+100-    availableReservations.find(
+101-      (reservation) => reservation.id === selectedReservationId,
+102-    ) ?? null;
+103-
+104-  useEffect(() => {
+105-    let cancelled = false;
+106-
+107-    getBranchByCode('TINOC')
+108-      .then((loadedBranch) => {
+109-        if (!cancelled) setBranch(loadedBranch);
+110-      })
+111-      .catch(() => {
+112-        if (!cancelled) setBranch(null);
+113-      });
+114-
+115-    return () => {
+116-      cancelled = true;
+--
+218-      setError('Please select a delivery address.');
+219-      return;
+220-    }
+221-
+222-    setIsSubmitting(true);
+223-
+224-    try {
+225-      const order = await checkout(token, {
+226-        branchCode: 'TINOC',
+227-        serviceType: checkoutServiceType,
+228-        timingType: checkoutTimingType,
+229-        scheduledFor: checkoutScheduledFor,
+230-        reservationId: linkedReservation?.id,
+231-        paymentMethod: checkoutPaymentMethod,
+232-        addressId:
+233-          checkoutServiceType === 'DELIVERY' ? selectedAddressId : undefined,
+234-        customerNotes: customerNotes.trim() || undefined,
+235-      });
+236-
+237-      setCreatedOrder(order);
+238:      setMessage(`Order submitted successfully: ${order.orderNumber}`);
+239-      setCustomerNotes('');
+240-      await refreshCart();
+241-    } catch (caughtError) {
+242-      setError(
+243-        caughtError instanceof Error
+244-          ? caughtError.message
+245-          : 'Checkout failed. Please try again.',
+246-      );
+247-    } finally {
+248-      setIsSubmitting(false);
+249-    }
+250-  }
+251-
+252-  return (
+253-    <section id="checkout" className="card checkout-card checkout-card-polished">
+254-      <div className="checkout-header">
+255-        <div>
+256-          <p className="eyebrow">Checkout</p>
+257-          <h2>Review and submit your order</h2>
+258-          <p>
+259-            Choose your service type, payment method, and notes before sending
+260-            the order to staff for review.
+261-          </p>
+262-        </div>
+263-
+264-        <div className="checkout-total-card">
+265-          <span>Estimated Total</span>
+266-          <strong>{formatPrice(cartTotal)}</strong>
+267-          <small>{cartCount === 1 ? '1 item in cart' : `${cartCount} items in cart`}</small>
+268-        </div>
+269-      </div>
+270-
+271-      <div className="checkout-steps">
+272-        <span>🛒 Cart</span>
+273-        <span>🍽️ Service</span>
+274-        <span>💳 Payment</span>
+275-        <span>📦 Staff Review</span>
+276-      </div>
+277-
+278-      {cart && cart.items.length > 0 ? (
+279-        <div className="checkout-review-list">
+280-          <div className="checkout-review-heading">
+281-            <h3>Order items</h3>
+282-            <span>{cartCount === 1 ? '1 item' : `${cartCount} items`}</span>
+283-          </div>
+--
+472-          <textarea
+473-            value={customerNotes}
+474-            maxLength={500}
+475-            placeholder="Optional notes for the staff..."
+476-            onChange={(event) => setCustomerNotes(event.target.value)}
+477-          />
+478-        </label>
+479-
+480-        <button
+481-          className="primary full-button"
+482-          type="submit"
+483-          disabled={isSubmitting || !hasItems}
+484-        >
+485-          {isSubmitting ? 'Submitting...' : 'Submit Order'}
+486-        </button>
+487-
+488-        {!hasItems ? <p>Your cart must have items before checkout.</p> : null}
+489-        {message ? <p className="success-text">{message}</p> : null}
+490-        {error ? <p className="error-text">{error}</p> : null}
+491-
+492:        {createdOrder ? (
+493-          <div className="order-result">
+494-            <h3>Order Created</h3>
+495:            <p>Order Number: {createdOrder.orderNumber}</p>
+496:            <p>Status: {createdOrder.status}</p>
+497:            <p>Total: {formatPrice(createdOrder.totalAmount)}</p>
+498-          </div>
+499-        ) : null}
+500-      </form>
+501-    </section>
+502-  );
+503-}
+
+===== ORDER HISTORY =====
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { Order, OrderStatus } from '@/lib/api-types';
+import { cancelOrder, getMyOrders, respondDeliveryFee } from '@/lib/orders-api';
+import { useAuth } from './auth-provider';
+import { formatDateTimePH } from '@/lib/ph-time';
+import { OrderItemOptionList } from './order-item-option-list';
+
+function formatPrice(price: string | number) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(Number(price));
+}
+
+function formatDate(value: string) {
+  return formatDateTimePH(value);
+}
+
+function getCustomerStatusSteps(
+  serviceType: Order['serviceType'],
+): OrderStatus[] {
+  if (serviceType === 'DINE_IN') {
+    return [
+      'PENDING',
+      'APPROVED',
+      'COOKING',
+      'READY_TO_SERVE',
+      'COMPLETED',
+    ];
+  }
+
+  if (serviceType === 'TAKE_OUT') {
+    return [
+      'PENDING',
+      'APPROVED',
+      'COOKING',
+      'READY_FOR_PICKUP',
+      'COMPLETED',
+    ];
+  }
+
+  return [
+    'PENDING',
+    'APPROVED',
+    'COOKING',
+    'READY_FOR_PICKUP',
+    'ASSIGNED_TO_RIDER',
+    'OUT_FOR_DELIVERY',
+    'ARRIVED',
+    'DELIVERED',
+    'COMPLETED',
+  ];
+}
+
+function getStepClass(order: Order, step: OrderStatus) {
+  const statusHistory = order.statusHistory.map((history) => history.toStatus);
+
+  if (order.status === step) {
+    return 'status-step active-status-step';
+  }
+
+  if (statusHistory.includes(step)) {
+    return 'status-step completed-status-step';
+  }
+
+  return 'status-step';
+}
+
+function formatLabel(value: string) {
+  return value.replaceAll('_', ' ').toLowerCase();
+}
+
+export function OrderHistory() {
+  const { user, token } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [feeBusyByOrderId, setFeeBusyByOrderId] = useState<Record<string, boolean>>({});
+  const [cancelBusyByOrderId, setCancelBusyByOrderId] = useState<Record<string, boolean>>({});
+
+  async function loadOrders() {
+    if (!token || user?.role !== 'CUSTOMER') {
+      setOrders([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const loadedOrders = await getMyOrders(token);
+      setOrders(loadedOrders);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to load order history.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleDeliveryFee(orderId: string, accept: boolean) {
+    if (!token) return;
+
+    setFeeBusyByOrderId((current) => ({ ...current, [orderId]: true }));
+    setMessage('');
+    setError('');
+
+    try {
+      const updatedOrder = await respondDeliveryFee(token, orderId, {
+        accept,
+        notes: accept
+          ? 'Customer accepted additional delivery fee.'
+          : 'Customer rejected additional delivery fee.',
+      });
+
+      setOrders((current) =>
+        current.map((order) => (order.id === orderId ? updatedOrder : order)),
+      );
+
+      setMessage(
+        accept
+          ? 'Additional delivery fee accepted.'
+          : 'Additional delivery fee rejected. Order cancelled.',
+      );
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to respond to delivery fee.',
+      );
+    } finally {
+      setFeeBusyByOrderId((current) => ({ ...current, [orderId]: false }));
+    }
+  }
+
+  async function handleCancelOrder(orderId: string) {
+    if (!token) return;
+
+    const confirmed = window.confirm(
+      'Cancel this pending order? This is only allowed before preparation.',
+    );
+
+    if (!confirmed) return;
+
+    setCancelBusyByOrderId((current) => ({ ...current, [orderId]: true }));
+    setMessage('');
+    setError('');
+
+    try {
+      const updatedOrder = await cancelOrder(token, orderId, {
+        cancellationReason: 'Customer cancelled pending order.',
+      });
+
+      setOrders((current) =>
+        current.map((order) => (order.id === orderId ? updatedOrder : order)),
+      );
+
+      setMessage('Order cancelled successfully.');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to cancel order.',
+      );
+    } finally {
+      setCancelBusyByOrderId((current) => ({ ...current, [orderId]: false }));
+    }
+  }
+
+  useEffect(() => {
+    loadOrders();
+  }, [token, user?.id]);
+

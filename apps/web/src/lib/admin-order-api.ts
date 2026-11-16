@@ -55,3 +55,17 @@ export function assignAdminOrderRider(
   });
 }
 
+
+export function confirmAdminCounterPayment(
+  token: string,
+  orderId: string,
+) {
+  return apiClient<AdminOrder>(
+    `/admin/orders/${orderId}/confirm-counter-payment`,
+    {
+      method: 'PATCH',
+      token,
+    },
+  );
+}
+

@@ -88,7 +88,7 @@ export function AdminInventoryPanel() {
   const [isBusy, setIsBusy] = useState(false);
 
   async function loadInventory() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (!token || user?.role !== 'SUPERADMIN') {
       setItems([]);
       return;
     }
@@ -286,11 +286,11 @@ export function AdminInventoryPanel() {
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <p>Login as an admin to manage inventory.</p>
       ) : null}
 
-      {user?.role === 'ADMIN' ? (
+      {user?.role === 'SUPERADMIN' ? (
         <>
           <form className="admin-inventory-form" onSubmit={handleCreateItem}>
             <h3>Add Inventory Item</h3>

@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react';
 import type {
   AdminPaymentProof,
+  AdminReservationDepositProof,
   PaymentProofStatus,
 } from '@/lib/api-types';
 import {
   getAdminPaymentProofs,
+  getAdminReservationDepositProofs,
   reviewAdminPaymentProof,
+  reviewAdminReservationDepositProof,
 } from '@/lib/admin-payment-proof-api';
 import { useAuth } from './auth-provider';
 import { formatDateTimePH } from '@/lib/ph-time';
@@ -46,6 +49,8 @@ function formatLabel(value: string) {
 export function AdminPaymentProofPanel() {
   const { user, token } = useAuth();
   const [proofs, setProofs] = useState<AdminPaymentProof[]>([]);
+  const [reservationDepositProofs, setReservationDepositProofs] =
+    useState<AdminReservationDepositProof[]>([]);
   const [filterStatus, setFilterStatus] =
     useState<PaymentProofStatus | 'ALL'>('PENDING_REVIEW');
   const [reviewStatusById, setReviewStatusById] =
@@ -59,7 +64,7 @@ export function AdminPaymentProofPanel() {
   const [isBusy, setIsBusy] = useState(false);
 
   async function loadProofs() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (!token || user?.role !== 'SUPERADMIN') {
       setProofs([]);
       return;
     }
@@ -68,14 +73,19 @@ export function AdminPaymentProofPanel() {
 
     try {
       const status = filterStatus === 'ALL' ? undefined : filterStatus;
-      const loadedProofs = await getAdminPaymentProofs(token, status);
+      const [loadedProofs, loadedReservationProofs] = await Promise.all([
+        getAdminPaymentProofs(token, status),
+        getAdminReservationDepositProofs(token, status),
+      ]);
+
       setProofs(loadedProofs);
+      setReservationDepositProofs(loadedReservationProofs);
 
       const nextStatus: Record<string, PaymentProofStatus> = {};
       const nextNotes: Record<string, string> = {};
       const nextReason: Record<string, string> = {};
 
-      for (const proof of loadedProofs) {
+      for (const proof of [...loadedProofs, ...loadedReservationProofs]) {
         nextStatus[proof.id] =
           proof.status === 'PENDING_REVIEW' ? 'APPROVED' : proof.status;
         nextNotes[proof.id] = '';
@@ -131,6 +141,45 @@ export function AdminPaymentProofPanel() {
     }
   }
 
+  async function handleReservationDepositReview(proofId: string) {
+    if (!token) return;
+
+    setIsBusy(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const reviewStatus = reviewStatusById[proofId];
+
+      const reviewedProof = await reviewAdminReservationDepositProof(
+        token,
+        proofId,
+        {
+          status: reviewStatus,
+          reviewNotes: reviewNotesById[proofId]?.trim() || undefined,
+          rejectionReason:
+            reviewStatus === 'REJECTED'
+              ? rejectionReasonById[proofId]?.trim() || 'Rejected by owner.'
+              : undefined,
+        },
+      );
+
+      setMessage(
+        `Reservation deposit reviewed: ${reviewedProof.reservation.reservationNumber}`,
+      );
+
+      await loadProofs();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to review reservation deposit proof.',
+      );
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   return (
     <section id="admin-payment-proofs" className="card admin-payment-proof-panel">
       <div className="admin-payment-proof-heading">
@@ -158,7 +207,7 @@ export function AdminPaymentProofPanel() {
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <div className="empty-admin-payment-proof-state">
           <span aria-hidden="true">🛡️</span>
           <h3>Admin login required</h3>
@@ -166,7 +215,7 @@ export function AdminPaymentProofPanel() {
         </div>
       ) : null}
 
-      {user?.role === 'ADMIN' ? (
+      {user?.role === 'SUPERADMIN' ? (
         <label className="admin-payment-proof-filter admin-payment-proof-filter-polished">
           Show Proofs
           <select
@@ -185,7 +234,7 @@ export function AdminPaymentProofPanel() {
       ) : null}
 
       <div className="admin-payment-proof-list">
-        {proofs.length === 0 && user?.role === 'ADMIN' ? (
+        {proofs.length === 0 && user?.role === 'SUPERADMIN' ? (
           <div className="empty-admin-payment-proof-state">
             <span aria-hidden="true">📭</span>
             <h3>No payment proofs found</h3>
@@ -283,6 +332,113 @@ export function AdminPaymentProofPanel() {
           </article>
         ))}
       </div>
+      <div className="admin-payment-proof-list">
+        <h3>Reservation Deposit Proofs</h3>
+
+        {reservationDepositProofs.length === 0 &&
+        user?.role === 'SUPERADMIN' ? (
+          <p>No reservation deposit proofs found.</p>
+        ) : null}
+
+        {reservationDepositProofs.map((proof) => (
+          <article
+            className="admin-payment-proof-card admin-payment-proof-card-polished"
+            key={proof.id}
+          >
+            <div className="admin-payment-proof-card-header">
+              <div>
+                <h3>{proof.reservation.reservationNumber}</h3>
+                <p>Submitted: {formatDate(proof.submittedAt)}</p>
+              </div>
+
+              <span className="status-pill">
+                {formatLabel(proof.status)}
+              </span>
+            </div>
+
+            <div className="admin-payment-proof-summary-grid">
+              <p><strong>Customer:</strong> {proof.reservation.customerName}</p>
+              <p><strong>Phone:</strong> {proof.reservation.customerPhone}</p>
+              <p><strong>Amount:</strong> {money(proof.amount)}</p>
+              <p><strong>GCash Ref:</strong> {proof.gcashReferenceNumber ?? 'N/A'}</p>
+              <p><strong>Payer:</strong> {proof.payerName ?? 'N/A'}</p>
+              <p><strong>Last 4:</strong> {proof.payerAccountLast4 ?? 'N/A'}</p>
+              <p><strong>Reserved For:</strong> {formatDate(proof.reservation.reservedFor)}</p>
+              <p><strong>Uploaded By:</strong> {proof.uploadedBy.email}</p>
+            </div>
+
+            <div className="admin-payment-proof-image">
+              <p><strong>Deposit Receipt:</strong></p>
+              <img
+                src={proof.proofImageUrl}
+                alt="Submitted reservation deposit GCash receipt"
+              />
+              <a href={proof.proofImageUrl} target="_blank" rel="noreferrer">
+                Open receipt in new tab
+              </a>
+            </div>
+
+            <div className="admin-payment-proof-review">
+              <label className="admin-payment-proof-field">
+                Review Decision
+                <select
+                  value={reviewStatusById[proof.id] ?? 'APPROVED'}
+                  onChange={(event) =>
+                    setReviewStatusById((current) => ({
+                      ...current,
+                      [proof.id]: event.target.value as PaymentProofStatus,
+                    }))
+                  }
+                >
+                  {reviewStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {formatLabel(status)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="admin-payment-proof-field">
+                Review Notes
+                <input
+                  value={reviewNotesById[proof.id] ?? ''}
+                  onChange={(event) =>
+                    setReviewNotesById((current) => ({
+                      ...current,
+                      [proof.id]: event.target.value,
+                    }))
+                  }
+                  placeholder="Example: Reservation deposit verified."
+                />
+              </label>
+
+              <label className="admin-payment-proof-field">
+                Rejection Reason
+                <input
+                  value={rejectionReasonById[proof.id] ?? ''}
+                  onChange={(event) =>
+                    setRejectionReasonById((current) => ({
+                      ...current,
+                      [proof.id]: event.target.value,
+                    }))
+                  }
+                  placeholder="Required when rejecting."
+                />
+              </label>
+
+              <button
+                className="secondary full-button"
+                type="button"
+                disabled={isBusy || proof.status !== 'PENDING_REVIEW'}
+                onClick={() => handleReservationDepositReview(proof.id)}
+              >
+                Submit Deposit Review
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
     </section>
   );
 }

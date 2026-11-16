@@ -1,0 +1,173 @@
+===== AUTH USER TYPE =====
+import { UserRole, UserStatus } from '@prisma/client';
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  branchId: string | null;
+  firstName: string | null;
+  lastName: string | null;
+};
+
+===== JWT PAYLOAD =====
+import { UserRole } from '@prisma/client';
+
+export type JwtPayload = {
+  sub: string;
+  email: string;
+  role: UserRole;
+  branchId: string | null;
+  sessionId?: string;
+};
+
+===== JWT GUARD =====
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { UserStatus } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthUser } from '../types/auth-user.type';
+import { JwtPayload } from '../types/jwt-payload.type';
+
+@Injectable()
+export class JwtAuthGuard implements CanActivate {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<{
+      headers: Record<string, string | string[] | undefined>;
+      user?: AuthUser;
+    }>();
+
+    const authorization = request.headers.authorization;
+
+    if (!authorization || Array.isArray(authorization)) {
+      throw new UnauthorizedException('Missing authorization header.');
+    }
+
+    const [scheme, token] = authorization.split(' ');
+
+    if (scheme !== 'Bearer' || !token) {
+      throw new UnauthorizedException('Invalid authorization header.');
+    }
+
+    const secret = this.configService.getOrThrow<string>('JWT_ACCESS_SECRET');
+
+    const payload = await this.jwtService
+      .verifyAsync<JwtPayload>(token, { secret })
+      .catch(() => {
+        throw new UnauthorizedException('Invalid or expired token.');
+      });
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account is not active.');
+    }
+
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      branchId: user.branchId,
+      firstName: user.profile?.firstName ?? null,
+      lastName: user.profile?.lastName ?? null,
+    };
+
+    return true;
+  }
+}
+
+===== ROLES GUARD =====
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { UserRole } from '@prisma/client';
+import { AuthUser } from '../types/auth-user.type';
+import { ROLES_KEY } from '../decorators/roles.decorator';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const request = context.switchToHttp().getRequest<{
+      user?: AuthUser;
+    }>();
+
+    if (!request.user) {
+      throw new ForbiddenException('Authenticated user is required.');
+    }
+
+    if (!requiredRoles.includes(request.user.role)) {
+      throw new ForbiddenException('This account role cannot access this resource.');
+    }
+
+    if (request.user.role === UserRole.SUPERADMIN) {
+      const configuredOwnerEmail =
+        process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+
+      if (
+        !configuredOwnerEmail ||
+        request.user.email.trim().toLowerCase() !== configuredOwnerEmail
+      ) {
+        throw new ForbiddenException(
+          'This account is not the authorized DineDo owner account.',
+        );
+      }
+    }
+
+    return true;
+  }
+}
+
+===== AUTH MODULE =====
+import { Global, Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PrismaModule } from '../prisma/prisma.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+
+@Global()
+@Module({
+  imports: [JwtModule.register({}), PrismaModule],
+  controllers: [AuthController],
+  providers: [AuthService, JwtAuthGuard, RolesGuard],
+  exports: [JwtModule, AuthService, JwtAuthGuard, RolesGuard],
+})
+export class AuthModule {}
+
+===== SUPER ADMIN FILES =====
+apps/api/src/auth/dto/update-superadmin-contact-number.dto.ts

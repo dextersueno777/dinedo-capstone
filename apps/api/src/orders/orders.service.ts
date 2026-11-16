@@ -12,6 +12,7 @@ import {
   OrderTimingType,
   PaymentMethod,
   PaymentState,
+  ReservationStatus,
   ServiceType,
   Prisma,
 } from '@prisma/client';
@@ -19,10 +20,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutDto } from './dto/checkout.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { RespondDeliveryFeeDto } from './dto/respond-delivery-fee.dto';
+import { MapboxDirectionsService } from './mapbox-directions.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly mapboxDirections: MapboxDirectionsService) {}
 
   async checkout(customerId: string, dto: CheckoutDto) {
     const branch = await this.findActiveBranch(dto.branchCode);
@@ -31,7 +33,13 @@ export class OrdersService {
 
     this.validateOrderingTime(branch, dto);
 
-    const addressId = await this.validateServiceAndPayment(customerId, dto);
+    const deliveryAddress = await this.validateServiceAndPayment(customerId, dto);
+
+    const linkedReservation = await this.validateReservationLink(
+      customerId,
+      branch.id,
+      dto,
+    );
 
     const cart = await this.prisma.cart.findUnique({
       where: {
@@ -74,13 +82,22 @@ export class OrdersService {
     }
 
     const subtotalAmount = this.calculateSubtotal(cart.items);
-    const deliveryFeeStatus = this.getDeliveryFeeStatus(branch, dto);
+    const deliveryDistanceKm =
+      dto.serviceType === ServiceType.DELIVERY && deliveryAddress
+        ? await this.calculateRouteDistanceKm(branch, deliveryAddress)
+        : 0;
+    const deliveryFeeStatus = this.getDeliveryFeeStatus(
+      branch,
+      dto.serviceType,
+      deliveryDistanceKm,
+    );
     const totalAmount = subtotalAmount;
 
     const scheduledFor =
-      dto.timingType === OrderTimingType.ADVANCE && dto.scheduledFor
+      linkedReservation?.reservedFor ??
+      (dto.timingType === OrderTimingType.ADVANCE && dto.scheduledFor
         ? new Date(dto.scheduledFor)
-        : null;
+        : null);
 
     const orderNumber = await this.generateOrderNumber();
 
@@ -90,7 +107,7 @@ export class OrdersService {
           orderNumber,
           branchId: branch.id,
           customerId,
-          addressId,
+          addressId: deliveryAddress?.id ?? null,
           serviceType: dto.serviceType,
           timingType: dto.timingType,
           scheduledFor,
@@ -136,6 +153,25 @@ export class OrdersService {
         },
       });
 
+      if (linkedReservation) {
+        const linkResult = await tx.reservation.updateMany({
+          where: {
+            id: linkedReservation.id,
+            linkedOrderId: null,
+          },
+          data: {
+            linkedOrderId: createdOrder.id,
+            totalEstimate: subtotalAmount,
+          },
+        });
+
+        if (linkResult.count !== 1) {
+          throw new BadRequestException(
+            'This reservation already has a linked food order.',
+          );
+        }
+      }
+
       if (dto.serviceType === ServiceType.DELIVERY) {
         await tx.delivery.create({
           data: {
@@ -145,6 +181,7 @@ export class OrdersService {
             codAmountToCollect:
               dto.paymentMethod === PaymentMethod.COD ? totalAmount : 0,
             deliveryFeeAmount: 0,
+            routeDistanceKm: deliveryDistanceKm,
           },
         });
       }
@@ -244,6 +281,7 @@ export class OrdersService {
         id: true,
         status: true,
         serviceType: true,
+        paymentMethod: true,
         deliveryFeeStatus: true,
         subtotalAmount: true,
         deliveryFeeAmount: true,
@@ -286,6 +324,42 @@ export class OrdersService {
             : 'Customer rejected additional delivery fee.',
         },
       });
+
+      if (dto.accept) {
+        const acceptedTotal =
+          Number(order.subtotalAmount) +
+          Number(order.deliveryFeeAmount) +
+          Number(order.additionalDeliveryFeeAmount);
+
+        await tx.delivery.updateMany({
+          where: {
+            orderId: order.id,
+            deletedAt: null,
+          },
+          data: {
+            codAmountToCollect:
+              order.paymentMethod === PaymentMethod.COD
+                ? acceptedTotal
+                : 0,
+            deliveryFeeAmount:
+              Number(order.deliveryFeeAmount) +
+              Number(order.additionalDeliveryFeeAmount),
+          },
+        });
+      }
+
+      if (!dto.accept) {
+        await tx.delivery.updateMany({
+          where: {
+            orderId: order.id,
+            deletedAt: null,
+          },
+          data: {
+            status: DeliveryStatus.CANCELLED,
+            cancelledAt: new Date(),
+          },
+        });
+      }
 
       await tx.orderStatusHistory.create({
         data: {
@@ -347,8 +421,8 @@ export class OrdersService {
     dto: CheckoutDto,
   ) {
     const timezone = branch.settings?.timezone ?? 'Asia/Manila';
-    const openTime = branch.settings?.orderingOpenTime ?? '08:00';
-    const closeTime = branch.settings?.orderingCloseTime ?? '18:00';
+    const openTime = branch.settings?.orderingOpenTime ?? '07:00';
+    const closeTime = branch.settings?.orderingCloseTime ?? '22:00';
 
     const targetDate =
       dto.timingType === OrderTimingType.ADVANCE && dto.scheduledFor
@@ -391,6 +465,8 @@ export class OrdersService {
       },
       select: {
         id: true,
+        latitude: true,
+        longitude: true,
         status: true,
         settings: {
           select: {
@@ -459,6 +535,8 @@ export class OrdersService {
         },
         select: {
           id: true,
+          latitude: true,
+          longitude: true,
         },
       });
 
@@ -466,7 +544,29 @@ export class OrdersService {
         throw new NotFoundException('Address not found.');
       }
 
-      return address.id;
+      return address;
+    }
+
+    if (dto.serviceType === ServiceType.TAKE_OUT) {
+      if (
+        dto.paymentMethod !== PaymentMethod.PAY_AT_COUNTER &&
+        dto.paymentMethod !== PaymentMethod.GCASH_MANUAL
+      ) {
+        throw new BadRequestException(
+          'Take-out orders only support pay at counter or manual GCash.',
+        );
+      }
+    }
+
+    if (dto.serviceType === ServiceType.DINE_IN) {
+      if (
+        dto.paymentMethod !== PaymentMethod.PAY_AFTER_EATING &&
+        dto.paymentMethod !== PaymentMethod.GCASH_MANUAL
+      ) {
+        throw new BadRequestException(
+          'Dine-in orders only support pay after eating or manual GCash.',
+        );
+      }
     }
 
     if (dto.addressId) {
@@ -478,20 +578,126 @@ export class OrdersService {
     return null;
   }
 
+  private async validateReservationLink(
+    customerId: string,
+    branchId: string,
+    dto: CheckoutDto,
+  ) {
+    if (!dto.reservationId) {
+      return null;
+    }
+
+    if (dto.timingType !== OrderTimingType.ADVANCE) {
+      throw new BadRequestException(
+        'A reservation can only be linked to an advance food order.',
+      );
+    }
+
+    if (dto.serviceType !== ServiceType.DINE_IN) {
+      throw new BadRequestException(
+        'A table reservation can only be linked to a dine-in food order.',
+      );
+    }
+
+    const reservation = await this.prisma.reservation.findFirst({
+      where: {
+        id: dto.reservationId,
+        customerId,
+        branchId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        reservedFor: true,
+        linkedOrderId: true,
+      },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found.');
+    }
+
+    if (reservation.linkedOrderId) {
+      throw new BadRequestException(
+        'This reservation already has a linked food order.',
+      );
+    }
+
+    if (
+      reservation.status === ReservationStatus.REJECTED ||
+      reservation.status === ReservationStatus.CANCELLED ||
+      reservation.status === ReservationStatus.COMPLETED ||
+      reservation.status === ReservationStatus.NO_SHOW
+    ) {
+      throw new BadRequestException(
+        'A food order cannot be linked to this reservation status.',
+      );
+    }
+
+    if (!dto.scheduledFor) {
+      throw new BadRequestException(
+        'Scheduled date and time is required for a linked reservation order.',
+      );
+    }
+
+    const scheduledFor = new Date(dto.scheduledFor);
+
+    if (
+      Math.abs(scheduledFor.getTime() - reservation.reservedFor.getTime()) >
+      60_000
+    ) {
+      throw new BadRequestException(
+        'The advance food order schedule must match the reservation schedule.',
+      );
+    }
+
+    return reservation;
+  }
+
+  private async calculateRouteDistanceKm(
+    branch: { latitude: unknown; longitude: unknown },
+    address: { latitude: unknown; longitude: unknown },
+  ) {
+    if (
+      branch.latitude == null ||
+      branch.longitude == null ||
+      address.latitude == null ||
+      address.longitude == null
+    ) {
+      throw new BadRequestException(
+        'Delivery location coordinates are incomplete.',
+      );
+    }
+
+    const route = await this.mapboxDirections.getDrivingRoute(
+      {
+        latitude: Number(branch.latitude),
+        longitude: Number(branch.longitude),
+      },
+      {
+        latitude: Number(address.latitude),
+        longitude: Number(address.longitude),
+      },
+    );
+
+    return route.distanceKm;
+  }
+
   private getDeliveryFeeStatus(
     branch: {
       settings: {
         normalDeliveryKm: { toString(): string };
       } | null;
     },
-    dto: CheckoutDto,
+    serviceType: ServiceType,
+    distanceKm: number,
   ) {
-    if (dto.serviceType !== ServiceType.DELIVERY) {
+    if (serviceType !== ServiceType.DELIVERY) {
       return DeliveryFeeStatus.NOT_REQUIRED;
     }
 
     const normalKm = Number(branch.settings?.normalDeliveryKm ?? 1);
-    const distanceKm = dto.deliveryDistanceKm ?? 0;
 
     if (distanceKm > normalKm) {
       return DeliveryFeeStatus.PENDING_STAFF_REVIEW;

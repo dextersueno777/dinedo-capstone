@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  DeliveryFeeStatus,
   OrderStatus,
   PaymentMethod,
   PaymentProofStatus,
   PaymentState,
   Prisma,
+  ServiceType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubmitPaymentProofDto } from './dto/submit-payment-proof.dto';
@@ -31,8 +33,11 @@ export class PaymentProofsService {
       select: {
         id: true,
         status: true,
+        serviceType: true,
         paymentMethod: true,
         paymentState: true,
+        deliveryFeeStatus: true,
+        totalAmount: true,
       },
     });
 
@@ -62,13 +67,29 @@ export class PaymentProofsService {
       throw new BadRequestException('This order payment is already approved.');
     }
 
+    if (order.paymentState === PaymentState.PROOF_SUBMITTED) {
+      throw new BadRequestException(
+        'A payment proof for this order is already waiting for review.',
+      );
+    }
+
+    if (
+      order.serviceType === ServiceType.DELIVERY &&
+      order.deliveryFeeStatus !== DeliveryFeeStatus.NOT_REQUIRED &&
+      order.deliveryFeeStatus !== DeliveryFeeStatus.ACCEPTED
+    ) {
+      throw new BadRequestException(
+        'Please wait until the delivery fee is finalized before submitting GCash payment proof.',
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const proof = await tx.paymentProof.create({
         data: {
           orderId,
           uploadedById: customerId,
           status: PaymentProofStatus.PENDING_REVIEW,
-          amount: dto.amount,
+          amount: order.totalAmount,
           proofImageUrl: dto.proofImageUrl,
           gcashReferenceNumber: dto.gcashReferenceNumber?.trim(),
           payerName: dto.payerName?.trim(),

@@ -1,3 +1,6 @@
+import { StaffOnboardingPanels } from '@/components/staff-onboarding-panels';
+import { StaffIdentityBadge } from '@/components/staff-identity-badge';
+import { DemoRoleSwitcher } from '@/components/demo-role-switcher';
 import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { AdminDashboardPanel } from '@/components/admin-dashboard-panel';
@@ -7,10 +10,14 @@ import { AdminReservationPanel } from '@/components/admin-reservation-panel';
 import { AdminInventoryPanel } from '@/components/admin-inventory-panel';
 import { AdminRefundPanel } from '@/components/admin-refund-panel';
 import { AdminAuditLogPanel } from '@/components/admin-audit-log-panel';
+import { PasswordRecoveryReviewPanel } from '@/components/password-recovery-review-panel';
+import { SecurityQuestionExistingSetup } from '@/components/security-question-existing-setup';
 
 export default function AdminPage() {
   return (
     <main className="page portal-page">
+      <StaffIdentityBadge />
+      <DemoRoleSwitcher />
       <header className="portal-header admin-portal-header">
         <a className="topbar-brand" href="/" aria-label="Go to DineDo home">
           <img src="/brand/dindos-logo.jpg" alt="Dindo's Restaurant logo" />
@@ -37,9 +44,12 @@ export default function AdminPage() {
         </p>
       </section>
 
-      <AuthPanel />
-      <RoleGate allowedRoles={['ADMIN']} portalName="Admin Dashboard">
+      <AuthPanel loginOnly adminExperience allowedLoginRoles={['ADMIN', 'SUPERADMIN']} />
+      <StaffOnboardingPanels role="ADMIN" />
+      <RoleGate allowedRoles={['ADMIN', 'SUPERADMIN']} portalName="Admin Dashboard">
+        <SecurityQuestionExistingSetup />
         <AdminDashboardPanel />
+        <PasswordRecoveryReviewPanel />
         <AdminOrderPanel />
         <AdminPaymentProofPanel />
         <AdminReservationPanel />

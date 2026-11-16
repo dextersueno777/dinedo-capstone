@@ -10,7 +10,7 @@ import { UpdateRefundStatusDto } from './dto/update-refund-status.dto';
 
 @Controller('admin/refunds')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 export class AdminRefundsController {
   constructor(private readonly adminRefundsService: AdminRefundsService) {}
 

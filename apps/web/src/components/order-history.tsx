@@ -18,14 +18,41 @@ function formatDate(value: string) {
   return formatDateTimePH(value);
 }
 
-const customerStatusSteps: OrderStatus[] = [
-  'PENDING',
-  'APPROVED',
-  'COOKING',
-  'READY_FOR_PICKUP',
-  'OUT_FOR_DELIVERY',
-  'DELIVERED',
-];
+function getCustomerStatusSteps(
+  serviceType: Order['serviceType'],
+): OrderStatus[] {
+  if (serviceType === 'DINE_IN') {
+    return [
+      'PENDING',
+      'APPROVED',
+      'COOKING',
+      'READY_TO_SERVE',
+      'COMPLETED',
+    ];
+  }
+
+  if (serviceType === 'TAKE_OUT') {
+    return [
+      'PENDING',
+      'APPROVED',
+      'COOKING',
+      'READY_FOR_PICKUP',
+      'COMPLETED',
+    ];
+  }
+
+  return [
+    'PENDING',
+    'APPROVED',
+    'COOKING',
+    'READY_FOR_PICKUP',
+    'ASSIGNED_TO_RIDER',
+    'OUT_FOR_DELIVERY',
+    'ARRIVED',
+    'DELIVERED',
+    'COMPLETED',
+  ];
+}
 
 function getStepClass(order: Order, step: OrderStatus) {
   const statusHistory = order.statusHistory.map((history) => history.toStatus);
@@ -97,6 +124,8 @@ export function OrderHistory() {
         current.map((order) => (order.id === orderId ? updatedOrder : order)),
       );
 
+      window.dispatchEvent(new Event('dinedo:orders-changed'));
+
       setMessage(
         accept
           ? 'Additional delivery fee accepted.'
@@ -135,6 +164,8 @@ export function OrderHistory() {
         current.map((order) => (order.id === orderId ? updatedOrder : order)),
       );
 
+      window.dispatchEvent(new Event('dinedo:orders-changed'));
+
       setMessage('Order cancelled successfully.');
     } catch (caughtError) {
       setError(
@@ -148,7 +179,45 @@ export function OrderHistory() {
   }
 
   useEffect(() => {
-    loadOrders();
+    void loadOrders();
+
+    function handleOrdersChanged() {
+      void loadOrders();
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        void loadOrders();
+      }
+    }
+
+    const refreshInterval = window.setInterval(() => {
+      void loadOrders();
+    }, 30000);
+
+    window.addEventListener(
+      'dinedo:orders-changed',
+      handleOrdersChanged,
+    );
+
+    document.addEventListener(
+      'visibilitychange',
+      handleVisibilityChange,
+    );
+
+    return () => {
+      window.clearInterval(refreshInterval);
+
+      window.removeEventListener(
+        'dinedo:orders-changed',
+        handleOrdersChanged,
+      );
+
+      document.removeEventListener(
+        'visibilitychange',
+        handleVisibilityChange,
+      );
+    };
   }, [token, user?.id]);
 
   if (!user) {
@@ -205,7 +274,7 @@ export function OrderHistory() {
             </div>
 
             <div className="customer-status-flow" aria-label="Customer order status flow">
-              {customerStatusSteps.map((step) => (
+              {getCustomerStatusSteps(order.serviceType).map((step) => (
                 <span className={getStepClass(order, step)} key={step}>
                   {formatLabel(step)}
                 </span>
@@ -215,6 +284,14 @@ export function OrderHistory() {
             <div className="order-summary-grid">
               <p>
                 <strong>Service:</strong> {formatLabel(order.serviceType)}
+              </p>
+              <p>
+                <strong>Timing:</strong>{' '}
+                {order.timingType === 'ADVANCE'
+                  ? order.scheduledFor
+                    ? `Advance — ${formatDate(order.scheduledFor)}`
+                    : 'Advance'
+                  : 'Order now'}
               </p>
               <p>
                 <strong>Payment:</strong> {formatLabel(order.paymentMethod)}

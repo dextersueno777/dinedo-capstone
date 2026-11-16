@@ -4,6 +4,7 @@ import type {
   AssignAdminReservationTablesPayload,
   ReservationStatus,
   ReviewAdminReservationPayload,
+  SetAdminReservationDepositPayload,
   UpdateAdminReservationStatusPayload,
 } from './api-types';
 
@@ -22,6 +23,21 @@ export function getAdminReservationById(token: string, reservationId: string) {
   return apiClient<AdminReservation>(`/admin/reservations/${reservationId}`, {
     token,
   });
+}
+
+export function setAdminReservationDepositRequirement(
+  token: string,
+  reservationId: string,
+  payload: SetAdminReservationDepositPayload,
+) {
+  return apiClient<AdminReservation>(
+    `/admin/reservations/${reservationId}/deposit-requirement`,
+    {
+      method: 'PATCH',
+      token,
+      body: payload,
+    },
+  );
 }
 
 export function reviewAdminReservation(

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { AdminOrder, AdminRider, OrderStatus } from '@/lib/api-types';
 import {
   assignAdminOrderRider,
+  confirmAdminCounterPayment,
   getAdminOrders,
   setAdminDeliveryFee,
   updateAdminOrderStatus,
@@ -61,7 +62,10 @@ export function AdminOrderPanel() {
   const [isBusy, setIsBusy] = useState(false);
 
   async function loadRiders() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (
+      !token ||
+      (user?.role !== 'SUPERADMIN' && user?.role !== 'ADMIN')
+    ) {
       setRiders([]);
       return;
     }
@@ -79,7 +83,10 @@ export function AdminOrderPanel() {
   }
 
   async function loadOrders() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (
+      !token ||
+      (user?.role !== 'SUPERADMIN' && user?.role !== 'ADMIN')
+    ) {
       setOrders([]);
       return;
     }
@@ -151,6 +158,28 @@ export function AdminOrderPanel() {
         caughtError instanceof Error
           ? caughtError.message
           : 'Unable to update order status.',
+      );
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function handleConfirmCounterPayment(orderId: string) {
+    if (!token) return;
+
+    setIsBusy(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const updated = await confirmAdminCounterPayment(token, orderId);
+      setMessage(`Counter payment confirmed: ${updated.orderNumber}`);
+      await loadOrders();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to confirm counter payment.',
       );
     } finally {
       setIsBusy(false);
@@ -252,7 +281,7 @@ export function AdminOrderPanel() {
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <div className="empty-admin-order-state">
           <span aria-hidden="true">🛡️</span>
           <h3>Admin login required</h3>
@@ -260,7 +289,7 @@ export function AdminOrderPanel() {
         </div>
       ) : null}
 
-      {user?.role === 'ADMIN' ? (
+      {user?.role === 'SUPERADMIN' ? (
         <div className="admin-order-notes">
           <label>
             Status Reason
@@ -292,7 +321,7 @@ export function AdminOrderPanel() {
       ) : null}
 
       <div className="admin-order-list">
-        {orders.length === 0 && user?.role === 'ADMIN' ? (
+        {orders.length === 0 && user?.role === 'SUPERADMIN' ? (
           <div className="empty-admin-order-state">
             <span aria-hidden="true">📭</span>
             <h3>No orders found</h3>
@@ -341,6 +370,7 @@ export function AdminOrderPanel() {
             <label className="admin-order-field">
               Update Status
               <select
+                disabled={isBusy || order.status === 'COMPLETED'}
                 value={statusByOrderId[order.id] ?? order.status}
                 onChange={(event) =>
                   setStatusByOrderId((current) => ({
@@ -391,11 +421,24 @@ export function AdminOrderPanel() {
             <button
               className="secondary full-button"
               type="button"
-              disabled={isBusy}
+              disabled={isBusy || order.status === 'COMPLETED'}
               onClick={() => handleUpdateStatus(order.id)}
             >
               Update Status
             </button>
+
+            {order.paymentMethod === 'PAY_AT_COUNTER' &&
+            order.paymentState === 'UNPAID' &&
+            order.status === 'READY_FOR_PICKUP' ? (
+              <button
+                className="primary full-button"
+                type="button"
+                disabled={isBusy}
+                onClick={() => handleConfirmCounterPayment(order.id)}
+              >
+                Confirm Counter Payment
+              </button>
+            ) : null}
 
             {order.serviceType === 'DELIVERY' ? (
               <>

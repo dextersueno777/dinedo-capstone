@@ -1,0 +1,528 @@
+===== MENU BROWSER =====
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import type { MenuCategory, MenuItem, MenuOptionGroup } from '@/lib/api-types';
+import { getMenuCategories, getMenuItems } from '@/lib/menu-api';
+import { useAuth } from './auth-provider';
+import { useCart } from './cart-provider';
+
+function formatPrice(price: string | number) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(Number(price));
+}
+
+export function MenuBrowser() {
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
+  const [specialNotes, setSpecialNotes] = useState('');
+  const [search, setSearch] = useState('');
+  const [message, setMessage] = useState('Loading menu...');
+  const [cartMessage, setCartMessage] = useState('');
+  const [error, setError] = useState('');
+  const { user } = useAuth();
+  const { addMenuItem } = useCart();
+
+  useEffect(() => {
+    let isActive = true;
+
+    Promise.all([
+      getMenuCategories(),
+      getMenuItems(),
+    ])
+      .then(([loadedCategories, loadedItems]) => {
+        if (!isActive) {
+          return;
+        }
+
+        setCategories(loadedCategories);
+        setItems(loadedItems);
+        setMessage('');
+      })
+      .catch((caughtError) => {
+        if (!isActive) {
+          return;
+        }
+
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to load menu.',
+        );
+        setMessage('');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const featuredItems = useMemo(
+    () => items.filter((item) => item.isFeatured).slice(0, 6),
+    [items],
+  );
+
+  const visibleCategories = useMemo(() => {
+    const categorySlugsWithItems = new Set(
+      items.map((item) => item.category.slug),
+    );
+
+    return categories.filter((category) =>
+      categorySlugsWithItems.has(category.slug),
+    );
+  }, [categories, items]);
+
+  const filteredItems = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const matchesCategory =
+        !selectedCategory || item.category.slug === selectedCategory;
+
+      const matchesSearch =
+        !normalizedSearch ||
+        item.name.toLowerCase().includes(normalizedSearch) ||
+        item.description?.toLowerCase().includes(normalizedSearch);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [items, selectedCategory, search]);
+
+  useEffect(() => {
+    if (
+      selectedCategory &&
+      !visibleCategories.some((category) => category.slug === selectedCategory)
+    ) {
+      setSelectedCategory('');
+    }
+  }, [selectedCategory, visibleCategories]);
+
+  const menuCountText =
+    filteredItems.length === 1
+      ? '1 item available'
+      : `${filteredItems.length} items available`;
+
+  function hasFlexiblePricing(item: MenuItem) {
+    const description = item.description?.toLowerCase() ?? '';
+
+    return (
+      description.includes('₱') ||
+      description.includes('solo') ||
+      description.includes('unli') ||
+      description.includes('small:') ||
+      description.includes('medium:') ||
+      description.includes('large:') ||
+      description.includes('whole')
+    );
+  }
+
+  const selectedItemImage = selectedItem?.images?.[0]?.url;
+
+
+  function resetItemSelection() {
+    setSelectedItem(null);
+    setSelectedQuantity(1);
+    setSelectedOptionIds([]);
+    setSpecialNotes('');
+  }
+
+  function openItemDetail(item: MenuItem) {
+    setSelectedItem(item);
+    setSelectedQuantity(1);
+    setSelectedOptionIds([]);
+    setSpecialNotes('');
+  }
+
+  function getSelectedOptionsTotal(item: MenuItem) {
+    return (item.optionGroups ?? [])
+      .flatMap((group) => group.options)
+      .filter((option) => selectedOptionIds.includes(option.id))
+      .reduce((total, option) => total + Number(option.priceDelta), 0);
+  }
+
+  function getOptionPriceLabel(priceDelta: string | number) {
+    const amount = Number(priceDelta);
+    if (amount > 0) return `+${formatPrice(amount)}`;
+    if (amount < 0) return `-${formatPrice(Math.abs(amount))}`;
+    return 'Included';
+  }
+
+  function toggleOption(group: MenuOptionGroup, optionId: string) {
+    setSelectedOptionIds((current) => {
+      const groupOptionIds = group.options.map((option) => option.id);
+      const isSelected = current.includes(optionId);
+
+      if (group.type === 'SINGLE') {
+        return [...current.filter((id) => !groupOptionIds.includes(id)), optionId];
+      }
+
+      if (isSelected) {
+        return current.filter((id) => id !== optionId);
+      }
+
+      const selectedInGroup = current.filter((id) => groupOptionIds.includes(id));
+      if (selectedInGroup.length >= group.maxSelect) return current;
+
+      return [...current, optionId];
+    });
+  }
+
+  function getOptionSelectionError(item: MenuItem, optionIds: string[]) {
+    for (const group of item.optionGroups ?? []) {
+      const groupOptionIds = group.options.map((option) => option.id);
+      const selectedCount = optionIds.filter((id) => groupOptionIds.includes(id)).length;
+
+      if (group.isRequired && selectedCount === 0) {
+        return `Please open this item and select ${group.name}.`;
+      }
+
+      if (selectedCount < group.minSelect) {
+        return `Please select at least ${group.minSelect} option(s) for ${group.name}.`;
+      }
+
+      if (selectedCount > group.maxSelect) {
+        return `Please select only ${group.maxSelect} option(s) for ${group.name}.`;
+      }
+    }
+
+    return '';
+  }
+
+  async function handleAddToCart(item: MenuItem, quantity = 1) {
+    setCartMessage('');
+    setError('');
+
+    if (!user || user.role !== 'CUSTOMER') {
+      setError('Please login as a customer before adding items to cart.');
+      return;
+    }
+
+    if (item.status !== 'AVAILABLE') {
+      setError('This menu item is currently sold out.');
+      return;
+    }
+
+    const optionIds = selectedItem?.id === item.id ? selectedOptionIds : [];
+    const notes = selectedItem?.id === item.id ? specialNotes : '';
+    const optionError = getOptionSelectionError(item, optionIds);
+
+    if (optionError) {
+      setError(optionError);
+      return;
+    }
+
+    try {
+      await addMenuItem(item.id, quantity, optionIds, notes);
+      setCartMessage(
+        quantity > 1
+          ? `${quantity}× ${item.name} added to cart.`
+          : `${item.name} added to cart.`,
+      );
+      resetItemSelection();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to add item to cart.',
+      );
+    }
+  }
+
+  return (
+    <section id="menu" className="card">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Order Menu</p>
+          <h2>Choose your Dindo favorites</h2>
+          <p className="section-subtitle">{menuCountText}</p>
+        </div>
+
+        <input
+          className="search-input"
+          type="search"
+          placeholder="Search menu..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      </div>
+
+      <div className="category-row">
+        <button
+          className={selectedCategory === '' ? 'chip active-chip' : 'chip'}
+          type="button"
+          onClick={() => setSelectedCategory('')}
+        >
+          All
+        </button>
+
+        {visibleCategories.map((category) => (
+          <button
+            className={
+              selectedCategory === category.slug ? 'chip active-chip' : 'chip'
+            }
+            key={category.id}
+            type="button"
+            onClick={() => setSelectedCategory(category.slug)}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+
+      {message ? <p>{message}</p> : null}
+      {cartMessage ? <p className="success-text">{cartMessage}</p> : null}
+      {error ? <p className="error-text">{error}</p> : null}
+
+      {!message && !error && featuredItems.length > 0 ? (
+        <div className="featured-menu-block">
+          <div className="mini-section-heading">
+            <div>
+              <p className="eyebrow">Popular Picks</p>
+              <h3>Featured Favorites</h3>
+            </div>
+            <a href="#cart">View Cart</a>
+          </div>
+
+          <div className="featured-menu-row">
+            {featuredItems.map((item) => {
+              const menuImage = item.images?.[0]?.url;
+
+              return (
+                <article
+                  className="featured-menu-card menu-clickable-card"
+                  key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openItemDetail(item)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openItemDetail(item);
+                    }
+                  }}
+                >
+                  {menuImage ? (
+                    <img
+                      src={menuImage}
+                      alt={item.images?.[0]?.altText ?? item.name}
+                      loading="lazy"
+                    />
+                  ) : null}
+
+                  <div>
+                    <p>{item.category.name}</p>
+                    <h4>{item.name}</h4>
+                    <strong>
+                      {hasFlexiblePricing(item) ? 'Starts at ' : ''}
+                      {formatPrice(item.price)}
+                    </strong>
+                  </div>
+
+                  <button
+                    className="primary"
+                    type="button"
+                    disabled={item.status !== 'AVAILABLE'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleAddToCart(item);
+                    }}
+                  >
+                    Add
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="menu-grid">
+        {filteredItems.map((item) => {
+          const menuImage = item.images?.[0]?.url;
+
+          return (
+            <article
+              className="menu-card menu-clickable-card"
+              key={item.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => openItemDetail(item)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openItemDetail(item);
+                }
+              }}
+
+===== CART PANEL =====
+'use client';
+
+import type { Cart } from '@/lib/api-types';
+import { useAuth } from './auth-provider';
+import { useCart } from './cart-provider';
+
+function formatPrice(price: string | number) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(Number(price));
+}
+
+function getCartTotal(cart: Cart | null) {
+  if (!cart) {
+    return 0;
+  }
+
+  return cart.items.reduce((total, item) => {
+    const basePrice = Number(item.menuItem.price);
+    const optionTotal = item.options.reduce(
+      (optionSum, option) => optionSum + Number(option.priceDelta) * option.quantity,
+      0,
+    );
+
+    return total + (basePrice + optionTotal) * item.quantity;
+  }, 0);
+}
+
+export function CartPanel() {
+  const { user } = useAuth();
+  const { cart, isLoading, error, updateItem, removeItem, clearMyCart } = useCart();
+
+  const cartCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  const cartTotal = getCartTotal(cart);
+
+  if (!user) {
+    return (
+      <section id="cart" className="card cart-card cart-empty-card">
+        <p className="eyebrow">Cart</p>
+        <h2>Sign in to view cart</h2>
+        <p>Please login as a customer to add meals, review quantities, and checkout.</p>
+      </section>
+    );
+  }
+
+  if (user.role !== 'CUSTOMER') {
+    return (
+      <section id="cart" className="card cart-card cart-empty-card">
+        <p className="eyebrow">Cart</p>
+        <h2>Customer cart only</h2>
+        <p>Use a customer account to add food items and submit orders.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section id="cart" className="card cart-card">
+      <div className="cart-heading">
+        <div>
+          <p className="eyebrow">Order Summary</p>
+          <h2>My Cart</h2>
+          <p className="section-subtitle">
+            {cartCount === 1 ? '1 item selected' : `${cartCount} items selected`}
+          </p>
+        </div>
+
+        <strong>{formatPrice(cartTotal)}</strong>
+      </div>
+
+      {isLoading ? <p>Loading cart...</p> : null}
+      {error ? <p className="error-text">{error}</p> : null}
+
+      {!isLoading && cart && cart.items.length === 0 ? (
+        <div className="empty-cart-state">
+          <span aria-hidden="true">🛒</span>
+          <h3>Your cart is empty</h3>
+          <p>Start by choosing meals from the Dindo menu.</p>
+          <a className="primary cart-link-button" href="#menu">
+            Browse Menu
+          </a>
+        </div>
+      ) : null}
+
+      <div className="cart-list">
+        {cart?.items.map((item) => (
+          <article className="cart-item" key={item.id}>
+            <div>
+              <h3>{item.menuItem.name}</h3>
+              <p>
+                {formatPrice(item.menuItem.price)} × {item.quantity}
+              </p>
+
+              {item.options.length > 0 ? (
+                <ul className="cart-option-list">
+                  {item.options.map((option) => (
+                    <li key={option.id}>
+                      <span>
+                        {option.menuOption.optionGroup.name}: {option.menuOption.name}
+                      </span>
+                      {Number(option.priceDelta) > 0 ? (
+                        <strong>+{formatPrice(option.priceDelta)}</strong>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {item.specialNotes ? (
+                <p className="cart-special-notes">Note: {item.specialNotes}</p>
+              ) : null}
+            </div>
+
+            <div className="cart-actions">
+              <button
+                className="small-button"
+                type="button"
+                disabled={item.quantity <= 1}
+                onClick={() => updateItem(item.id, item.quantity - 1)}
+              >
+                −
+              </button>
+
+              <span>{item.quantity}</span>
+
+              <button
+                className="small-button"
+                type="button"
+                onClick={() => updateItem(item.id, item.quantity + 1)}
+              >
+                +
+              </button>
+
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => removeItem(item.id)}
+              >
+                Remove
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {cart && cart.items.length > 0 ? (
+        <div className="cart-summary-bar">
+          <div>
+            <span>Total</span>
+            <strong>{formatPrice(cartTotal)}</strong>
+          </div>
+
+          <a className="primary cart-link-button" href="#checkout">
+            Go to Checkout
+          </a>
+
+          <button className="danger-button" type="button" onClick={clearMyCart}>
+            Clear Cart
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
+}

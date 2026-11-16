@@ -73,7 +73,7 @@ export function AdminRefundPanel() {
   const [isBusy, setIsBusy] = useState(false);
 
   async function loadRefunds() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (!token || user?.role !== 'SUPERADMIN') {
       setRefunds([]);
       return;
     }
@@ -204,11 +204,11 @@ export function AdminRefundPanel() {
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <p>Login as an admin to manage refunds.</p>
       ) : null}
 
-      {user?.role === 'ADMIN' ? (
+      {user?.role === 'SUPERADMIN' ? (
         <label className="admin-payment-proof-filter">
           Filter Status
           <select
@@ -227,7 +227,7 @@ export function AdminRefundPanel() {
       ) : null}
 
       <div className="admin-payment-proof-list">
-        {refunds.length === 0 && user?.role === 'ADMIN' ? (
+        {refunds.length === 0 && user?.role === 'SUPERADMIN' ? (
           <p>No refunds found.</p>
         ) : null}
 

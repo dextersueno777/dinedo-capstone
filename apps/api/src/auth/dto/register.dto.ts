@@ -1,4 +1,15 @@
-import { IsEmail, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsEmail,
+  IsString,
+  Length,
+  Matches,
+  ValidateNested,
+} from 'class-validator';
+import { SecurityQuestionAnswerDto } from './security-question-answer.dto';
 
 export class RegisterDto {
   @IsEmail()
@@ -16,8 +27,14 @@ export class RegisterDto {
   @Length(1, 80)
   lastName!: string;
 
-  @IsOptional()
   @IsString()
   @Matches(/^09\d{9}$/)
-  phoneNumber?: string;
+  phoneNumber!: string;
+
+  @IsArray()
+  @ArrayMinSize(3)
+  @ArrayMaxSize(3)
+  @ValidateNested({ each: true })
+  @Type(() => SecurityQuestionAnswerDto)
+  securityQuestions!: SecurityQuestionAnswerDto[];
 }

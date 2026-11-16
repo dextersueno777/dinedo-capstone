@@ -1,10 +1,16 @@
+import { StaffOnboardingPanels } from '@/components/staff-onboarding-panels';
+import { StaffIdentityBadge } from '@/components/staff-identity-badge';
+import { DemoRoleSwitcher } from '@/components/demo-role-switcher';
 import { RoleGate } from '@/components/role-gate';
 import { AuthPanel } from '@/components/auth-panel';
 import { KitchenOrderPanel } from '@/components/kitchen-order-panel';
+import { SecurityQuestionExistingSetup } from '@/components/security-question-existing-setup';
 
 export default function KitchenPage() {
   return (
     <main className="page portal-page">
+      <StaffIdentityBadge />
+      <DemoRoleSwitcher />
       <header className="portal-header kitchen-portal-header">
         <a className="topbar-brand" href="/" aria-label="Go to DineDo home">
           <img src="/brand/dindos-logo.jpg" alt="Dindo's Restaurant logo" />
@@ -28,8 +34,10 @@ export default function KitchenPage() {
         </p>
       </section>
 
-      <AuthPanel />
+      <AuthPanel loginOnly allowedLoginRoles={['KITCHEN']} />
+      <StaffOnboardingPanels role="KITCHEN" />
       <RoleGate allowedRoles={['KITCHEN']} portalName="Kitchen Staff Portal">
+        <SecurityQuestionExistingSetup />
         <KitchenOrderPanel />
       </RoleGate>
     </main>

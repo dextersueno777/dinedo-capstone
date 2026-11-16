@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { CustomerAddress } from '@/lib/api-types';
-import { createAddress, getMyAddresses } from '@/lib/address-api';
+import { createAddress, getMyAddresses, updateAddress } from '@/lib/address-api';
 import { useAuth } from './auth-provider';
 
 type AddressSelectorProps = {
@@ -63,6 +63,13 @@ export function AddressSelector({
     setError('');
 
     try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+      });
+
       const address = await createAddress(token, {
         label: 'Home',
         recipient: 'Customer',
@@ -72,6 +79,8 @@ export function AddressSelector({
         municipality: 'Tinoc',
         province: 'Ifugao',
         landmark: 'Near Dindo’s Restaurant',
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
         isDefault: true,
       });
 
@@ -83,6 +92,39 @@ export function AddressSelector({
         caughtError instanceof Error
           ? caughtError.message
           : 'Unable to create address.',
+      );
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  async function handleUpdateSelectedLocation() {
+    if (!token || !selectedAddressId) return;
+
+    setIsCreating(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+      });
+
+      await updateAddress(token, selectedAddressId, {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+
+      setMessage('Delivery location updated.');
+      await loadAddresses();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to update delivery location.',
       );
     } finally {
       setIsCreating(false);
@@ -130,6 +172,21 @@ export function AddressSelector({
           </label>
         ))}
       </div>
+
+      {addresses.some(
+        (address) =>
+          address.id === selectedAddressId &&
+          (address.latitude == null || address.longitude == null),
+      ) ? (
+        <button
+          className="secondary full-button"
+          type="button"
+          onClick={handleUpdateSelectedLocation}
+          disabled={isCreating}
+        >
+          {isCreating ? 'Getting location...' : 'Use My Current Location'}
+        </button>
+      ) : null}
 
       {addresses.length === 0 ? (
         <div>

@@ -9,6 +9,7 @@ import {
   assignAdminReservationTables,
   getAdminReservations,
   reviewAdminReservation,
+  setAdminReservationDepositRequirement,
   updateAdminReservationStatus,
 } from '@/lib/admin-reservation-api';
 import { useAuth } from './auth-provider';
@@ -71,7 +72,7 @@ export function AdminReservationPanel() {
   const [isBusy, setIsBusy] = useState(false);
 
   async function loadReservations() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (!token || user?.role !== 'SUPERADMIN') {
       setReservations([]);
       return;
     }
@@ -120,6 +121,41 @@ export function AdminReservationPanel() {
   useEffect(() => {
     loadReservations();
   }, [token, user?.role, filterStatus]);
+
+  async function handleDepositRequirement(
+    reservationId: string,
+    depositRequired: boolean,
+  ) {
+    if (!token) return;
+
+    setIsBusy(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const updated = await setAdminReservationDepositRequirement(
+        token,
+        reservationId,
+        { depositRequired },
+      );
+
+      setMessage(
+        updated.depositRequired
+          ? `50% deposit required for ${updated.reservationNumber}: ${money(updated.downPaymentAmount)}`
+          : `No deposit required for ${updated.reservationNumber}.`,
+      );
+
+      await loadReservations();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to update reservation deposit requirement.',
+      );
+    } finally {
+      setIsBusy(false);
+    }
+  }
 
   async function handleReview(reservationId: string) {
     if (!token) return;
@@ -233,11 +269,11 @@ export function AdminReservationPanel() {
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <p>Login as an admin to manage reservations.</p>
       ) : null}
 
-      {user?.role === 'ADMIN' ? (
+      {user?.role === 'SUPERADMIN' ? (
         <label className="admin-reservation-filter">
           Filter Status
           <select
@@ -256,7 +292,7 @@ export function AdminReservationPanel() {
       ) : null}
 
       <div className="admin-reservation-list">
-        {reservations.length === 0 && user?.role === 'ADMIN' ? (
+        {reservations.length === 0 && user?.role === 'SUPERADMIN' ? (
           <p>No reservations found.</p>
         ) : null}
 
@@ -279,8 +315,32 @@ export function AdminReservationPanel() {
                 <p><strong>Phone:</strong> {reservation.customerPhone}</p>
                 <p><strong>Guests:</strong> {reservation.guestCount}</p>
                 <p><strong>Branch:</strong> {reservation.branch.name}</p>
-                <p><strong>Down Payment:</strong> {money(reservation.downPaymentAmount)}</p>
-                <p><strong>Total Estimate:</strong> {money(reservation.totalEstimate)}</p>
+                <p>
+                  <strong>Booking Type / Occasion:</strong>{' '}
+                  {reservation.bookingType || 'Not specified'}
+                </p>
+                <p>
+                  <strong>Advance Food Order:</strong>{' '}
+                  {reservation.linkedOrderId ? 'Linked' : 'Not linked'}
+                </p>
+                <p>
+                  <strong>Estimated Food Total:</strong>{' '}
+                  {money(reservation.totalEstimate)}
+                </p>
+                <p>
+                  <strong>Current Down Payment:</strong>{' '}
+                  {money(reservation.downPaymentAmount)}
+                </p>
+                <p>
+                  <strong>Deposit Requirement:</strong>{' '}
+                  {reservation.depositRequired ? 'Required' : 'Not required'}
+                </p>
+                <p>
+                  <strong>Deposit Decision:</strong>{' '}
+                  {reservation.depositDecisionAt
+                    ? formatDate(reservation.depositDecisionAt)
+                    : 'Not decided yet'}
+                </p>
               </div>
 
               {reservation.notes ? (
@@ -302,6 +362,50 @@ export function AdminReservationPanel() {
               </div>
 
               <div className="admin-reservation-actions">
+                <div className="admin-reservation-field">
+                  <strong>Reservation Deposit Decision</strong>
+
+                  <p>
+                    A 50% deposit can only be required when an advance food
+                    order is linked and has a positive estimated food total.
+                  </p>
+
+                  {!reservation.linkedOrderId ? (
+                    <p>
+                      Link an advance food order before requiring a deposit.
+                    </p>
+                  ) : null}
+
+                  <div className="button-row">
+                    <button
+                      className="secondary"
+                      type="button"
+                      disabled={
+                        isBusy ||
+                        reservation.status !== 'PENDING' ||
+                        !reservation.linkedOrderId ||
+                        Number(reservation.totalEstimate ?? 0) <= 0
+                      }
+                      onClick={() =>
+                        handleDepositRequirement(reservation.id, true)
+                      }
+                    >
+                      Require 50% Deposit
+                    </button>
+
+                    <button
+                      className="secondary"
+                      type="button"
+                      disabled={isBusy || reservation.status !== 'PENDING'}
+                      onClick={() =>
+                        handleDepositRequirement(reservation.id, false)
+                      }
+                    >
+                      No Deposit Required
+                    </button>
+                  </div>
+                </div>
+
                 <label className="admin-reservation-field">
                   Review Decision
                   <select

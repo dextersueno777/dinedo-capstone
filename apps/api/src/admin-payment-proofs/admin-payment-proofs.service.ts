@@ -15,6 +15,94 @@ import { ReviewPaymentProofDto } from './dto/review-payment-proof.dto';
 export class AdminPaymentProofsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getReservationDepositProofs(status?: PaymentProofStatus) {
+    return this.prisma.reservationDepositProof.findMany({
+      where: {
+        deletedAt: null,
+        status,
+      },
+      select: {
+        id: true,
+        reservationId: true,
+        uploadedById: true,
+        reviewedById: true,
+        status: true,
+        amount: true,
+        proofImageUrl: true,
+        gcashReferenceNumber: true,
+        payerName: true,
+        payerAccountLast4: true,
+        rejectionReason: true,
+        reviewNotes: true,
+        submittedAt: true,
+        reviewedAt: true,
+        reservation: {
+          select: {
+            reservationNumber: true,
+            customerName: true,
+            customerPhone: true,
+            reservedFor: true,
+          },
+        },
+        uploadedBy: {
+          select: {
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        submittedAt: 'desc',
+      },
+    });
+  }
+
+  async reviewReservationDepositProof(
+    adminId: string,
+    id: string,
+    dto: ReviewPaymentProofDto,
+  ) {
+    if (dto.status === PaymentProofStatus.PENDING_REVIEW) {
+      throw new BadRequestException(
+        'Review status must be APPROVED or REJECTED.',
+      );
+    }
+
+    if (dto.status === PaymentProofStatus.REJECTED && !dto.rejectionReason) {
+      throw new BadRequestException(
+        'Rejection reason is required when rejecting deposit proof.',
+      );
+    }
+
+    const proof = await this.prisma.reservationDepositProof.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, status: true },
+    });
+
+    if (!proof) {
+      throw new NotFoundException('Reservation deposit proof not found.');
+    }
+
+    if (proof.status !== PaymentProofStatus.PENDING_REVIEW) {
+      throw new BadRequestException(
+        'This reservation deposit proof was already reviewed.',
+      );
+    }
+
+    return this.prisma.reservationDepositProof.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        reviewedById: adminId,
+        reviewedAt: new Date(),
+        reviewNotes: dto.reviewNotes?.trim(),
+        rejectionReason:
+          dto.status === PaymentProofStatus.REJECTED
+            ? dto.rejectionReason?.trim()
+            : null,
+      },
+    });
+  }
+
   async getPaymentProofs(status?: PaymentProofStatus) {
     return this.prisma.paymentProof.findMany({
       where: {

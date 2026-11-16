@@ -35,7 +35,6 @@ export function PaymentProofPanel() {
   const { user, token } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderId, setOrderId] = useState('');
-  const [amount, setAmount] = useState('');
   const [proofImageUrl, setProofImageUrl] = useState('');
   const [receiptFileName, setReceiptFileName] = useState('');
   const [gcashReferenceNumber, setGcashReferenceNumber] = useState('');
@@ -52,8 +51,12 @@ export function PaymentProofPanel() {
           order.paymentMethod === 'GCASH_MANUAL' &&
           order.status !== 'CANCELLED' &&
           order.status !== 'REJECTED' &&
+          order.paymentState !== 'PROOF_SUBMITTED' &&
           order.paymentState !== 'APPROVED' &&
-          order.paymentState !== 'PAID',
+          order.paymentState !== 'PAID' &&
+          (order.serviceType !== 'DELIVERY' ||
+            order.deliveryFeeStatus === 'NOT_REQUIRED' ||
+            order.deliveryFeeStatus === 'ACCEPTED'),
       ),
     [orders],
   );
@@ -75,13 +78,18 @@ export function PaymentProofPanel() {
           order.paymentMethod === 'GCASH_MANUAL' &&
           order.status !== 'CANCELLED' &&
           order.status !== 'REJECTED' &&
+          order.paymentState !== 'PROOF_SUBMITTED' &&
           order.paymentState !== 'APPROVED' &&
-          order.paymentState !== 'PAID',
+          order.paymentState !== 'PAID' &&
+          (order.serviceType !== 'DELIVERY' ||
+            order.deliveryFeeStatus === 'NOT_REQUIRED' ||
+            order.deliveryFeeStatus === 'ACCEPTED'),
       );
 
       if (first) {
         setOrderId(first.id);
-        setAmount(String(first.totalAmount));
+      } else {
+        setOrderId('');
       }
     } catch (caughtError) {
       setError(
@@ -142,7 +150,6 @@ export function PaymentProofPanel() {
 
     try {
       const proof = await submitPaymentProof(token, orderId, {
-        amount: Number(amount),
         proofImageUrl: proofImageUrl.trim(),
         gcashReferenceNumber: gcashReferenceNumber.trim() || undefined,
         payerName: payerName.trim() || undefined,
@@ -251,17 +258,18 @@ export function PaymentProofPanel() {
             </select>
           </label>
 
-          <label>
-            Amount Paid
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              required
-            />
-          </label>
+          <div className="payment-proof-info-card">
+            <span>Required Payment Amount</span>
+            <strong>
+              {money(
+                eligibleOrders.find((order) => order.id === orderId)?.totalAmount ??
+                  0,
+              )}
+            </strong>
+            <small>
+              This amount is calculated from the order and cannot be changed here.
+            </small>
+          </div>
 
           <label>
             Upload Receipt Image

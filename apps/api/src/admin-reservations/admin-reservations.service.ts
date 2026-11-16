@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  PaymentProofStatus,
   Prisma,
   ReservationStatus,
   TableStatus,
@@ -11,6 +12,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { AssignReservationTablesDto } from './dto/assign-reservation-tables.dto';
 import { ReviewReservationDto } from './dto/review-reservation.dto';
+import { SetReservationDepositDto } from './dto/set-reservation-deposit.dto';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto';
 
 @Injectable()
@@ -46,6 +48,80 @@ export class AdminReservationsService {
     return reservation;
   }
 
+  async setDepositRequirement(
+    adminId: string,
+    id: string,
+    dto: SetReservationDepositDto,
+  ) {
+    const reservation = await this.prisma.reservation.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        linkedOrderId: true,
+        totalEstimate: true,
+      },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found.');
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING) {
+      throw new BadRequestException(
+        'Deposit requirement can only be changed while the reservation is pending.',
+      );
+    }
+
+    const existingProofCount =
+      await this.prisma.reservationDepositProof.count({
+        where: {
+          reservationId: reservation.id,
+          deletedAt: null,
+        },
+      });
+
+    if (existingProofCount > 0) {
+      throw new BadRequestException(
+        'Deposit requirement cannot be changed after a deposit proof has been submitted.',
+      );
+    }
+
+    if (dto.depositRequired) {
+      if (!reservation.linkedOrderId) {
+        throw new BadRequestException(
+          'A deposit can only be required after an advance food order is linked to the reservation.',
+        );
+      }
+
+      if (reservation.totalEstimate.lte(0)) {
+        throw new BadRequestException(
+          'A positive estimated food total is required before calculating the reservation deposit.',
+        );
+      }
+    }
+
+    const downPaymentAmount = dto.depositRequired
+      ? reservation.totalEstimate.mul(new Prisma.Decimal('0.50'))
+      : new Prisma.Decimal(0);
+
+    return this.prisma.reservation.update({
+      where: {
+        id: reservation.id,
+      },
+      data: {
+        depositRequired: dto.depositRequired,
+        downPaymentAmount,
+        depositDecisionById: adminId,
+        depositDecisionAt: new Date(),
+      },
+      select: this.reservationSelect(),
+    });
+  }
+
   async reviewReservation(id: string, dto: ReviewReservationDto) {
     if (
       dto.status !== ReservationStatus.APPROVED &&
@@ -71,6 +147,7 @@ export class AdminReservationsService {
         id: true,
         branchId: true,
         status: true,
+        depositRequired: true,
       },
     });
 
@@ -87,6 +164,28 @@ export class AdminReservationsService {
     const tableIds = [...new Set(dto.tableIds ?? [])];
 
     return this.prisma.$transaction(async (tx) => {
+      if (
+        dto.status === ReservationStatus.APPROVED &&
+        reservation.depositRequired
+      ) {
+        const approvedDeposit = await tx.reservationDepositProof.findFirst({
+          where: {
+            reservationId: id,
+            status: PaymentProofStatus.APPROVED,
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!approvedDeposit) {
+          throw new BadRequestException(
+            'Required reservation deposit must be verified before approval.',
+          );
+        }
+      }
+
       if (dto.status === ReservationStatus.APPROVED && tableIds.length > 0) {
         const tables = await tx.restaurantTable.findMany({
           where: {
@@ -283,12 +382,17 @@ export class AdminReservationsService {
     return {
       id: true,
       reservationNumber: true,
+      linkedOrderId: true,
       status: true,
       reservedFor: true,
       guestCount: true,
       customerName: true,
       customerPhone: true,
+      bookingType: true,
       notes: true,
+      depositRequired: true,
+      depositDecisionById: true,
+      depositDecisionAt: true,
       downPaymentAmount: true,
       totalEstimate: true,
       adminNotes: true,

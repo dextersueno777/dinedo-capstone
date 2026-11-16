@@ -112,13 +112,12 @@ export default function HomePage() {
           <p className="eyebrow">Restaurant Status</p>
           <h2>Ready for dine-in, take-out, delivery, and reservations.</h2>
           <p>
-            Ordering hours are from 8:00 AM to 6:00 PM. Customers may pay by COD
-            or upload GCash proof for manual verification.
+            Current operating hours are shown in the Customer App from the branch settings. Customers may pay by COD or upload GCash proof for manual verification.
           </p>
         </div>
 
         <div className="status-grid">
-          <span>🕗 8:00 AM - 6:00 PM</span>
+          <span>🕗 Branch operating hours</span>
           <span>🏍️ 1 km base delivery area</span>
           <span>💳 COD / GCash proof</span>
           <span>📦 Status updates</span>

@@ -21,7 +21,7 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 @ApiTags('Admin Orders')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
 @Controller('admin/orders')
 export class AdminOrdersController {
   constructor(private readonly adminOrdersService: AdminOrdersService) {}
@@ -43,6 +43,11 @@ export class AdminOrdersController {
     @Body() dto: UpdateOrderStatusDto,
   ) {
     return this.adminOrdersService.updateStatus(user.id, id, dto);
+  }
+
+  @Patch(':id/confirm-counter-payment')
+  confirmCounterPayment(@Param('id') id: string) {
+    return this.adminOrdersService.confirmCounterPayment(id);
   }
 
   @Patch(':id/assign-rider')

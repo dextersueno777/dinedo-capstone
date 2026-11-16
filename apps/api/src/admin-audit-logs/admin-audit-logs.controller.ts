@@ -13,7 +13,7 @@ import { AdminAuditLogsService } from './admin-audit-logs.service';
 
 @Controller('admin/audit-logs')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 export class AdminAuditLogsController {
   constructor(private readonly adminAuditLogsService: AdminAuditLogsService) {}
 

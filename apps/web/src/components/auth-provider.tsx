@@ -11,8 +11,10 @@ import {
   getMe,
   login as loginRequest,
   register as registerRequest,
+  switchDemoRole as switchDemoRoleRequest,
   type LoginPayload,
   type RegisterPayload,
+  type DemoRole,
 } from '@/lib/auth-api';
 import type { AuthUser } from '@/lib/api-types';
 import {
@@ -27,6 +29,7 @@ type AuthContextValue = {
   isLoading: boolean;
   login: (payload: LoginPayload) => Promise<AuthUser>;
   register: (payload: RegisterPayload) => Promise<AuthUser>;
+  switchDemoRole: (role: DemoRole) => Promise<AuthUser>;
   logout: () => void;
 };
 
@@ -76,6 +79,17 @@ export function AuthProvider({
   async function register(payload: RegisterPayload) {
     const response = await registerRequest(payload);
 
+    // New customers must verify their email before login.
+    return response.user;
+  }
+
+  async function switchDemoRole(role: DemoRole) {
+    if (!token) {
+      throw new Error('Login is required.');
+    }
+
+    const response = await switchDemoRoleRequest(token, role);
+
     saveAccessToken(response.accessToken);
     setToken(response.accessToken);
     setUser(response.user);
@@ -96,6 +110,7 @@ export function AuthProvider({
       isLoading,
       login,
       register,
+      switchDemoRole,
       logout,
     }),
     [user, token, isLoading],

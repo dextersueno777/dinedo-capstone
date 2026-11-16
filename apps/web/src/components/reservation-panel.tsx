@@ -1,14 +1,35 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import type { Reservation } from '@/lib/api-types';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import type { Branch, Reservation } from '@/lib/api-types';
 import {
   cancelReservation,
   createReservation,
   getMyReservations,
 } from '@/lib/reservation-api';
+import {
+  getReservationDepositProofs,
+  submitReservationDepositProof,
+  type ReservationDepositProof,
+} from '@/lib/reservation-deposit-api';
+import { getBranchByCode } from '@/lib/branches-api';
+import { formatBranchTime } from '@/lib/branch-hours';
 import { useAuth } from './auth-provider';
 import { formatDateTimePH, getManilaDatetimeLocalValue, manilaDatetimeLocalToIso } from '@/lib/ph-time';
+
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () =>
+      typeof reader.result === 'string'
+        ? resolve(reader.result)
+        : reject(new Error('Unable to read receipt image.'));
+
+    reader.onerror = () => reject(new Error('Unable to read receipt image.'));
+    reader.readAsDataURL(file);
+  });
+}
 
 function formatDateTime(value: string) {
   return formatDateTimePH(value);
@@ -25,12 +46,21 @@ function getDefaultReservedFor() {
 export function ReservationPanel() {
   const { user, token } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [branch, setBranch] = useState<Branch | null>(null);
+  const [depositProofs, setDepositProofs] =
+    useState<Record<string, ReservationDepositProof | null>>({});
   const [reservedFor, setReservedFor] = useState(getDefaultReservedFor());
   const [guestCount, setGuestCount] = useState('2');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [bookingType, setBookingType] = useState('');
   const [notes, setNotes] = useState('');
-  const [totalEstimate, setTotalEstimate] = useState('');
+  const [depositReservationId, setDepositReservationId] = useState('');
+  const [depositProofImageUrl, setDepositProofImageUrl] = useState('');
+  const [depositReceiptFileName, setDepositReceiptFileName] = useState('');
+  const [depositReferenceNumber, setDepositReferenceNumber] = useState('');
+  const [depositPayerName, setDepositPayerName] = useState('');
+  const [depositAccountLast4, setDepositAccountLast4] = useState('');
   const [cancelReason, setCancelReason] = useState('Customer requested cancellation.');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -47,12 +77,105 @@ export function ReservationPanel() {
     try {
       const loaded = await getMyReservations(token);
       setReservations(loaded);
+
+      const proofEntries = await Promise.all(
+        loaded.map(async (reservation) => {
+          if (!reservation.depositRequired) {
+            return [reservation.id, null] as const;
+          }
+
+          const proofs = await getReservationDepositProofs(
+            token,
+            reservation.id,
+          );
+
+          return [reservation.id, proofs[0] ?? null] as const;
+        }),
+      );
+
+      setDepositProofs(Object.fromEntries(proofEntries));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
           : 'Unable to load reservations.',
       );
+    }
+  }
+
+  async function handleDepositReceiptChange(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a GCash receipt image.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError('Receipt image must be 4 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      setDepositProofImageUrl(await fileToDataUrl(file));
+      setDepositReceiptFileName(file.name);
+      setError('');
+    } catch {
+      setError('Unable to read receipt image.');
+    }
+  }
+
+  async function handleDepositSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!token || !depositReservationId) {
+      setError('Please select a reservation.');
+      return;
+    }
+
+    if (!depositProofImageUrl) {
+      setError('Please upload your GCash receipt.');
+      return;
+    }
+
+    setIsBusy(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const proof = await submitReservationDepositProof(
+        token,
+        depositReservationId,
+        {
+          proofImageUrl: depositProofImageUrl,
+          gcashReferenceNumber: depositReferenceNumber.trim() || undefined,
+          payerName: depositPayerName.trim() || undefined,
+          payerAccountLast4: depositAccountLast4.trim() || undefined,
+        },
+      );
+
+      setMessage(`Deposit proof submitted. Status: ${proof.status}`);
+      setDepositReservationId('');
+      setDepositProofImageUrl('');
+      setDepositReceiptFileName('');
+      setDepositReferenceNumber('');
+      setDepositPayerName('');
+      setDepositAccountLast4('');
+      await loadReservations();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to submit deposit proof.',
+      );
+    } finally {
+      setIsBusy(false);
     }
   }
 
@@ -75,13 +198,13 @@ export function ReservationPanel() {
         guestCount: Number(guestCount),
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
+        bookingType: bookingType.trim(),
         notes: notes.trim() || undefined,
-        totalEstimate: totalEstimate ? Number(totalEstimate) : undefined,
       });
 
       setMessage(`Reservation created: ${reservation.reservationNumber}`);
+      setBookingType('');
       setNotes('');
-      setTotalEstimate('');
       await loadReservations();
     } catch (caughtError) {
       setError(
@@ -123,6 +246,22 @@ export function ReservationPanel() {
   }
 
   useEffect(() => {
+    let cancelled = false;
+
+    getBranchByCode('TINOC')
+      .then((loadedBranch) => {
+        if (!cancelled) setBranch(loadedBranch);
+      })
+      .catch(() => {
+        if (!cancelled) setBranch(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     loadReservations();
   }, [token, user?.id]);
 
@@ -139,7 +278,10 @@ export function ReservationPanel() {
 
         <div className="reservation-info-card">
           <span>Branch Hours</span>
-          <strong>8:00 AM - 6:00 PM</strong>
+          <strong>
+            {formatBranchTime(branch?.settings?.orderingOpenTime ?? '07:00')} -{' '}
+            {formatBranchTime(branch?.settings?.orderingCloseTime ?? '22:00')}
+          </strong>
           <small>Tinoc Branch</small>
         </div>
       </div>
@@ -205,14 +347,13 @@ export function ReservationPanel() {
           </label>
 
           <label>
-            Estimated Total
+            Booking Type / Occasion
             <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={totalEstimate}
-              onChange={(event) => setTotalEstimate(event.target.value)}
-              placeholder="Optional"
+              value={bookingType}
+              maxLength={120}
+              placeholder="Example: Regular dining, Birthday, Wedding, Meeting"
+              onChange={(event) => setBookingType(event.target.value)}
+              required
             />
           </label>
 
@@ -276,6 +417,132 @@ export function ReservationPanel() {
               <strong>Phone:</strong> {reservation.customerPhone}
             </p>
 
+            {reservation.bookingType ? (
+              <p>
+                <strong>Booking Type:</strong> {reservation.bookingType}
+              </p>
+            ) : null}
+
+            {reservation.depositRequired ? (
+              <div className="reservation-deposit-notice">
+                <p>
+                  <strong>Reservation Deposit Required:</strong>{' '}
+                  {new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                  }).format(Number(reservation.downPaymentAmount))}
+                </p>
+                <p>
+                  Submit your GCash deposit proof while this reservation is pending.
+                </p>
+              </div>
+            ) : null}
+
+            {depositProofs[reservation.id]?.status === 'PENDING_REVIEW' ? (
+              <p>
+                <strong>Deposit Proof:</strong> Waiting for owner verification
+              </p>
+            ) : null}
+
+            {depositProofs[reservation.id]?.status === 'APPROVED' ? (
+              <p>
+                <strong>Deposit Proof:</strong> Approved
+              </p>
+            ) : null}
+
+            {depositProofs[reservation.id]?.status === 'REJECTED' ? (
+              <p>
+                <strong>Deposit Proof:</strong> Rejected
+                {depositProofs[reservation.id]?.rejectionReason
+                  ? `, ${depositProofs[reservation.id]?.rejectionReason}`
+                  : ', please submit a corrected proof.'}
+              </p>
+            ) : null}
+
+            {reservation.depositRequired &&
+            reservation.status === 'PENDING' &&
+            (!depositProofs[reservation.id] ||
+              depositProofs[reservation.id]?.status === 'REJECTED') ? (
+              <form
+                className="auth-form reservation-deposit-form"
+                onSubmit={handleDepositSubmit}
+              >
+                <input
+                  type="hidden"
+                  value={reservation.id}
+                  readOnly
+                />
+
+                <label>
+                  GCash Receipt
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={(event) => {
+                      setDepositReservationId(reservation.id);
+                      void handleDepositReceiptChange(event);
+                    }}
+                    required={!depositProofImageUrl}
+                  />
+                </label>
+
+                {depositReceiptFileName ? (
+                  <p>Selected: {depositReceiptFileName}</p>
+                ) : null}
+
+                <label>
+                  GCash Reference Number
+                  <input
+                    type="text"
+                    value={depositReferenceNumber}
+                    maxLength={80}
+                    onChange={(event) => {
+                      setDepositReservationId(reservation.id);
+                      setDepositReferenceNumber(event.target.value);
+                    }}
+                  />
+                </label>
+
+                <label>
+                  Payer Name
+                  <input
+                    type="text"
+                    value={depositPayerName}
+                    maxLength={120}
+                    onChange={(event) => {
+                      setDepositReservationId(reservation.id);
+                      setDepositPayerName(event.target.value);
+                    }}
+                  />
+                </label>
+
+                <label>
+                  Last 4 Digits of GCash Number
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={depositAccountLast4}
+                    maxLength={4}
+                    onChange={(event) => {
+                      setDepositReservationId(reservation.id);
+                      setDepositAccountLast4(
+                        event.target.value.replace(/\D/g, '').slice(0, 4),
+                      );
+                    }}
+                  />
+                </label>
+
+                <button
+                  className="primary full-button"
+                  type="submit"
+                  disabled={isBusy}
+                  onClick={() => setDepositReservationId(reservation.id)}
+                >
+                  Submit GCash Deposit Proof
+                </button>
+              </form>
+            ) : null}
+
             {reservation.notes ? (
               <p>
                 <strong>Notes:</strong> {reservation.notes}
@@ -291,7 +558,8 @@ export function ReservationPanel() {
               </p>
             ) : null}
 
-            {reservation.status !== 'CANCELLED' &&
+            {reservation.status !== 'REJECTED' &&
+            reservation.status !== 'CANCELLED' &&
             reservation.status !== 'COMPLETED' &&
             reservation.status !== 'NO_SHOW' ? (
               <button

@@ -34,7 +34,7 @@ export function AdminDashboardPanel() {
   const [isLoading, setIsLoading] = useState(false);
 
   async function loadSummary() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (!token || user?.role !== 'SUPERADMIN') {
       setSummary(null);
       return;
     }
@@ -87,7 +87,7 @@ export function AdminDashboardPanel() {
       {message ? <p className="success-text">{message}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <p>Login as an admin to view the dashboard summary.</p>
       ) : null}
 

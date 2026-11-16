@@ -1,11 +1,21 @@
-export type UserRole = 'CUSTOMER' | 'ADMIN' | 'KITCHEN' | 'RIDER';
+export type UserRole = 'CUSTOMER' | 'ADMIN' | 'SUPERADMIN' | 'KITCHEN' | 'RIDER';
 
 export type AuthUser = {
   id: string;
   email: string;
   role: UserRole;
+  status:
+    | 'PENDING_EMAIL_VERIFICATION'
+    | 'PENDING_STAFF_APPROVAL'
+    | 'ACTIVE'
+    | 'DISABLED'
+    | 'BANNED';
   branchId: string | null;
-};
+  emailVerifiedAt: string | null;
+
+  workerId: string | null;
+  firstName: string | null;
+  lastName: string | null;};
 
 export type LoginResponse = {
   user: AuthUser;
@@ -17,6 +27,14 @@ export type Branch = {
   code: string;
   name: string;
   address: string | null;
+  status: string;
+  settings: {
+    timezone: string;
+    orderingOpenTime: string;
+    orderingCloseTime: string;
+    normalDeliveryKm: string | number;
+    reservationsEnabled: boolean;
+  } | null;
 };
 
 export type ApiErrorPayload = {
@@ -180,8 +198,8 @@ export type CheckoutPayload = {
   timingType: OrderTimingType;
   scheduledFor?: string;
   addressId?: string;
+  reservationId?: string;
   paymentMethod: PaymentMethod;
-  deliveryDistanceKm?: number;
   customerNotes?: string;
 };
 
@@ -304,7 +322,6 @@ export type PaymentProof = {
 };
 
 export type SubmitPaymentProofPayload = {
-  amount: number;
   proofImageUrl: string;
   gcashReferenceNumber?: string;
   payerName?: string;
@@ -338,12 +355,17 @@ export type ReservationTable = {
 export type Reservation = {
   id: string;
   reservationNumber: string;
+  linkedOrderId: string | null;
   status: ReservationStatus;
   reservedFor: string;
   guestCount: number;
   customerName: string;
   customerPhone: string;
+  bookingType: string | null;
   notes: string | null;
+  depositRequired: boolean;
+  depositDecisionById: string | null;
+  depositDecisionAt: string | null;
   downPaymentAmount: string | number;
   totalEstimate: string | number;
   adminNotes: string | null;
@@ -363,9 +385,8 @@ export type CreateReservationPayload = {
   guestCount: number;
   customerName: string;
   customerPhone: string;
+  bookingType: string;
   notes?: string;
-  downPaymentAmount?: number;
-  totalEstimate?: number;
 };
 
 export type CancelReservationPayload = {
@@ -724,6 +745,32 @@ export type AdminPaymentProof = {
   } | null;
 };
 
+export type AdminReservationDepositProof = {
+  id: string;
+  reservationId: string;
+  uploadedById: string;
+  reviewedById: string | null;
+  status: PaymentProofStatus;
+  amount: string | number;
+  proofImageUrl: string;
+  gcashReferenceNumber: string | null;
+  payerName: string | null;
+  payerAccountLast4: string | null;
+  rejectionReason: string | null;
+  reviewNotes: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+  reservation: {
+    reservationNumber: string;
+    customerName: string;
+    customerPhone: string;
+    reservedFor: string;
+  };
+  uploadedBy: {
+    email: string;
+  };
+};
+
 export type ReviewPaymentProofPayload = {
   status: PaymentProofStatus;
   reviewNotes?: string;
@@ -734,12 +781,17 @@ export type ReviewPaymentProofPayload = {
 export type AdminReservation = {
   id: string;
   reservationNumber: string;
+  linkedOrderId: string | null;
   status: ReservationStatus;
   reservedFor: string;
   guestCount: number;
   customerName: string;
   customerPhone: string;
+  bookingType: string | null;
   notes: string | null;
+  depositRequired: boolean;
+  depositDecisionById: string | null;
+  depositDecisionAt: string | null;
   downPaymentAmount: string | number;
   totalEstimate: string | number | null;
   adminNotes: string | null;
@@ -768,6 +820,10 @@ export type AdminReservation = {
       status: string;
     };
   }>;
+};
+
+export type SetAdminReservationDepositPayload = {
+  depositRequired: boolean;
 };
 
 export type ReviewAdminReservationPayload = {

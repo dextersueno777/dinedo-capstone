@@ -11,17 +11,20 @@ import {
   ReservationStatus,
   UserRole,
 } from '@prisma/client';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { AuthUser } from '../auth/types/auth-user.type';
 import { AdminReservationsService } from './admin-reservations.service';
 import { AssignReservationTablesDto } from './dto/assign-reservation-tables.dto';
 import { ReviewReservationDto } from './dto/review-reservation.dto';
+import { SetReservationDepositDto } from './dto/set-reservation-deposit.dto';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto';
 
 @Controller('admin/reservations')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 export class AdminReservationsController {
   constructor(
     private readonly adminReservationsService: AdminReservationsService,
@@ -35,6 +38,19 @@ export class AdminReservationsController {
   @Get(':id')
   getReservationById(@Param('id') id: string) {
     return this.adminReservationsService.getReservationById(id);
+  }
+
+  @Patch(':id/deposit-requirement')
+  setDepositRequirement(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: SetReservationDepositDto,
+  ) {
+    return this.adminReservationsService.setDepositRequirement(
+      user.id,
+      id,
+      dto,
+    );
   }
 
   @Patch(':id/review')

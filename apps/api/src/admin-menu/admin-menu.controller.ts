@@ -19,7 +19,7 @@ import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 @ApiTags('Admin Menu')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 @Controller('admin/menu-items')
 export class AdminMenuController {
   constructor(private readonly adminMenuService: AdminMenuService) {}

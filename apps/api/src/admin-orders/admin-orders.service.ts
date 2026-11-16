@@ -94,8 +94,22 @@ export class AdminOrdersService {
       throw new NotFoundException('Order not found.');
     }
 
+    if (existingOrder.status === OrderStatus.COMPLETED) {
+      throw new BadRequestException('Completed orders cannot be changed.');
+    }
+
     if (existingOrder.status === dto.status) {
       throw new BadRequestException('Order is already in this status.');
+    }
+
+    if (
+      dto.status === OrderStatus.COMPLETED &&
+      existingOrder.paymentMethod === PaymentMethod.PAY_AT_COUNTER &&
+      existingOrder.paymentState !== PaymentState.PAID
+    ) {
+      throw new BadRequestException(
+        'Pay-at-counter orders must be paid before completion.',
+      );
     }
 
     const timestampData: Prisma.OrderUpdateInput = {};
@@ -228,6 +242,26 @@ export class AdminOrdersService {
     });
   }
 
+  async confirmCounterPayment(orderId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, deletedAt: null },
+    });
+
+    if (!order) throw new NotFoundException('Order not found.');
+
+    if (order.paymentMethod !== PaymentMethod.PAY_AT_COUNTER)
+      throw new BadRequestException('This is not a pay-at-counter order.');
+
+    if (order.status !== OrderStatus.READY_FOR_PICKUP)
+      throw new BadRequestException('Order must be ready for pickup first.');
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { paymentState: PaymentState.PAID },
+      select: this.orderSelect(),
+    });
+  }
+
   async assignRider(adminId: string, orderId: string, dto: AssignRiderDto) {
     const order = await this.prisma.order.findFirst({
       where: { id: orderId, deletedAt: null },
@@ -236,6 +270,7 @@ export class AdminOrdersService {
         branchId: true,
         serviceType: true,
         status: true,
+        deliveryFeeStatus: true,
         paymentMethod: true,
         totalAmount: true,
         deliveryFeeAmount: true,
@@ -260,6 +295,26 @@ export class AdminOrdersService {
     if (order.serviceType !== ServiceType.DELIVERY) {
       throw new BadRequestException(
         'Rider assignment is only for delivery orders.',
+      );
+    }
+
+    if (
+      order.status === OrderStatus.CANCELLED ||
+      order.status === OrderStatus.REJECTED ||
+      order.status === OrderStatus.DELIVERED ||
+      order.status === OrderStatus.COMPLETED
+    ) {
+      throw new BadRequestException(
+        'Cannot assign a rider to a closed order.',
+      );
+    }
+
+    if (
+      order.deliveryFeeStatus !== DeliveryFeeStatus.NOT_REQUIRED &&
+      order.deliveryFeeStatus !== DeliveryFeeStatus.ACCEPTED
+    ) {
+      throw new BadRequestException(
+        'Delivery fee must be finalized before assigning a rider.',
       );
     }
 
@@ -365,6 +420,8 @@ export class AdminOrdersService {
       select: {
         id: true,
         serviceType: true,
+        status: true,
+        deliveryFeeStatus: true,
         subtotalAmount: true,
         deliveryFeeAmount: true,
       },
@@ -377,6 +434,22 @@ export class AdminOrdersService {
     if (existingOrder.serviceType !== ServiceType.DELIVERY) {
       throw new BadRequestException(
         'Additional delivery fee is only for delivery orders.',
+      );
+    }
+
+    if (
+      existingOrder.status !== OrderStatus.PENDING &&
+      existingOrder.status !== OrderStatus.APPROVED &&
+      existingOrder.status !== OrderStatus.MODIFICATION_REQUESTED
+    ) {
+      throw new BadRequestException(
+        'Delivery fee cannot be changed at this order stage.',
+      );
+    }
+
+    if (existingOrder.deliveryFeeStatus === DeliveryFeeStatus.ACCEPTED) {
+      throw new BadRequestException(
+        'Customer already accepted this delivery fee.',
       );
     }
 

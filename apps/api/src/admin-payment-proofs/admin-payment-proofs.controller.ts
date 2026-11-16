@@ -21,11 +21,31 @@ import { AdminPaymentProofsService } from './admin-payment-proofs.service';
 
 @Controller('admin/payment-proofs')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SUPERADMIN)
 export class AdminPaymentProofsController {
   constructor(
     private readonly adminPaymentProofsService: AdminPaymentProofsService,
   ) {}
+
+  @Get('reservation-deposits')
+  getReservationDepositProofs(
+    @Query('status') status?: PaymentProofStatus,
+  ) {
+    return this.adminPaymentProofsService.getReservationDepositProofs(status);
+  }
+
+  @Patch('reservation-deposits/:id/review')
+  reviewReservationDepositProof(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: ReviewPaymentProofDto,
+  ) {
+    return this.adminPaymentProofsService.reviewReservationDepositProof(
+      user.id,
+      id,
+      dto,
+    );
+  }
 
   @Get()
   getPaymentProofs(@Query('status') status?: PaymentProofStatus) {

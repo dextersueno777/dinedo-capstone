@@ -1,0 +1,528 @@
+===== PRISMA USER / ENUMS =====
+232-  auditLogs      AuditLog[]
+233-  notifications  Notification[]    @relation("BranchNotifications")
+234-
+235-  @@index([status])
+236-}
+237-
+238-model BranchSettings {
+239-  id                  String   @id @default(cuid())
+240-  branchId            String   @unique
+241-  timezone            String   @default("Asia/Manila")
+242-  orderingOpenTime    String   @default("07:00")
+243-  orderingCloseTime   String   @default("22:00")
+244-  normalDeliveryKm    Decimal  @default(1.00) @db.Decimal(8, 2)
+245-  reservationsEnabled Boolean  @default(true)
+246-  createdAt           DateTime @default(now())
+247-  updatedAt           DateTime @updatedAt
+248-
+249-  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+250-}
+251-
+252:model User {
+253-  id           String     @id @default(cuid())
+254-  branchId     String?
+255-  email        String     @unique
+256-  passwordHash String
+257-  role         UserRole
+258-  status       UserStatus @default(ACTIVE)
+259-  createdAt    DateTime   @default(now())
+260-  updatedAt    DateTime   @updatedAt
+261-  deletedAt    DateTime?
+262-
+263-  branch                           Branch?                   @relation(fields: [branchId], references: [id])
+264-  profile                          UserProfile?
+265-  refreshSessions                  RefreshSession[]
+266-  favorites                        Favorite[]
+267-  addresses                        Address[]
+268-  carts                            Cart[]
+269-  orders                           Order[]                   @relation("CustomerOrders")
+270-  customerStrikes                  CustomerStrike[]          @relation("CustomerStrikeCustomer")
+271-  issuedCustomerStrikes            CustomerStrike[]          @relation("CustomerStrikeIssuer")
+272-  statusUpdates                    OrderStatusHistory[]      @relation("OrderStatusActor")
+273-  reservations                     Reservation[]             @relation("CustomerReservations")
+274-  reservationDepositDecisions      Reservation[]             @relation("ReservationDepositDecisionBy")
+275-  uploadedPaymentProofs            PaymentProof[]            @relation("PaymentProofUploader")
+276-  reviewedPaymentProofs            PaymentProof[]            @relation("PaymentProofReviewer")
+277-  uploadedReservationDepositProofs ReservationDepositProof[] @relation("ReservationDepositProofUploader")
+278-  reviewedReservationDepositProofs ReservationDepositProof[] @relation("ReservationDepositProofReviewer")
+279-  customerRefunds                  Refund[]                  @relation("CustomerRefunds")
+280-  requestedRefunds                 Refund[]                  @relation("RefundRequester")
+281-  processedRefunds                 Refund[]                  @relation("RefundProcessor")
+282-  riderProfile                     RiderProfile?
+283-  riderShifts                      RiderShift[]              @relation("RiderShifts")
+284-  assignedDeliveries               Delivery[]                @relation("AssignedDeliveries")
+285-  reportedDeliveryIssues           DeliveryIssue[]           @relation("DeliveryIssueReporter")
+286-  capturedProofs                   ProofOfDelivery[]         @relation("ProofOfDeliveryCapturer")
+287-  codRemittances                   CodRemittance[]           @relation("RiderCodRemittances")
+288-  verifiedCodRemittances           CodRemittance[]           @relation("CodRemittanceVerifier")
+289-  stockMovements                   StockMovement[]           @relation("StockMovementActor")
+290-  auditLogs                        AuditLog[]                @relation("AuditLogActor")
+291-
+292-  notifications Notification[] @relation("UserNotifications")
+293-
+294-  @@index([branchId])
+295-  @@index([role])
+296-  @@index([status])
+297-}
+298-
+299:model UserProfile {
+300-  id          String   @id @default(cuid())
+301-  userId      String   @unique
+302-  firstName   String
+303-  lastName    String
+304-  phoneNumber String?
+305-  createdAt   DateTime @default(now())
+306-  updatedAt   DateTime @updatedAt
+307-
+308-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+309-}
+310-
+311-model RefreshSession {
+312-  id        String    @id @default(cuid())
+313-  userId    String
+314-  tokenHash String    @unique
+315-  userAgent String?
+316-  ipAddress String?
+317-  expiresAt DateTime
+318-  revokedAt DateTime?
+319-  createdAt DateTime  @default(now())
+320-
+321-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+322-
+323-  @@index([userId])
+324-  @@index([expiresAt])
+325-}
+326-
+327-model MenuCategory {
+328-  id          String    @id @default(cuid())
+329-  branchId    String
+330-  name        String
+331-  slug        String
+332-  description String?
+333-  sortOrder   Int       @default(0)
+334-  isActive    Boolean   @default(true)
+335-  createdAt   DateTime  @default(now())
+336-  updatedAt   DateTime  @updatedAt
+337-  deletedAt   DateTime?
+338-
+339-  branch    Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
+340-  menuItems MenuItem[]
+341-
+342-  @@unique([branchId, slug])
+343-  @@index([branchId])
+344-  @@index([isActive])
+345-}
+346-
+347-model MenuItem {
+348-  id          String         @id @default(cuid())
+349-  branchId    String
+350-  categoryId  String
+351-  name        String
+352-  slug        String
+353-  description String?
+354-  price       Decimal        @db.Decimal(10, 2)
+355-  status      MenuItemStatus @default(AVAILABLE)
+356-  isFeatured  Boolean        @default(false)
+357-  sortOrder   Int            @default(0)
+358-  createdAt   DateTime       @default(now())
+359-  updatedAt   DateTime       @updatedAt
+360-  deletedAt   DateTime?
+361-
+362-  branch       Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+363-  category     MenuCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+364-  images       MenuItemImage[]
+365-  optionGroups MenuOptionGroup[]
+366-  favorites    Favorite[]
+367-  cartItems    CartItem[]
+368-  orderItems   OrderItem[]
+369-
+370-  @@unique([branchId, slug])
+371-  @@index([branchId])
+372-  @@index([categoryId])
+373-  @@index([status])
+374-  @@index([isFeatured])
+375-}
+376-
+377-model MenuItemImage {
+378-  id         String   @id @default(cuid())
+379-  menuItemId String
+380-  url        String
+381-  altText    String?
+382-  sortOrder  Int      @default(0)
+383-  createdAt  DateTime @default(now())
+384-
+385-  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+386-
+387-  @@index([menuItemId])
+388-}
+389-
+
+===== AUTH FILES =====
+apps/api/src/auth/auth.controller.ts
+apps/api/src/auth/auth.module.ts
+apps/api/src/auth/auth.service.ts
+apps/api/src/auth/decorators/current-user.decorator.ts
+apps/api/src/auth/decorators/roles.decorator.ts
+apps/api/src/auth/dto/login.dto.ts
+apps/api/src/auth/dto/register.dto.ts
+apps/api/src/auth/dto/update-superadmin-contact-number.dto.ts
+apps/api/src/auth/guards/jwt-auth.guard.ts
+apps/api/src/auth/guards/roles.guard.ts
+apps/api/src/auth/types/auth-user.type.ts
+apps/api/src/auth/types/jwt-payload.type.ts
+
+===== AUTH SERVICE =====
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { UserRole, UserStatus } from '@prisma/client';
+import * as argon2 from 'argon2';
+import { PrismaService } from '../prisma/prisma.service';
+import { RegisterDto } from './dto/register.dto';
+import { UpdateSuperadminContactNumberDto } from './dto/update-superadmin-contact-number.dto';
+import { LoginDto } from './dto/login.dto';
+import { AuthUser } from './types/auth-user.type';
+import { JwtPayload } from './types/jwt-payload.type';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async register(dto: RegisterDto) {
+    const email = dto.email.trim().toLowerCase();
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email is already registered.');
+    }
+
+    const passwordHash = await argon2.hash(dto.password, {
+      type: argon2.argon2id,
+    });
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        role: UserRole.CUSTOMER,
+        status: UserStatus.ACTIVE,
+        profile: {
+          create: {
+            firstName: dto.firstName.trim(),
+            lastName: dto.lastName.trim(),
+            phoneNumber: dto.phoneNumber?.trim(),
+          },
+        },
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    return {
+      user: this.toAuthUser(user),
+      accessToken: await this.signAccessToken(this.toAuthUser(user)),
+    };
+  }
+
+  async login(dto: LoginDto) {
+    const email = dto.email.trim().toLowerCase();
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password.');
+    }
+
+    const passwordIsValid = await argon2.verify(user.passwordHash, dto.password);
+
+    if (!passwordIsValid) {
+      throw new UnauthorizedException('Invalid email or password.');
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account is not active.');
+    }
+
+    if (user.role === UserRole.SUPERADMIN) {
+      const suppliedOwnerContact =
+        dto.ownerContactNumber?.replace(/\D/g, '') ?? '';
+      const storedOwnerContact =
+        user.profile?.phoneNumber?.replace(/\D/g, '') ?? '';
+
+      if (
+        !suppliedOwnerContact ||
+        !storedOwnerContact ||
+        suppliedOwnerContact !== storedOwnerContact
+      ) {
+        throw new UnauthorizedException('Invalid login credentials.');
+      }
+    }
+
+    const authUser = this.toAuthUser(user);
+
+    return {
+      user: authUser,
+      accessToken: await this.signAccessToken(authUser),
+    };
+  }
+
+  async updateSuperadminContactNumber(
+    userId: string,
+    dto: UpdateSuperadminContactNumberDto,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (
+      !user ||
+      user.role !== UserRole.SUPERADMIN ||
+      user.status !== UserStatus.ACTIVE
+    ) {
+      throw new UnauthorizedException('Unauthorized owner account.');
+    }
+
+    const passwordIsValid = await argon2.verify(
+      user.passwordHash,
+      dto.currentPassword,
+    );
+
+    if (!passwordIsValid) {
+      throw new UnauthorizedException('Current password is incorrect.');
+    }
+
+    const newContactNumber = dto.newContactNumber.replace(/\D/g, '');
+
+    await this.prisma.userProfile.upsert({
+      where: {
+        userId: user.id,
+      },
+      update: {
+        phoneNumber: newContactNumber,
+      },
+      create: {
+        userId: user.id,
+        firstName: user.profile?.firstName ?? 'DineDo',
+        lastName: user.profile?.lastName ?? 'Owner',
+        phoneNumber: newContactNumber,
+      },
+    });
+
+    return {
+      message: 'Owner contact number updated successfully.',
+      maskedContactNumber:
+        `${newContactNumber.slice(0, 2)}*******${newContactNumber.slice(-2)}`,
+    };
+  }
+
+  private async signAccessToken(user: AuthUser) {
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      branchId: user.branchId,
+    };
+
+    const secret = this.configService.getOrThrow<string>('JWT_ACCESS_SECRET');
+
+    return this.jwtService.signAsync(payload, {
+      secret,
+      expiresIn: '15m',
+    });
+  }
+
+  private toAuthUser(user: {
+    id: string;
+    email: string;
+    role: UserRole;
+    status: UserStatus;
+    branchId: string | null;
+    profile: {
+      firstName: string;
+      lastName: string;
+    } | null;
+  }): AuthUser {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      branchId: user.branchId,
+      firstName: user.profile?.firstName ?? null,
+      lastName: user.profile?.lastName ?? null,
+    };
+  }
+}
+
+===== SEED USERS =====
+3-import * as dotenv from 'dotenv';
+4-import { resolve } from 'node:path';
+5-
+6-dotenv.config({
+7-  path: resolve(__dirname, '../../../.env')
+8-});
+9-
+10-const prisma = new PrismaClient();
+11-
+12-async function main(): Promise<void> {
+13:  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@dinedo.local';
+14:  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe123!';
+15:  const adminFirstName = process.env.SEED_ADMIN_FIRST_NAME ?? 'DineDo';
+16:  const adminLastName = process.env.SEED_ADMIN_LAST_NAME ?? 'Admin';
+17-
+18-  const tinocBranch = await prisma.branch.upsert({
+19-    where: {
+20-      code: 'TINOC'
+21-    },
+22-    update: {
+23-      name: 'Dindo’s Restaurant - Tinoc Branch',
+24-      address: 'Tinoc, Ifugao, Philippines',
+25-      latitude: '16.6777375',
+26-      longitude: '120.9360469',
+27-      status: 'ACTIVE'
+28-    },
+29-    create: {
+30-      name: 'Dindo’s Restaurant - Tinoc Branch',
+31-      code: 'TINOC',
+32-      address: 'Tinoc, Ifugao, Philippines',
+33-      latitude: '16.6777375',
+34-      longitude: '120.9360469',
+35-      status: 'ACTIVE'
+36-    }
+37-  });
+38-
+39-  await prisma.branchSettings.upsert({
+40-    where: {
+41-      branchId: tinocBranch.id
+42-    },
+43-    update: {
+44-      timezone: 'Asia/Manila',
+45-      orderingOpenTime: '07:00',
+46-      orderingCloseTime: '22:00',
+47-      normalDeliveryKm: '1.00',
+48-      reservationsEnabled: true
+49-    },
+50-    create: {
+51-      branchId: tinocBranch.id,
+52-      timezone: 'Asia/Manila',
+53-      orderingOpenTime: '07:00',
+54-      orderingCloseTime: '22:00',
+55-      normalDeliveryKm: '1.00',
+56-      reservationsEnabled: true
+57-    }
+58-  });
+59-
+60:  // Retire the original development-only administrator without deleting
+61-  // historical records that may reference the account.
+62:  const legacyDemoAdminEmail = 'admin@dinedo.local';
+63-
+64:  if (adminEmail.toLowerCase() !== legacyDemoAdminEmail) {
+65:    const legacyDemoAdmin = await prisma.user.findUnique({
+66-      where: {
+67:        email: legacyDemoAdminEmail
+68-      },
+69-      select: {
+70-        id: true
+71-      }
+72-    });
+73-
+74:    if (legacyDemoAdmin) {
+75-      await prisma.$transaction([
+76-        prisma.refreshSession.updateMany({
+77-          where: {
+78:            userId: legacyDemoAdmin.id,
+79-            revokedAt: null
+80-          },
+81-          data: {
+82-            revokedAt: new Date()
+83-          }
+84-        }),
+85-        prisma.user.update({
+86-          where: {
+87:            id: legacyDemoAdmin.id
+88-          },
+89-          data: {
+90-            status: UserStatus.DISABLED,
+91-            deletedAt: new Date()
+92-          }
+93-        })
+94-      ]);
+95-    }
+96-  }
+97-
+98:  const passwordHash = await argon2.hash(adminPassword, {
+99-    type: argon2.argon2id
+100-  });
+101-
+102:  const adminUser = await prisma.user.upsert({
+103-    where: {
+104:      email: adminEmail.toLowerCase()
+105-    },
+106-    update: {
+107-      branchId: tinocBranch.id,
+108-      passwordHash,
+109:      role: UserRole.SUPERADMIN,
+110-      status: UserStatus.ACTIVE,
+111-      deletedAt: null
+112-    },
+113-    create: {
+114-      branchId: tinocBranch.id,
+115:      email: adminEmail.toLowerCase(),
+116-      passwordHash,
+117:      role: UserRole.SUPERADMIN,
+118-      status: UserStatus.ACTIVE
+119-    }
+120-  });
+121-
+122-  await prisma.userProfile.upsert({
+123-    where: {
+124:      userId: adminUser.id
+125-    },
+126-    update: {
+127:      firstName: adminFirstName,
+128:      lastName: adminLastName
+129-    },
+130-    create: {
+131:      userId: adminUser.id,
+132:      firstName: adminFirstName,
+133:      lastName: adminLastName
+134-    }
+135-  });
+136-
+137-  console.log('Seed completed successfully.');
+138-  console.log(`Branch: ${tinocBranch.name} (${tinocBranch.code})`);
+139:  console.log(`Admin: ${adminEmail.toLowerCase()}`);
+140-}
+141-
+142-main()
+143-  .catch((error) => {
+144-    console.error('Seed failed.');
+145-    console.error(error);
+146-    process.exit(1);
+147-  })
+148-  .finally(async () => {
+149-    await prisma.$disconnect();
+150-  });

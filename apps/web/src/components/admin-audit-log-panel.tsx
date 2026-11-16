@@ -37,7 +37,7 @@ export function AdminAuditLogPanel() {
   const [isLoading, setIsLoading] = useState(false);
 
   async function loadLogs() {
-    if (!token || user?.role !== 'ADMIN') {
+    if (!token || user?.role !== 'SUPERADMIN') {
       setLogs([]);
       return;
     }
@@ -93,11 +93,11 @@ export function AdminAuditLogPanel() {
 
       {error ? <p className="error-text">{error}</p> : null}
 
-      {user?.role !== 'ADMIN' ? (
+      {user?.role !== 'SUPERADMIN' ? (
         <p>Login as an admin to view audit logs.</p>
       ) : null}
 
-      {user?.role === 'ADMIN' ? (
+      {user?.role === 'SUPERADMIN' ? (
         <>
           <form className="admin-audit-filter" onSubmit={handleSearch}>
             <input
